@@ -1,0 +1,14 @@
+{
+  "app": { "title": "Canapact" },
+  "nav": {
+    "alone": "Seul",
+    "together": "Ensemble",
+    "pending": "Mon avis"
+  },
+  "views": {
+    "alone": "Je peux regarder seul",
+    "together": "À regarder ensemble",
+    "pending": "En attente de votre avis"
+  },
+  "empty": "Rien ici pour l'instant."
+}
