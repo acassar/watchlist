@@ -4,7 +4,14 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth/store';
 import StatusDot from './StatusDot.vue';
 
-defineProps<{ title: GroupTitle }>();
+withDefaults(
+  defineProps<{
+    title: GroupTitle;
+    /** Ma pastille se touche pour changer d'avis (pas sur la carte de « Mon avis »). */
+    editable?: boolean;
+  }>(),
+  { editable: true },
+);
 const emit = defineEmits<{ edit: [] }>();
 const { t } = useI18n();
 const auth = useAuthStore();
@@ -23,7 +30,7 @@ function label(name: string, status: string, counted: boolean) {
   <div class="members d-flex align-center ga-1" data-test="members">
     <template v-for="member in title.members" :key="member.userId">
       <button
-        v-if="member.userId === auth.user?.id"
+        v-if="editable && member.userId === auth.user?.id"
         type="button"
         class="member mine"
         :aria-label="

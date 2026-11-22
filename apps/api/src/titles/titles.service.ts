@@ -62,7 +62,7 @@ function toGroupTitle(
       displayName: m.displayName,
       status,
       watchedAloneAt: s?.watchedAloneAt?.toISOString() ?? null,
-      counted: isCounted(m.joinedAt, row.addedAt, status),
+      counted: isCounted(m.joinedAt, row.addedAt),
     };
   });
   // Moi d'abord, puis par ordre d'arrivée (déjà l'ordre de `members`).
