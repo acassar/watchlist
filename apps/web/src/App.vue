@@ -6,17 +6,33 @@ import {
   mdiHelpCircleOutline,
   mdiLogout,
 } from '@mdi/js';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
+import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
+import { pendingInvite } from '@/features/groups/storage';
+import { useGroupsStore } from '@/features/groups/store';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const groups = useGroupsStore();
 const bare = computed(() => route.meta.layout === 'auth');
+
+// Mes groupes se chargent dès qu'on est connecté, et repartent de zéro au changement de compte.
+watch(
+  () => auth.user?.id,
+  (userId) => {
+    groups.reset();
+    if (userId) groups.load().catch(() => undefined);
+  },
+  { immediate: true },
+);
 
 async function logout() {
   await auth.logout().catch(() => undefined);
+  // Appareil partagé : une invitation laissée de côté ne doit pas suivre le compte suivant.
+  pendingInvite.clear();
   await router.replace({ name: 'login' });
 }
 </script>
@@ -29,10 +45,11 @@ async function logout() {
 
     <template v-else>
       <v-app-bar density="comfortable" flat>
-        <v-app-bar-title class="font-display">{{
+        <v-app-bar-title class="font-display text-primary brand">{{
           $t('app.title')
         }}</v-app-bar-title>
         <template v-if="auth.user" #append>
+          <GroupSwitcher />
           <v-menu>
             <template #activator="{ props }">
               <v-btn
@@ -76,3 +93,9 @@ async function logout() {
     </template>
   </v-app>
 </template>
+
+<style scoped>
+.brand {
+  font-weight: 600;
+}
+</style>

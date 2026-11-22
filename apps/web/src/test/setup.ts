@@ -5,6 +5,21 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 };
 
+// Ni visualViewport, utilisé par les fenêtres et panneaux de Vuetify.
+if (!('visualViewport' in globalThis)) {
+  Object.defineProperty(globalThis, 'visualViewport', {
+    value: Object.assign(new EventTarget(), {
+      width: 390,
+      height: 844,
+      offsetLeft: 0,
+      offsetTop: 0,
+      pageLeft: 0,
+      pageTop: 0,
+      scale: 1,
+    }),
+  });
+}
+
 /** Réponse JSON simulée pour les tests qui remplacent fetch. */
 export function jsonResponse(status: number, body?: unknown) {
   return new Response(body === undefined ? null : JSON.stringify(body), {

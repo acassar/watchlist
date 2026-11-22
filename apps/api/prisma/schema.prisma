@@ -23,8 +23,10 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  refreshTokens RefreshToken[]
-  emailTokens   EmailToken[]
+  refreshTokens      RefreshToken[]
+  emailTokens        EmailToken[]
+  memberships        GroupMember[]
+  createdInvitations Invitation[]
 
   @@map("users")
 }
@@ -76,4 +78,64 @@ model EmailToken {
 
   @@index([userId, type])
   @@map("email_tokens")
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+
+  @@map("group_role")
+}
+
+/// Groupe (couple, amis, coloc) qui partage une watchlist. Un seul membre est permis.
+model Group {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  members     GroupMember[]
+  invitations Invitation[]
+
+  @@map("groups")
+}
+
+/// Appartenance d'un utilisateur à un groupe. Toujours exactement un OWNER par groupe.
+model GroupMember {
+  groupId  String    @map("group_id") @db.Uuid
+  userId   String    @map("user_id") @db.Uuid
+  role     GroupRole @default(MEMBER)
+  /// Un membre ne contraint que les titres ajoutés après son arrivée (étape 6).
+  joinedAt DateTime  @default(now()) @map("joined_at") @db.Timestamptz(3)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+/// Invitation par lien (jeton de 256 bits, seul son hash est stocké) ou par code
+/// court à dicter. Expirante, révocable, nombre d'utilisations limitable.
+model Invitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  groupId     String    @map("group_id") @db.Uuid
+  /// Null si l'auteur a supprimé son compte.
+  createdById String?   @map("created_by") @db.Uuid
+  tokenHash   String    @unique @map("token_hash")
+  /// Gardé en clair pour pouvoir le réafficher : il ne sert qu'avec le rate limiting.
+  code        String    @unique
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  uses        Int       @default(0)
+  /// Null = illimité jusqu'à l'expiration.
+  maxUses     Int?      @map("max_uses")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@map("invitations")
 }

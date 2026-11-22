@@ -52,6 +52,28 @@ En dev, les emails (vérification, mot de passe oublié) ne partent pas : ils s'
 | `GET /api/auth/google/callback`        | Retour de Google : session puis redirection vers `next` |
 | `GET /api/me`                          | Profil de l'utilisateur connecté                        |
 
+## Groupes et invitations
+
+- Un utilisateur peut être dans plusieurs groupes ; un groupe d'un seul membre est permis. Rôles : propriétaire (un par groupe) et membre.
+- Guard `GroupMemberGuard` sur toute route `:groupId` : un non-membre reçoit 404 (on ne révèle pas l'existence du groupe). `@OwnerOnly()` réserve une route au propriétaire.
+- Invitation = un lien (`/join#token=…`, jeton de 256 bits dont seul le hash est stocké, montré une seule fois) et un code de 8 caractères à dicter. Valable 7 jours par défaut, révocable, nombre d'utilisations limitable. Tout membre peut inviter ; l'auteur ou le propriétaire peut révoquer.
+- Quitter : le dernier membre supprime le groupe ; un propriétaire qui part passe la main au membre arrivé le plus tôt ; les invitations du partant sont révoquées. Ses statuts seront supprimés (étape 6), ses titres resteront (« ancien membre »).
+- Limites : 20 membres et 20 invitations actives par groupe. Aperçu et acceptation limités en débit par IP (`AUTH_RATE_LIMIT`).
+
+| Route                                                   | Rôle                                       |
+| ------------------------------------------------------- | ------------------------------------------ |
+| `GET /api/groups`                                       | Mes groupes                                |
+| `POST /api/groups`                                      | Créer un groupe (j'en suis propriétaire)   |
+| `GET /api/groups/:groupId`                              | Détail et membres                          |
+| `PATCH /api/groups/:groupId`                            | Renommer (propriétaire)                    |
+| `POST /api/groups/:groupId/leave`                       | Quitter le groupe                          |
+| `DELETE /api/groups/:groupId/members/:userId`           | Retirer un membre (propriétaire)           |
+| `GET /api/groups/:groupId/invitations`                  | Invitations encore utilisables             |
+| `POST /api/groups/:groupId/invitations`                 | Nouvelle invitation (lien + code)          |
+| `DELETE /api/groups/:groupId/invitations/:invitationId` | Révoquer (auteur ou propriétaire)          |
+| `POST /api/invitations/preview`                         | Aperçu avant de rejoindre (`token`/`code`) |
+| `POST /api/invitations/accept`                          | Rejoindre (`token` ou `code`)              |
+
 ## Commandes
 
 | Commande                                | Rôle                                             |

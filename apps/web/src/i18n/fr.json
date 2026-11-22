@@ -96,7 +96,9 @@
     "passwordTooLong": "128 caractères maximum.",
     "displayNameTooLong": "50 caractères maximum.",
     "invalidToken": "Lien invalide.",
-    "invalid": "Valeur invalide."
+    "invalid": "Valeur invalide.",
+    "groupNameTooLong": "50 caractères maximum.",
+    "invitationCode": "Un code fait 8 caractères, lettres et chiffres."
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
@@ -104,6 +106,104 @@
     "INVALID_TOKEN": "Ce lien est invalide ou a expiré.",
     "TOO_MANY_REQUESTS": "Doucement ! Trop d'essais, réessayez dans une minute.",
     "VALIDATION_ERROR": "Certains champs sont à corriger.",
+    "INVITATION_INVALID": "Cette invitation est invalide, expirée ou révoquée. Demandez-en une nouvelle.",
+    "GROUP_FULL": "Ce groupe est complet (20 membres maximum).",
+    "TOO_MANY_INVITATIONS": "Trop d'invitations en cours : révoquez-en une d'abord.",
+    "OWNER_ONLY": "Seul le propriétaire du groupe peut faire ça.",
+    "CANNOT_REMOVE_SELF": "Pour partir, utilisez « Quitter le groupe ».",
+    "NOT_FOUND": "Introuvable.",
     "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant."
+  },
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "save": "Enregistrer"
+  },
+  "groups": {
+    "name": "Nom du groupe",
+    "memberCount": "Aucun membre | 1 membre | {n} membres",
+    "roles": {
+      "OWNER": "Propriétaire",
+      "MEMBER": "Membre"
+    },
+    "switcher": {
+      "label": "Groupe actif : {name}. Changer de groupe",
+      "title": "Vos groupes",
+      "manage": "Gérer le groupe {name}",
+      "create": "Créer un groupe",
+      "join": "Rejoindre"
+    },
+    "empty": {
+      "title": "Votre canapé vous attend",
+      "body": "Un groupe, c'est la liste que vous partagez. Commencez seul si vous voulez, puis invitez votre moitié, vos amis ou vos colocs.",
+      "create": "Créer un groupe",
+      "join": "J'ai un code"
+    },
+    "create": {
+      "title": "Nouveau groupe",
+      "body": "Donnez-lui un nom que tout le monde reconnaîtra. Vous pourrez le changer plus tard.",
+      "placeholder": "Nous deux, Coloc Rivoli…",
+      "submit": "Créer le groupe"
+    },
+    "join": {
+      "title": "Rejoindre un groupe",
+      "needAccount": "Vous avez reçu une invitation pour un groupe Canapact. Créez un compte ou connectez-vous : on vous ramène ici juste après.",
+      "invitedBy": "{name} vous invite à rejoindre",
+      "invited": "On vous invite à rejoindre",
+      "alreadyMember": "Vous faites déjà partie de ce groupe.",
+      "open": "Ouvrir le groupe",
+      "accept": "Rejoindre le groupe",
+      "later": "Plus tard",
+      "codeBody": "Saisissez le code à 8 caractères qu'on vous a donné.",
+      "code": "Code d'invitation",
+      "submitCode": "Continuer",
+      "back": "Retour à mes listes"
+    },
+    "settings": {
+      "title": "Groupe",
+      "members": "Membres",
+      "you": "(vous)",
+      "created": "Groupe créé ! Invitez maintenant ceux avec qui vous partagez le canapé.",
+      "notFound": "Ce groupe n'existe plus, ou vous n'en faites plus partie."
+    },
+    "invitations": {
+      "title": "Inviter",
+      "body": "Un lien ou un code, valable 7 jours. Tout membre peut inviter.",
+      "create": "Inviter quelqu'un",
+      "expires": "Expire le {date}",
+      "uses": "Aucune utilisation | Utilisée 1 fois | Utilisée {n} fois",
+      "by": "par {name}",
+      "revoke": "Révoquer"
+    },
+    "invite": {
+      "title": "Invitation prête",
+      "body": "Envoyez ce lien, ou dictez le code. Valable jusqu'au {date}.",
+      "link": "Lien d'invitation",
+      "share": "Partager",
+      "copyLink": "Copier le lien",
+      "copied": "Copié !",
+      "orCode": "Ou le code, à saisir dans « Rejoindre » :",
+      "copyCode": "Copier le code",
+      "shareTitle": "Rejoins-moi sur Canapact",
+      "shareText": "Rejoins « {name} » sur Canapact, qu'on arrête de regarder des trucs sans l'autre !"
+    },
+    "rename": {
+      "title": "Renommer le groupe"
+    },
+    "remove": {
+      "label": "Retirer {name} du groupe",
+      "title": "Retirer {name} ?",
+      "text": "Ses avis sur les titres du groupe seront supprimés, les titres ajoutés restent. Une nouvelle invitation permettra de revenir.",
+      "confirm": "Retirer"
+    },
+    "leave": {
+      "action": "Quitter le groupe",
+      "title": "Quitter « {name} » ?",
+      "lastMember": "Il n'y a plus que vous : le groupe et sa liste seront supprimés.",
+      "owner": "{name} deviendra propriétaire. Vos avis seront supprimés, les titres que vous avez ajoutés restent.",
+      "member": "Vos avis sur les titres du groupe seront supprimés. Les titres que vous avez ajoutés restent.",
+      "confirm": "Quitter"
+    }
   }
 }
