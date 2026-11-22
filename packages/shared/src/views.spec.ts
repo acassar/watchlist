@@ -168,12 +168,33 @@ describe('vues', () => {
     });
   });
 
-  it('compte un membre arrivé avant l’ajout, ou arrivé après avec un avis', () => {
+  it('ne compte que les membres arrivés avant l’ajout', () => {
     const added = '2026-11-22T20:00:00Z';
-    expect(isCounted('2026-11-01T00:00:00Z', added, 'PENDING')).toBe(true);
-    expect(isCounted(added, added, 'PENDING')).toBe(true);
-    expect(isCounted('2026-11-22T21:00:00Z', added, 'PENDING')).toBe(false);
-    expect(isCounted('2026-11-22T21:00:00Z', added, 'TOGETHER')).toBe(true);
+    expect(isCounted('2026-11-01T00:00:00Z', added)).toBe(true);
+    expect(isCounted(added, added)).toBe(true);
+    expect(isCounted('2026-11-22T21:00:00Z', added)).toBe(false);
+  });
+
+  describe('membre arrivé après l’ajout', () => {
+    it('son « ensemble » ne bloque pas les autres', () => {
+      const t = title({
+        moi: 'OK_ALONE',
+        toi: 'OK_ALONE',
+        nouveau: ['TOGETHER', 'nouveau'],
+      });
+      expect(titleViewFor(t, 'moi')).toBe(TitleView.ALONE);
+      // Lui veut le voir avec les autres, qui sont encore là.
+      expect(titleViewFor(t, 'nouveau')).toBe(TitleView.TOGETHER);
+    });
+
+    it('n’empêche pas l’archivage', () => {
+      const t = title({
+        moi: ['OK_ALONE', 'vu'],
+        toi: 'NOT_INTERESTED',
+        nouveau: ['OK_ALONE', 'nouveau'],
+      });
+      expect(isArchived(t)).toBe(true);
+    });
   });
 
   it('refuse une date « vu ensemble » dans le futur', () => {

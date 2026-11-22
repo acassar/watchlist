@@ -39,8 +39,9 @@ export interface ViewMember {
   status: MemberStatus;
   watchedAloneAt: string | Date | null;
   /**
-   * Compte comme contrainte : arrivé avant l'ajout du titre, ou arrivé après
-   * mais a donné son avis de lui-même (un avis donné engage, l'absence non).
+   * Compte comme contrainte : membre arrivé avant l'ajout du titre (ou au même
+   * moment). Arrivé après, il peut donner son avis, mais il ne bloque personne
+   * et n'empêche pas l'archivage (règle validée dans le doc d'architecture).
    */
   counted: boolean;
 }
@@ -55,9 +56,8 @@ export interface ViewTitle {
 export function isCounted(
   joinedAt: string | Date,
   addedAt: string | Date,
-  status: MemberStatus,
 ): boolean {
-  return status !== 'PENDING' || new Date(joinedAt) <= new Date(addedAt);
+  return new Date(joinedAt) <= new Date(addedAt);
 }
 
 /** Ce membre n'a plus rien à voir sur ce titre : il l'a vu seul ou n'est pas intéressé. */

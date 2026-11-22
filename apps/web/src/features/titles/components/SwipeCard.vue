@@ -114,7 +114,7 @@ function decide(choice: WatchStatus) {
         }}
       </p>
       <div class="d-flex align-center justify-space-between mt-2">
-        <MemberStatuses :title="title" />
+        <MemberStatuses :title="title" :editable="false" />
         <v-btn
           :href="title.media.url"
           target="_blank"
@@ -162,6 +162,11 @@ function decide(choice: WatchStatus) {
   user-select: none;
   cursor: grab;
   will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-card {
+    transition: none !important;
+  }
 }
 .title-text {
   display: -webkit-box;

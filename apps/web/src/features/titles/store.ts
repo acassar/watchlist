@@ -32,6 +32,15 @@ export const useTitlesStore = defineStore('titles', () => {
   const groupId = ref<string | null>(null);
   const status = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const historyStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  /**
+   * Actions en cours, et compteur d'actions lancées. Une liste lue pendant
+   * une action (ou avant elle) ne connaît pas encore son effet : l'appliquer
+   * ferait revenir une carte déjà glissée. On l'ignore ; le rechargement qui
+   * suit la dernière action remet tout d'accord.
+   */
+  let pending = 0;
+  let actions = 0;
+  const stale = (since: number) => pending > 0 || actions !== since;
 
   const byView = computed(() => {
     const lists: Record<TitleView, GroupTitle[]> = {
@@ -61,10 +70,12 @@ export const useTitlesStore = defineStore('titles', () => {
     switchTo(id);
     // Rechargement discret : la liste déjà affichée reste en place.
     if (status.value !== 'ready') status.value = 'loading';
+    const since = actions;
     try {
       const list = await titlesApi.list(id);
       // Le groupe a pu changer pendant la requête.
       if (groupId.value !== id) return;
+      if (status.value === 'ready' && stale(since)) return;
       titles.value = list;
       status.value = 'ready';
     } catch (error) {
@@ -78,9 +89,11 @@ export const useTitlesStore = defineStore('titles', () => {
   async function loadHistory(id: string) {
     switchTo(id);
     if (historyStatus.value !== 'ready') historyStatus.value = 'loading';
+    const since = actions;
     try {
       const list = await titlesApi.history(id);
       if (groupId.value !== id) return;
+      if (historyStatus.value === 'ready' && stale(since)) return;
       history.value = list;
       historyStatus.value = 'ready';
     } catch (error) {
@@ -120,8 +133,6 @@ export const useTitlesStore = defineStore('titles', () => {
               patch.watchedAloneAt !== undefined
                 ? patch.watchedAloneAt
                 : m.watchedAloneAt,
-            // Un avis donné engage, même arrivé après l'ajout du titre.
-            counted: m.counted || patch.status !== undefined,
           }
         : m,
     );
@@ -169,12 +180,15 @@ export const useTitlesStore = defineStore('titles', () => {
     const id = groupId.value;
     if (!id) throw new Error('Aucun groupe');
     put(patched(title, patch));
+    pending++;
+    actions++;
     try {
       const updated = await call(id);
       if (groupId.value === id) put(updated);
       return updated;
     } finally {
-      if (groupId.value === id) refresh();
+      pending--;
+      if (groupId.value === id && pending === 0) refresh();
     }
   }
 

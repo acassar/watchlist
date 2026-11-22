@@ -185,10 +185,8 @@ describe('Avis, vues et suivi « vu » (e2e)', () => {
   });
 
   describe('nouveau membre', () => {
-    it('ne bloque pas les titres ajoutés avant son arrivée, mais peut donner son avis', async () => {
-      const old = await addTitle(adrien, 'OK_ALONE', {
-        addedAt: new Date(Date.now() - 60_000),
-      });
+    it('ne bloque pas les titres ajoutés avant son arrivée, même avec un avis', async () => {
+      const old = await addTitle(adrien);
       await setStatus(camille, old, 'OK_ALONE').expect(200);
       await join(sam, groupId, adrien);
 
@@ -200,9 +198,15 @@ describe('Avis, vues et suivi « vu » (e2e)', () => {
         counted: false,
       });
 
-      // Un avis donné engage : son « ensemble » compte.
+      // Même avec un avis donné, il ne bloque pas les autres.
       await setStatus(sam, old, 'TOGETHER').expect(200);
-      expect(await viewOf(adrien, old)).toBe('TOGETHER');
+      expect(await viewOf(adrien, old)).toBe('ALONE');
+      expect(await viewOf(sam, old)).toBe('TOGETHER');
+      const [after] = await list(adrien);
+      expect(after.members.find((m) => m.userId === sam.id)).toMatchObject({
+        status: 'TOGETHER',
+        counted: false,
+      });
     });
 
     it('compte pour les titres ajoutés après son arrivée', async () => {
