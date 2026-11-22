@@ -17,15 +17,20 @@ export const MEDIA_URL_MAX_LENGTH = 2048;
 /** Garde-fou contre l'abus : une watchlist de couple n'en approche pas. */
 export const GROUP_MAX_TITLES = 2000;
 
+/** Toutes les URL http(s) d'un texte, dans l'ordre. */
+export function findAllUrls(text: string): string[] {
+  return [...text.matchAll(/https?:\/\/[^\s<>"'«»]+/gi)].map((match) =>
+    // Ponctuation de fin de phrase collée au lien.
+    match[0].replace(/[).,;:!?]+$/, ''),
+  );
+}
+
 /**
  * Première URL http(s) trouvée dans un texte. Le presse-papiers ou un partage
  * contient souvent plus que le lien (« Regarde ça ! https://youtu.be/… »).
  */
 export function findFirstUrl(text: string): string | null {
-  const match = text.match(/https?:\/\/[^\s<>"'«»]+/i);
-  if (!match) return null;
-  // Ponctuation de fin de phrase collée au lien.
-  return match[0].replace(/[).,;:!?]+$/, '');
+  return findAllUrls(text)[0] ?? null;
 }
 
 export const mediaUrlSchema = z

@@ -4,8 +4,9 @@ import {
   type RouteRecordRaw,
   type Router,
 } from 'vue-router';
+import { findSharedLink } from '@watchlist/shared';
 import { useAuthStore } from '@/features/auth/store';
-import { pendingInvite } from '@/features/groups/storage';
+import { pendingInvite, pendingShare } from '@/features/groups/storage';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -45,6 +46,43 @@ export const routes: RouteRecordRaw[] = [
     path: '/history',
     name: 'history',
     component: () => import('@/pages/HistoryPage.vue'),
+  },
+  {
+    // Ajout plein écran : choix du groupe puis lien. Raccourci de l'icône,
+    // et sur iOS (pas de menu « Partager » vers une PWA) le bouton « Coller le lien ».
+    path: '/add',
+    name: 'add',
+    component: () => import('@/pages/AddPage.vue'),
+    meta: { layout: 'auth' },
+  },
+  {
+    // Cible du menu « Partager » d'Android (share_target du manifest). Publique :
+    // le lien est mis de côté avant la connexion, puis on revient ici.
+    path: '/share',
+    name: 'share',
+    component: () => import('@/pages/AddPage.vue'),
+    props: { shared: true },
+    meta: authPage,
+    beforeEnter: (to) => {
+      const { title, text, url } = to.query;
+      if (title === undefined && text === undefined && url === undefined) {
+        // Lien mis de côté : il faut un compte pour l'ajouter.
+        if (!useAuthStore().isAuthenticated && !to.query.empty) {
+          return { name: 'login', query: { redirect: '/share' } };
+        }
+        return true;
+      }
+      const field = (v: unknown) => (typeof v === 'string' ? v : null);
+      const link = findSharedLink([field(url), field(text), field(title)]);
+      if (link) pendingShare.set(link);
+      else pendingShare.clear();
+      // Le partage ne reste ni dans la barre d'adresse ni dans l'historique.
+      return {
+        name: 'share',
+        query: link ? {} : { empty: '1' },
+        replace: true,
+      };
+    },
   },
   {
     path: '/groups/new',
@@ -111,6 +149,9 @@ export const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
+/** Pages accessibles alors qu'un partage attend d'être ajouté. */
+const SHARE_DETOURS = new Set(['share', 'join', 'group-new']);
+
 /** Restaure la session au premier passage, puis protège les pages privées. */
 export function installAuthGuard(router: Router) {
   router.beforeEach(async (to) => {
@@ -122,8 +163,23 @@ export function installAuthGuard(router: Router) {
     }
     if (to.meta.guestOnly && auth.isAuthenticated) return '/';
     // Invitation ouverte avant de se connecter : on y revient une fois connecté.
-    if (auth.isAuthenticated && to.name !== 'join' && pendingInvite.get()) {
+    if (
+      auth.isAuthenticated &&
+      to.name !== 'join' &&
+      // Un partage qui arrive passe avant : l'invitation attendra la suite.
+      to.name !== 'share' &&
+      pendingInvite.get()
+    ) {
       return { name: 'join' };
+    }
+    // Partage reçu avant de se connecter : on y revient une fois connecté.
+    // Créer ou rejoindre un groupe reste possible (il en faut un pour ajouter).
+    if (
+      auth.isAuthenticated &&
+      !SHARE_DETOURS.has(String(to.name)) &&
+      pendingShare.get()
+    ) {
+      return { name: 'share' };
     }
     return true;
   });
@@ -132,5 +188,17 @@ export function installAuthGuard(router: Router) {
 export function createAppRouter(history = createWebHistory()) {
   const router = createRouter({ history, routes });
   installAuthGuard(router);
+  // Nouvelle version déployée pendant que l'app était ouverte : les morceaux
+  // de l'ancienne n'existent plus. On recharge la page demandée.
+  router.onError((error, to) => {
+    if (
+      error instanceof Error &&
+      /dynamically imported module|Importing a module script failed/i.test(
+        error.message,
+      )
+    ) {
+      window.location.assign(to.fullPath);
+    }
+  });
   return router;
 }

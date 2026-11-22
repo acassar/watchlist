@@ -1,4 +1,4 @@
-import { pendingInvite } from './storage';
+import { pendingInvite, pendingShare } from './storage';
 
 describe('invitation en attente', () => {
   beforeEach(() => localStorage.clear());
@@ -21,5 +21,24 @@ describe('invitation en attente', () => {
   it('ignore une valeur illisible', () => {
     localStorage.setItem('canapact.pendingInvite', '{pas du json');
     expect(pendingInvite.get()).toBeNull();
+  });
+});
+
+describe('partage en attente', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.useRealTimers());
+
+  it('garde le lien jusqu’à ce qu’on l’efface', () => {
+    pendingShare.set('https://youtu.be/dQw4w9WgXcQ');
+    expect(pendingShare.get()).toBe('https://youtu.be/dQw4w9WgXcQ');
+    pendingShare.clear();
+    expect(pendingShare.get()).toBeNull();
+  });
+
+  it('oublie un lien de plus d’un jour', () => {
+    vi.useFakeTimers();
+    pendingShare.set('https://youtu.be/dQw4w9WgXcQ');
+    vi.advanceTimersByTime(25 * 60 * 60 * 1000);
+    expect(pendingShare.get()).toBeNull();
   });
 });
