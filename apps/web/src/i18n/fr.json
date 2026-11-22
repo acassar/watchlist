@@ -1,0 +1,237 @@
+{
+  "app": {
+    "title": "Canapact",
+    "tagline": "Promis, je t'attends."
+  },
+  "nav": {
+    "alone": "Seul",
+    "together": "Ensemble",
+    "pending": "Mon avis"
+  },
+  "views": {
+    "alone": "Je peux regarder seul",
+    "together": "À regarder ensemble",
+    "pending": "En attente de votre avis"
+  },
+  "account": {
+    "menu": "Mon compte",
+    "logout": "Se déconnecter"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "displayName": "Prénom ou surnom",
+    "displayNameHint": "C'est ce que verront les membres de vos groupes.",
+    "passwordHint": "Au moins 8 caractères. Une phrase, c'est encore mieux.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "login": {
+      "title": "Bon retour sur le canapé",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "register": "Créer un compte",
+      "notVerified": "Votre adresse n'est pas encore confirmée. Cliquez sur le lien reçu par email.",
+      "resend": "Renvoyer le lien"
+    },
+    "register": {
+      "title": "Créer votre compte",
+      "subtitle": "Fini les « tu l'as regardé sans moi ?! ».",
+      "submit": "Créer mon compte",
+      "hasAccount": "Déjà un compte ?",
+      "login": "Se connecter"
+    },
+    "checkEmail": {
+      "title": "Regardez vos emails",
+      "body": "Si tout est en ordre, un email vient de partir vers {email}. Cliquez sur le lien qu'il contient pour continuer.",
+      "spam": "Rien reçu ? Jetez un œil aux indésirables, ou renvoyez le lien.",
+      "resend": "Renvoyer le lien",
+      "resent": "C'est reparti. Un nouveau lien arrive (s'il en est parti un il y a plus d'une minute).",
+      "back": "Retour à la connexion"
+    },
+    "verify": {
+      "title": "Confirmation de votre adresse",
+      "loading": "Un instant, on vérifie votre lien…",
+      "success": "Adresse confirmée, bienvenue !",
+      "failed": "Ce lien est invalide ou a expiré. Connectez-vous pour en recevoir un nouveau.",
+      "continue": "C'est parti"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "body": "Indiquez votre email : on vous envoie un lien pour en choisir un nouveau.",
+      "submit": "Envoyer le lien",
+      "sent": "Si un compte existe pour {email}, un lien vient de partir. Il est valable 1 heure."
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "submit": "Enregistrer",
+      "success": "Mot de passe changé. Par sécurité, vous êtes déconnecté de tous vos appareils.",
+      "login": "Se connecter"
+    },
+    "link": {
+      "title": "Ajouter un mot de passe",
+      "body": "Choisissez le mot de passe qui vous servira à vous connecter par email, en plus de Google.",
+      "submit": "Enregistrer",
+      "success": "C'est fait : vous pouvez maintenant vous connecter avec Google ou avec votre mot de passe.",
+      "continue": "Continuer"
+    },
+    "missingToken": "Ce lien est incomplet. Copiez-le en entier depuis l'email.",
+    "google": {
+      "continue": "Continuer avec Google",
+      "or": "ou",
+      "errors": {
+        "google_cancelled": "Connexion Google annulée. Vous pouvez réessayer quand vous voulez.",
+        "google_email_not_verified": "Google ne confirme pas l'adresse de ce compte. Utilisez un autre compte Google ou votre email.",
+        "google_account_conflict": "Cette adresse est déjà liée à un autre compte Google. Connectez-vous avec celui-là, ou avec votre mot de passe.",
+        "google_failed": "La connexion Google n'a pas abouti. Réessayez dans un instant."
+      }
+    }
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire.",
+    "email": "Cette adresse email ne semble pas valide.",
+    "passwordTooShort": "Au moins 8 caractères.",
+    "passwordTooLong": "128 caractères maximum.",
+    "displayNameTooLong": "50 caractères maximum.",
+    "invalidToken": "Lien invalide.",
+    "invalid": "Valeur invalide.",
+    "groupNameTooLong": "50 caractères maximum.",
+    "invitationCode": "Un code fait 8 caractères, lettres et chiffres.",
+    "mediaUrl": "Collez un lien (il commence par https://)."
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
+    "EMAIL_NOT_VERIFIED": "Votre adresse n'est pas encore confirmée.",
+    "INVALID_TOKEN": "Ce lien est invalide ou a expiré.",
+    "TOO_MANY_REQUESTS": "Doucement ! Trop d'essais, réessayez dans une minute.",
+    "VALIDATION_ERROR": "Certains champs sont à corriger.",
+    "INVITATION_INVALID": "Cette invitation est invalide, expirée ou révoquée. Demandez-en une nouvelle.",
+    "GROUP_FULL": "Ce groupe est complet (20 membres maximum).",
+    "TOO_MANY_INVITATIONS": "Trop d'invitations en cours : révoquez-en une d'abord.",
+    "OWNER_ONLY": "Seul le propriétaire du groupe peut faire ça.",
+    "CANNOT_REMOVE_SELF": "Pour partir, utilisez « Quitter le groupe ».",
+    "NOT_FOUND": "Introuvable.",
+    "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant.",
+    "UNSUPPORTED_URL": "Ce lien n'est pas pris en charge. Pour l'instant, Canapact lit les liens YouTube.",
+    "MEDIA_NOT_FOUND": "Vidéo introuvable : elle est peut-être privée ou supprimée.",
+    "MEDIA_UNAVAILABLE": "YouTube ne répond pas. Réessayez dans un instant.",
+    "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
+    "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…"
+  },
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "save": "Enregistrer"
+  },
+  "groups": {
+    "name": "Nom du groupe",
+    "memberCount": "Aucun membre | 1 membre | {n} membres",
+    "roles": {
+      "OWNER": "Propriétaire",
+      "MEMBER": "Membre"
+    },
+    "switcher": {
+      "label": "Groupe actif : {name}. Changer de groupe",
+      "title": "Vos groupes",
+      "manage": "Gérer le groupe {name}",
+      "create": "Créer un groupe",
+      "join": "Rejoindre"
+    },
+    "empty": {
+      "title": "Votre canapé vous attend",
+      "body": "Un groupe, c'est la liste que vous partagez. Commencez seul si vous voulez, puis invitez votre moitié, vos amis ou vos colocs.",
+      "create": "Créer un groupe",
+      "join": "J'ai un code"
+    },
+    "create": {
+      "title": "Nouveau groupe",
+      "body": "Donnez-lui un nom que tout le monde reconnaîtra. Vous pourrez le changer plus tard.",
+      "placeholder": "Nous deux, Coloc Rivoli…",
+      "submit": "Créer le groupe"
+    },
+    "join": {
+      "title": "Rejoindre un groupe",
+      "needAccount": "Vous avez reçu une invitation pour un groupe Canapact. Créez un compte ou connectez-vous : on vous ramène ici juste après.",
+      "invitedBy": "{name} vous invite à rejoindre",
+      "invited": "On vous invite à rejoindre",
+      "alreadyMember": "Vous faites déjà partie de ce groupe.",
+      "open": "Ouvrir le groupe",
+      "accept": "Rejoindre le groupe",
+      "later": "Plus tard",
+      "codeBody": "Saisissez le code à 8 caractères qu'on vous a donné.",
+      "code": "Code d'invitation",
+      "submitCode": "Continuer",
+      "back": "Retour à mes listes"
+    },
+    "settings": {
+      "title": "Groupe",
+      "members": "Membres",
+      "you": "(vous)",
+      "created": "Groupe créé ! Invitez maintenant ceux avec qui vous partagez le canapé.",
+      "notFound": "Ce groupe n'existe plus, ou vous n'en faites plus partie."
+    },
+    "invitations": {
+      "title": "Inviter",
+      "body": "Un lien ou un code, valable 7 jours. Tout membre peut inviter.",
+      "create": "Inviter quelqu'un",
+      "expires": "Expire le {date}",
+      "uses": "Aucune utilisation | Utilisée 1 fois | Utilisée {n} fois",
+      "by": "par {name}",
+      "revoke": "Révoquer"
+    },
+    "invite": {
+      "title": "Invitation prête",
+      "body": "Envoyez ce lien, ou dictez le code. Valable jusqu'au {date}.",
+      "link": "Lien d'invitation",
+      "share": "Partager",
+      "copyLink": "Copier le lien",
+      "copied": "Copié !",
+      "orCode": "Ou le code, à saisir dans « Rejoindre » :",
+      "copyCode": "Copier le code",
+      "shareTitle": "Rejoins-moi sur Canapact",
+      "shareText": "Rejoins « {name} » sur Canapact, qu'on arrête de regarder des trucs sans l'autre !"
+    },
+    "rename": {
+      "title": "Renommer le groupe"
+    },
+    "remove": {
+      "label": "Retirer {name} du groupe",
+      "title": "Retirer {name} ?",
+      "text": "Ses avis sur les titres du groupe seront supprimés, les titres ajoutés restent. Une nouvelle invitation permettra de revenir.",
+      "confirm": "Retirer"
+    },
+    "leave": {
+      "action": "Quitter le groupe",
+      "title": "Quitter « {name} » ?",
+      "lastMember": "Il n'y a plus que vous : le groupe et sa liste seront supprimés.",
+      "owner": "{name} deviendra propriétaire. Vos avis seront supprimés, les titres que vous avez ajoutés restent.",
+      "member": "Vos avis sur les titres du groupe seront supprimés. Les titres que vous avez ajoutés restent.",
+      "confirm": "Quitter"
+    }
+  },
+  "titles": {
+    "addButton": "Ajouter un titre",
+    "added": "Ajouté à « {name} »",
+    "empty": "Rien ici pour l'instant. Appuyez sur « + » pour ajouter une vidéo.",
+    "loadError": "Impossible de charger la liste. Vérifiez votre connexion.",
+    "status": {
+      "OK_ALONE": "Sans moi, ok",
+      "TOGETHER": "Ensemble",
+      "NOT_INTERESTED": "Pas pour moi"
+    },
+    "add": {
+      "title": "Ajouter un titre",
+      "inGroup": "Dans « {name} »",
+      "paste": "Coller le lien",
+      "link": "Lien YouTube",
+      "placeholder": "https://youtu.be/…",
+      "preview": "Aperçu",
+      "noLink": "Collez un lien YouTube (il commence par https://).",
+      "clipboardDenied": "Impossible de lire le presse-papiers. Collez le lien dans le champ.",
+      "yourStatus": "Et vous ?",
+      "submit": "Ajouter"
+    }
+  }
+}

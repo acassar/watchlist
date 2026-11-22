@@ -1,0 +1,222 @@
+// Schéma Prisma. Les tables arrivent étape par étape (voir le doc d'architecture).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  /// Toujours en minuscules (normalisé par le schéma Zod partagé).
+  email           String    @unique
+  /// Null pour un compte créé uniquement via Google (étape 3).
+  passwordHash    String?   @map("password_hash")
+  googleId        String?   @unique @map("google_id")
+  displayName     String    @map("display_name")
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  refreshTokens      RefreshToken[]
+  emailTokens        EmailToken[]
+  memberships        GroupMember[]
+  createdInvitations Invitation[]
+  addedTitles        GroupTitle[]
+  statuses           MemberStatus[]
+
+  @@map("users")
+}
+
+/// Refresh token rotatif : seul son hash SHA-256 est stocké.
+/// Tous les jetons issus d'une même connexion partagent `familyId` : si un jeton
+/// déjà utilisé revient, toute la famille est révoquée (vol probable).
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  familyId  String    @map("family_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+enum EmailTokenType {
+  /// Confirmer l'adresse après inscription.
+  VERIFY_EMAIL
+  /// Mot de passe oublié.
+  RESET_PASSWORD
+  /// Ajouter un mot de passe à un compte existant sans mot de passe (compte Google).
+  LINK_PASSWORD
+
+  @@map("email_token_type")
+}
+
+/// Jeton à usage unique envoyé par email : seul son hash SHA-256 est stocké.
+model EmailToken {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  type         EmailTokenType
+  tokenHash    String         @unique @map("token_hash")
+  /// LINK_PASSWORD : hash du mot de passe choisi, appliqué seulement après le clic.
+  passwordHash String?        @map("password_hash")
+  expiresAt    DateTime       @map("expires_at") @db.Timestamptz(3)
+  usedAt       DateTime?      @map("used_at") @db.Timestamptz(3)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("email_tokens")
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+
+  @@map("group_role")
+}
+
+/// Groupe (couple, amis, coloc) qui partage une watchlist. Un seul membre est permis.
+model Group {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  members     GroupMember[]
+  invitations Invitation[]
+  titles      GroupTitle[]
+
+  @@map("groups")
+}
+
+/// Appartenance d'un utilisateur à un groupe. Toujours exactement un OWNER par groupe.
+model GroupMember {
+  groupId  String    @map("group_id") @db.Uuid
+  userId   String    @map("user_id") @db.Uuid
+  role     GroupRole @default(MEMBER)
+  /// Un membre ne contraint que les titres ajoutés après son arrivée (étape 6).
+  joinedAt DateTime  @default(now()) @map("joined_at") @db.Timestamptz(3)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+/// Invitation par lien (jeton de 256 bits, seul son hash est stocké) ou par code
+/// court à dicter. Expirante, révocable, nombre d'utilisations limitable.
+model Invitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  groupId     String    @map("group_id") @db.Uuid
+  /// Null si l'auteur a supprimé son compte.
+  createdById String?   @map("created_by") @db.Uuid
+  tokenHash   String    @unique @map("token_hash")
+  /// Gardé en clair pour pouvoir le réafficher : il ne sert qu'avec le rate limiting.
+  code        String    @unique
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  uses        Int       @default(0)
+  /// Null = illimité jusqu'à l'expiration.
+  maxUses     Int?      @map("max_uses")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@map("invitations")
+}
+
+/// Service d'origine d'un titre (même valeurs que MediaSourceType dans shared).
+enum MediaSource {
+  YOUTUBE
+  TMDB
+  MANUAL
+
+  @@map("media_source")
+}
+
+/// Avis d'un membre. PENDING n'est pas stocké : c'est l'absence de ligne.
+enum WatchStatus {
+  OK_ALONE
+  TOGETHER
+  NOT_INTERESTED
+
+  @@map("watch_status")
+}
+
+/// Cache des métadonnées d'un titre, partagé entre groupes : une vidéo n'est
+/// résolue qu'une fois. Rafraîchi après 30 jours (règles de l'API YouTube).
+model MediaItem {
+  id           String      @id @default(uuid()) @db.Uuid
+  source       MediaSource
+  externalId   String      @map("external_id")
+  url          String
+  title        String
+  /// Hotlink chez le service (décision D6) : aucune image stockée chez nous.
+  thumbnailUrl String?     @map("thumbnail_url")
+  author       String?
+  durationSec  Int?        @map("duration_sec")
+  fetchedAt    DateTime    @map("fetched_at") @db.Timestamptz(3)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  groupTitles GroupTitle[]
+
+  @@unique([source, externalId])
+  @@map("media_items")
+}
+
+/// Un titre dans la liste d'un groupe.
+model GroupTitle {
+  id                String    @id @default(uuid()) @db.Uuid
+  groupId           String    @map("group_id") @db.Uuid
+  mediaItemId       String    @map("media_item_id") @db.Uuid
+  /// Null si l'auteur a supprimé son compte. S'il a seulement quitté le groupe,
+  /// l'id reste (affiché « ancien membre », étape 6).
+  addedById         String?   @map("added_by") @db.Uuid
+  addedAt           DateTime  @default(now()) @map("added_at") @db.Timestamptz(3)
+  /// Vu ensemble : le titre sort des listes actives (étape 6).
+  watchedTogetherAt DateTime? @map("watched_together_at") @db.Timestamptz(3)
+
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  mediaItem MediaItem      @relation(fields: [mediaItemId], references: [id], onDelete: Restrict)
+  addedBy   User?          @relation(fields: [addedById], references: [id], onDelete: SetNull)
+  statuses  MemberStatus[]
+
+  @@unique([groupId, mediaItemId])
+  @@index([groupId, addedAt])
+  @@map("group_titles")
+}
+
+/// Avis d'un membre sur un titre de son groupe.
+model MemberStatus {
+  groupTitleId   String      @map("group_title_id") @db.Uuid
+  userId         String      @map("user_id") @db.Uuid
+  status         WatchStatus
+  /// Vu seul : ne retire le titre que des listes de ce membre (étape 6).
+  watchedAloneAt DateTime?   @map("watched_alone_at") @db.Timestamptz(3)
+  updatedAt      DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  groupTitle GroupTitle @relation(fields: [groupTitleId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupTitleId, userId])
+  @@index([userId])
+  @@map("member_statuses")
+}

@@ -1,0 +1,23 @@
+{
+  "name": "watchlist",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @watchlist/shared build && pnpm --parallel --filter @watchlist/api --filter @watchlist/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose -f docker/compose.dev.yml up -d",
+    "db:down": "docker compose -f docker/compose.dev.yml down",
+    "db:migrate": "pnpm --filter @watchlist/api db:migrate"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}
