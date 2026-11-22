@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -25,6 +26,13 @@ export async function lockGroup(tx: Tx, groupId: string): Promise<boolean> {
   const rows = await tx.$queryRaw<{ id: string }[]>`
     SELECT id FROM groups WHERE id = ${groupId}::uuid FOR UPDATE`;
   return rows.length > 0;
+}
+
+export function ownerOnly() {
+  return new ForbiddenException({
+    code: GroupErrorCode.OWNER_ONLY,
+    message: 'Réservé au propriétaire du groupe',
+  });
 }
 
 const memberCount = { _count: { select: { members: true } } } as const;
@@ -143,6 +151,15 @@ export class GroupsService {
     }
     await this.prisma.$transaction(async (tx) => {
       if (!(await lockGroup(tx, groupId))) throw groupNotFound();
+      // Le guard a vérifié le rôle avant le verrou : relu ici, car le
+      // propriétaire a pu partir entre-temps (sur un autre appareil) et passer
+      // la main justement au membre visé. Sans ça, le groupe resterait sans
+      // propriétaire.
+      const actor = await tx.groupMember.findUnique({
+        where: { groupId_userId: { groupId, userId: ownerId } },
+      });
+      if (!actor) throw groupNotFound();
+      if (actor.role !== GroupRole.OWNER) throw ownerOnly();
       const target = await tx.groupMember.findUnique({
         where: { groupId_userId: { groupId, userId: targetId } },
       });

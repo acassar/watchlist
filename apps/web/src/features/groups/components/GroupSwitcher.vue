@@ -74,7 +74,6 @@ async function go(to: Parameters<typeof router.push>[0]) {
           <v-btn
             :icon="mdiCogOutline"
             variant="text"
-            size="small"
             class="mr-1"
             :aria-label="$t('groups.switcher.manage', { name: group.name })"
             @click="go({ name: 'group', params: { groupId: group.id } })"

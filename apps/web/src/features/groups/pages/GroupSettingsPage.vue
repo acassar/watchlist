@@ -296,7 +296,6 @@ function initial(name: string) {
               <v-btn
                 :icon="mdiClose"
                 variant="text"
-                size="small"
                 :aria-label="
                   $t('groups.remove.label', { name: member.displayName })
                 "
@@ -348,8 +347,7 @@ function initial(name: string) {
             <template v-if="canRevoke(invitation)" #append>
               <v-btn
                 variant="text"
-                size="small"
-                class="text-none"
+                class="text-none touch-target"
                 @click="revoke(invitation)"
               >
                 {{ $t('groups.invitations.revoke') }}
@@ -446,6 +444,10 @@ function initial(name: string) {
 <style scoped>
 .page {
   max-width: 560px;
+}
+/* Cible tactile d'au moins 48 px de haut sur mobile. */
+.touch-target {
+  min-height: 48px;
 }
 .invite-code {
   font-variant-numeric: tabular-nums;

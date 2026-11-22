@@ -1,4 +1,6 @@
 import request from 'supertest';
+import { GroupsService } from '../src/groups/groups.service.js';
+import { InvitationsService } from '../src/groups/invitations.service.js';
 import {
   createTestApp,
   createUser,
@@ -329,6 +331,45 @@ describe('Groupes et invitations (e2e)', () => {
       const res = await accept(camille, { token }).expect(409);
       expect(res.body.code).toBe('GROUP_FULL');
     });
+    it('tient la limite d’invitations actives même en création simultanée', async () => {
+      const groupId = await createGroup(adrien);
+      for (let i = 0; i < 18; i++) await invite(adrien, groupId);
+
+      const results = await Promise.all(
+        Array.from({ length: 5 }, () =>
+          http()
+            .post(`/api/groups/${groupId}/invitations`)
+            .set(adrien.auth)
+            .send({}),
+        ),
+      );
+      expect(results.map((r) => r.status).sort((a, b) => a - b)).toEqual([
+        201, 201, 409, 409, 409,
+      ]);
+      expect(await t.prisma.invitation.count({ where: { groupId } })).toBe(20);
+    });
+
+    it('n’émet pas d’invitation pour quelqu’un qui vient de partir', async () => {
+      const groupId = await createGroup(adrien);
+      await join(camille, groupId, adrien);
+      await http()
+        .post(`/api/groups/${groupId}/leave`)
+        .set(camille.auth)
+        .expect(204);
+
+      // Appel arrivé après le guard mais avant le départ : l'appartenance est relue sous verrou.
+      await expect(
+        t.app
+          .get(InvitationsService)
+          .create(
+            { groupId, userId: camille.id, role: 'MEMBER' },
+            { expiresInDays: 7, maxUses: null },
+          ),
+      ).rejects.toMatchObject({ status: 404 });
+      expect(
+        await t.prisma.invitation.count({ where: { createdById: camille.id } }),
+      ).toBe(0);
+    });
   });
 
   describe('quitter et retirer', () => {
@@ -412,6 +453,41 @@ describe('Groupes et invitations (e2e)', () => {
         .delete(`/api/groups/${groupId}/members/${sam.id}`)
         .set(adrien.auth)
         .expect(404);
+    });
+
+    it('ne laisse jamais le groupe sans propriétaire (rôle relu sous verrou)', async () => {
+      const groupId = await createGroup(adrien);
+      await join(camille, groupId, adrien);
+      await join(sam, groupId, adrien);
+      const groups = t.app.get(GroupsService);
+
+      // Adrien est parti sur un autre appareil et Camille a hérité : sa demande
+      // de retrait, déjà passée par le guard, ne doit plus aboutir.
+      await http()
+        .post(`/api/groups/${groupId}/leave`)
+        .set(adrien.auth)
+        .expect(204);
+      await expect(
+        groups.removeMember(groupId, adrien.id, camille.id),
+      ).rejects.toMatchObject({ status: 404 });
+
+      // Même chose pour un ancien propriétaire resté membre.
+      await t.prisma.groupMember.update({
+        where: { groupId_userId: { groupId, userId: camille.id } },
+        data: { role: 'MEMBER' },
+      });
+      await t.prisma.groupMember.update({
+        where: { groupId_userId: { groupId, userId: sam.id } },
+        data: { role: 'OWNER' },
+      });
+      await expect(
+        groups.removeMember(groupId, camille.id, sam.id),
+      ).rejects.toMatchObject({ status: 403 });
+      expect(
+        await t.prisma.groupMember.count({
+          where: { groupId, role: 'OWNER' },
+        }),
+      ).toBe(1);
     });
   });
 });
