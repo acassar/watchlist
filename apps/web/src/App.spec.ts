@@ -26,7 +26,7 @@ describe('App', () => {
 
     expect(wrapper.text()).toContain('Seul');
     expect(wrapper.text()).toContain('Ensemble');
-    expect(wrapper.text()).toContain('À donner');
+    expect(wrapper.text()).toContain('Mon avis');
     expect(wrapper.text()).toContain('Je peux regarder seul');
   });
 });

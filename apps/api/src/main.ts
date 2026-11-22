@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
+import { configureApp } from './app.setup.js';
+import type { Env } from './config.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  // Front et API partagent le même domaine : toutes les routes API vivent sous /api.
-  app.setGlobalPrefix('api');
-  app.enableShutdownHooks();
-  await app.listen(process.env.PORT ?? 3000);
+  const app = configureApp(await NestFactory.create(AppModule));
+  // PORT passe par la config validée (Zod) plutôt que par process.env brut.
+  const config = app.get(ConfigService<Env, true>);
+  await app.listen(config.get('PORT', { infer: true }));
 }
 await bootstrap();

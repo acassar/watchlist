@@ -1,9 +1,9 @@
 {
-  "app": { "title": "Watchlist" },
+  "app": { "title": "Canapact" },
   "nav": {
     "alone": "Seul",
     "together": "Ensemble",
-    "pending": "À donner"
+    "pending": "Mon avis"
   },
   "views": {
     "alone": "Je peux regarder seul",

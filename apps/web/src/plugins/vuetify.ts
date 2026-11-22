@@ -4,5 +4,6 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 
 export const vuetify = createVuetify({
   icons: { defaultSet: 'mdi', aliases, sets: { mdi } },
-  theme: { defaultTheme: 'system' },
+  // Sombre par défaut (maquette validée « Cocon du soir ») ; le thème clair viendra avec le design.
+  theme: { defaultTheme: 'dark' },
 });

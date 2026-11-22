@@ -1,3 +1,4 @@
+import { ServiceUnavailableException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { HealthController } from './health.controller.js';
@@ -21,12 +22,14 @@ describe('HealthController', () => {
     });
   });
 
-  it('signale la base comme indisponible sans planter', async () => {
+  it('répond 503 quand la base est indisponible', async () => {
     const controller = await setup(() =>
       Promise.reject(new Error('ECONNREFUSED')),
     );
-    await expect(controller.check()).resolves.toEqual({
-      status: 'ok',
+    const error = await controller.check().catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect((error as ServiceUnavailableException).getResponse()).toEqual({
+      status: 'error',
       db: 'down',
     });
   });

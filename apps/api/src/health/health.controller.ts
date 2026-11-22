@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import type { HealthResponse } from '@watchlist/shared';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -6,14 +6,18 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Utilisé par le reverse proxy et la supervision. */
+  /**
+   * Utilisé par le reverse proxy, le healthcheck Docker et la supervision :
+   * renvoie 503 quand la base ne répond pas, pour que la panne soit visible.
+   */
   @Get()
   async check(): Promise<HealthResponse> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       return { status: 'ok', db: 'up' };
     } catch {
-      return { status: 'ok', db: 'down' };
+      const body: HealthResponse = { status: 'error', db: 'down' };
+      throw new ServiceUnavailableException(body);
     }
   }
 }
