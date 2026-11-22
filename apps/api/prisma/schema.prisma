@@ -1,0 +1,12 @@
+// Schéma Prisma. Les tables arrivent étape par étape (voir le doc d'architecture).
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
