@@ -17,9 +17,12 @@ export default defineConfig({
       // Identifiants factices : les échanges avec Google sont simulés (voir mockGoogle).
       GOOGLE_CLIENT_ID: 'e2e-client-id.apps.googleusercontent.com',
       GOOGLE_CLIENT_SECRET: 'e2e-client-secret',
+<<<<<<< HEAD
       // Clé factice : YouTube est simulé (voir mockYouTube).
       YOUTUBE_API_KEY: 'e2e-youtube-key',
       MEDIA_RATE_LIMIT: '1000',
+=======
+>>>>>>> origin/main
     },
   },
 });

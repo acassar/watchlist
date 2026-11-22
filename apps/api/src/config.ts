@@ -37,6 +37,7 @@ export const envSchema = z
      */
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+<<<<<<< HEAD
     /**
      * Clé API YouTube Data v3 (console Google Cloud), facultative : elle sert
      * à récupérer la durée des vidéos. Sans elle, l'ajout marche, sans durée.
@@ -44,6 +45,8 @@ export const envSchema = z
     YOUTUBE_API_KEY: z.string().min(1).optional(),
     /** Résolutions de liens (aperçu ou ajout) par utilisateur et par minute. */
     MEDIA_RATE_LIMIT: z.coerce.number().int().positive().default(30),
+=======
+>>>>>>> origin/main
   })
   .refine((env) => env.MAIL_TRANSPORT !== 'brevo' || !!env.BREVO_API_KEY, {
     message: 'BREVO_API_KEY est obligatoire quand MAIL_TRANSPORT=brevo',

@@ -5,21 +5,30 @@ import {
   mdiAccountGroup,
   mdiHelpCircleOutline,
   mdiLogout,
+<<<<<<< HEAD
   mdiPlus,
 } from '@mdi/js';
 import { computed, ref, watch } from 'vue';
+=======
+} from '@mdi/js';
+import { computed, watch } from 'vue';
+>>>>>>> origin/main
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
 import { pendingInvite } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
+<<<<<<< HEAD
 import AddTitleSheet from '@/features/titles/components/AddTitleSheet.vue';
 import { useTitlesStore } from '@/features/titles/store';
+=======
+>>>>>>> origin/main
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const groups = useGroupsStore();
+<<<<<<< HEAD
 const titles = useTitlesStore();
 const bare = computed(() => route.meta.layout === 'auth');
 const adding = ref(false);
@@ -36,13 +45,19 @@ const canAdd = computed(
     !!groups.activeGroup &&
     ['alone', 'together', 'pending'].includes(String(route.name)),
 );
+=======
+const bare = computed(() => route.meta.layout === 'auth');
+>>>>>>> origin/main
 
 // Mes groupes se chargent dès qu'on est connecté, et repartent de zéro au changement de compte.
 watch(
   () => auth.user?.id,
   (userId) => {
     groups.reset();
+<<<<<<< HEAD
     titles.reset();
+=======
+>>>>>>> origin/main
     if (userId) groups.load().catch(() => undefined);
   },
   { immediate: true },
@@ -97,6 +112,7 @@ async function logout() {
         <router-view />
       </v-main>
 
+<<<<<<< HEAD
       <template v-if="canAdd">
         <v-btn
           class="add-fab"
@@ -118,6 +134,8 @@ async function logout() {
         {{ $t('titles.added', { name: addedTo ?? '' }) }}
       </v-snackbar>
 
+=======
+>>>>>>> origin/main
       <!-- Mobile d'abord : les trois vues principales en barre du bas. -->
       <v-bottom-navigation grow>
         <v-btn to="/alone" :prepend-icon="mdiAccount">{{
@@ -138,6 +156,7 @@ async function logout() {
 .brand {
   font-weight: 600;
 }
+<<<<<<< HEAD
 /* Au-dessus de la barre d'onglets (56 px), à portée de pouce. */
 .add-fab {
   position: fixed;
@@ -145,4 +164,6 @@ async function logout() {
   bottom: calc(56px + 16px + env(safe-area-inset-bottom));
   z-index: 1005;
 }
+=======
+>>>>>>> origin/main
 </style>

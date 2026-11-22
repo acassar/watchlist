@@ -13,6 +13,10 @@
     "together": "À regarder ensemble",
     "pending": "En attente de votre avis"
   },
+<<<<<<< HEAD
+=======
+  "empty": "Rien ici pour l'instant.",
+>>>>>>> origin/main
   "account": {
     "menu": "Mon compte",
     "logout": "Se déconnecter"
@@ -97,8 +101,12 @@
     "invalidToken": "Lien invalide.",
     "invalid": "Valeur invalide.",
     "groupNameTooLong": "50 caractères maximum.",
+<<<<<<< HEAD
     "invitationCode": "Un code fait 8 caractères, lettres et chiffres.",
     "mediaUrl": "Collez un lien (il commence par https://)."
+=======
+    "invitationCode": "Un code fait 8 caractères, lettres et chiffres."
+>>>>>>> origin/main
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
@@ -112,12 +120,16 @@
     "OWNER_ONLY": "Seul le propriétaire du groupe peut faire ça.",
     "CANNOT_REMOVE_SELF": "Pour partir, utilisez « Quitter le groupe ».",
     "NOT_FOUND": "Introuvable.",
+<<<<<<< HEAD
     "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant.",
     "UNSUPPORTED_URL": "Ce lien n'est pas pris en charge. Pour l'instant, Canapact lit les liens YouTube.",
     "MEDIA_NOT_FOUND": "Vidéo introuvable : elle est peut-être privée ou supprimée.",
     "MEDIA_UNAVAILABLE": "YouTube ne répond pas. Réessayez dans un instant.",
     "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
     "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…"
+=======
+    "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant."
+>>>>>>> origin/main
   },
   "common": {
     "back": "Retour",
@@ -210,6 +222,7 @@
       "member": "Vos avis sur les titres du groupe seront supprimés. Les titres que vous avez ajoutés restent.",
       "confirm": "Quitter"
     }
+<<<<<<< HEAD
   },
   "titles": {
     "addButton": "Ajouter un titre",
@@ -233,5 +246,7 @@
       "yourStatus": "Et vous ?",
       "submit": "Ajouter"
     }
+=======
+>>>>>>> origin/main
   }
 }
