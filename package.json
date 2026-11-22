@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose -f docker/compose.dev.yml up -d",
-    "db:down": "docker compose -f docker/compose.dev.yml down"
+    "db:down": "docker compose -f docker/compose.dev.yml down",
+    "db:migrate": "pnpm --filter @watchlist/api db:migrate"
   },
   "devDependencies": {
     "prettier": "^3.4.2"

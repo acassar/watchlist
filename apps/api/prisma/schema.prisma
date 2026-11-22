@@ -1,12 +1,79 @@
 // Schéma Prisma. Les tables arrivent étape par étape (voir le doc d'architecture).
 
 generator client {
-  provider               = "prisma-client"
-  output                 = "../src/generated/prisma"
-  moduleFormat           = "esm"
-  importFileExtension    = "js"
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  /// Toujours en minuscules (normalisé par le schéma Zod partagé).
+  email           String    @unique
+  /// Null pour un compte créé uniquement via Google (étape 3).
+  passwordHash    String?   @map("password_hash")
+  googleId        String?   @unique @map("google_id")
+  displayName     String    @map("display_name")
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  refreshTokens RefreshToken[]
+  emailTokens   EmailToken[]
+
+  @@map("users")
+}
+
+/// Refresh token rotatif : seul son hash SHA-256 est stocké.
+/// Tous les jetons issus d'une même connexion partagent `familyId` : si un jeton
+/// déjà utilisé revient, toute la famille est révoquée (vol probable).
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  familyId  String    @map("family_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+enum EmailTokenType {
+  /// Confirmer l'adresse après inscription.
+  VERIFY_EMAIL
+  /// Mot de passe oublié.
+  RESET_PASSWORD
+  /// Ajouter un mot de passe à un compte existant sans mot de passe (compte Google).
+  LINK_PASSWORD
+
+  @@map("email_token_type")
+}
+
+/// Jeton à usage unique envoyé par email : seul son hash SHA-256 est stocké.
+model EmailToken {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  type         EmailTokenType
+  tokenHash    String         @unique @map("token_hash")
+  /// LINK_PASSWORD : hash du mot de passe choisi, appliqué seulement après le clic.
+  passwordHash String?        @map("password_hash")
+  expiresAt    DateTime       @map("expires_at") @db.Timestamptz(3)
+  usedAt       DateTime?      @map("used_at") @db.Timestamptz(3)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("email_tokens")
 }

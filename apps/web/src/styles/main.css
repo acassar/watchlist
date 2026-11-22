@@ -1,0 +1,19 @@
+/* Polices auto-hébergées (pas d'appel à Google Fonts : rien ne part chez un tiers). */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
+
+:root {
+  --v-font-body: 'Inter Variable', system-ui, sans-serif;
+  --v-font-heading: 'Fraunces Variable', Georgia, serif;
+}
+
+.font-display {
+  font-family: var(--v-font-heading) !important;
+  letter-spacing: normal !important;
+}
+
+/* Liens aux couleurs du thème (ambre en sombre), pas le bleu du navigateur. */
+.v-application a:not(.v-btn):not(.v-list-item) {
+  color: rgb(var(--v-theme-primary));
+  text-underline-offset: 2px;
+}

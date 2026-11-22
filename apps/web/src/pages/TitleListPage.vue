@@ -4,7 +4,7 @@ defineProps<{ view: 'alone' | 'together' | 'pending' }>();
 
 <template>
   <v-container class="pa-4">
-    <h1 class="text-h6 mb-4">{{ $t(`views.${view}`) }}</h1>
+    <h1 class="text-title-large mb-4">{{ $t(`views.${view}`) }}</h1>
     <p class="text-medium-emphasis">{{ $t('empty') }}</p>
   </v-container>
 </template>

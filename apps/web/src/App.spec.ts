@@ -1,32 +1,55 @@
 import { mount, flushPromises } from '@vue/test-utils';
-import { createPinia } from 'pinia';
-import { createRouter, createMemoryHistory } from 'vue-router';
+import { createPinia, setActivePinia } from 'pinia';
+import { createMemoryHistory } from 'vue-router';
 import { createVuetify } from 'vuetify';
 import App from './App.vue';
 import { i18n } from './plugins/i18n';
-import { routes } from './router';
+import { createAppRouter } from './router';
+import { fakeUser, jsonResponse } from './test/setup';
 
-// jsdom ne fournit pas ResizeObserver, utilisé par Vuetify.
-globalThis.ResizeObserver ??= class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
+async function mountAt(path: string) {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  const router = createAppRouter(createMemoryHistory());
+  await router.push(path);
+  await router.isReady();
+  const wrapper = mount(App, {
+    global: { plugins: [pinia, router, i18n, createVuetify()] },
+  });
+  await flushPromises();
+  return { wrapper, router };
+}
 
 describe('App', () => {
-  it('affiche les trois vues principales et ouvre « Je peux regarder seul » par défaut', async () => {
-    const router = createRouter({ history: createMemoryHistory(), routes });
-    router.push('/');
-    await router.isReady();
+  afterEach(() => vi.unstubAllGlobals());
 
-    const wrapper = mount(App, {
-      global: { plugins: [createPinia(), router, i18n, createVuetify()] },
-    });
-    await flushPromises();
+  it('connecté : affiche les trois vues et ouvre « Je peux regarder seul » par défaut', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse(200, { accessToken: 'jwt', user: fakeUser }),
+        ),
+    );
+    const { wrapper } = await mountAt('/');
 
     expect(wrapper.text()).toContain('Seul');
     expect(wrapper.text()).toContain('Ensemble');
     expect(wrapper.text()).toContain('Mon avis');
     expect(wrapper.text()).toContain('Je peux regarder seul');
+  });
+
+  it('non connecté : renvoie vers la connexion en gardant la page demandée', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse(401, { code: 'UNAUTHENTICATED' })),
+    );
+    const { wrapper, router } = await mountAt('/together');
+
+    expect(router.currentRoute.value.name).toBe('login');
+    expect(router.currentRoute.value.query.redirect).toBe('/together');
+    expect(wrapper.text()).toContain('Bon retour sur le canapé');
+    expect(wrapper.text()).not.toContain('Mon avis');
   });
 });
