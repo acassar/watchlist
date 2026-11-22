@@ -27,11 +27,8 @@ model User {
   emailTokens        EmailToken[]
   memberships        GroupMember[]
   createdInvitations Invitation[]
-<<<<<<< HEAD
   addedTitles        GroupTitle[]
   statuses           MemberStatus[]
-=======
->>>>>>> origin/main
 
   @@map("users")
 }
@@ -101,10 +98,7 @@ model Group {
 
   members     GroupMember[]
   invitations Invitation[]
-<<<<<<< HEAD
   titles      GroupTitle[]
-=======
->>>>>>> origin/main
 
   @@map("groups")
 }
@@ -148,7 +142,6 @@ model Invitation {
   @@index([groupId])
   @@map("invitations")
 }
-<<<<<<< HEAD
 
 /// Service d'origine d'un titre (même valeurs que MediaSourceType dans shared).
 enum MediaSource {
@@ -227,5 +220,3 @@ model MemberStatus {
   @@index([userId])
   @@map("member_statuses")
 }
-=======
->>>>>>> origin/main

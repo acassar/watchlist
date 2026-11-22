@@ -1,5 +1,4 @@
 <script setup lang="ts">
-<<<<<<< HEAD
 import { watch } from 'vue';
 import { useGroupsStore } from '@/features/groups/store';
 import TitleRow from '@/features/titles/components/TitleRow.vue';
@@ -18,12 +17,6 @@ watch(
   },
   { immediate: true },
 );
-=======
-import { useGroupsStore } from '@/features/groups/store';
-
-defineProps<{ view: 'alone' | 'together' | 'pending' }>();
-const groups = useGroupsStore();
->>>>>>> origin/main
 </script>
 
 <template>
@@ -65,7 +58,6 @@ const groups = useGroupsStore();
       <h1 class="font-display text-headline-small mb-4">
         {{ $t(`views.${view}`) }}
       </h1>
-<<<<<<< HEAD
       <div v-if="titles.titles.length" class="title-list" data-test="titles">
         <TitleRow
           v-for="title in titles.titles"
@@ -82,9 +74,6 @@ const groups = useGroupsStore();
       <p v-else-if="titles.status === 'ready'" class="text-medium-emphasis">
         {{ $t('titles.empty') }}
       </p>
-=======
-      <p class="text-medium-emphasis">{{ $t('empty') }}</p>
->>>>>>> origin/main
     </template>
   </v-container>
 </template>
@@ -93,11 +82,8 @@ const groups = useGroupsStore();
 .empty-state {
   max-width: 400px;
 }
-<<<<<<< HEAD
 /* Place pour le bouton « + » sous la dernière ligne. */
 .title-list {
   padding-bottom: 80px;
 }
-=======
->>>>>>> origin/main
 </style>

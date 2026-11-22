@@ -17,7 +17,6 @@
   color: rgb(var(--v-theme-primary));
   text-underline-offset: 2px;
 }
-<<<<<<< HEAD
 
 /* Poignée des panneaux du bas (groupes, ajout d'un titre). */
 .sheet-handle {
@@ -26,5 +25,3 @@
   border-radius: 2px;
   background: rgba(var(--v-theme-on-surface), 0.24);
 }
-=======
->>>>>>> origin/main
