@@ -1,0 +1,95 @@
+{
+  "app": { "title": "Canapact", "tagline": "Promis, je t'attends." },
+  "nav": {
+    "alone": "Seul",
+    "together": "Ensemble",
+    "pending": "Mon avis"
+  },
+  "views": {
+    "alone": "Je peux regarder seul",
+    "together": "À regarder ensemble",
+    "pending": "En attente de votre avis"
+  },
+  "empty": "Rien ici pour l'instant.",
+  "account": {
+    "menu": "Mon compte",
+    "logout": "Se déconnecter"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "displayName": "Prénom ou surnom",
+    "displayNameHint": "C'est ce que verront les membres de vos groupes.",
+    "passwordHint": "Au moins 8 caractères. Une phrase, c'est encore mieux.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "login": {
+      "title": "Bon retour sur le canapé",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "register": "Créer un compte",
+      "notVerified": "Votre adresse n'est pas encore confirmée. Cliquez sur le lien reçu par email.",
+      "resend": "Renvoyer le lien"
+    },
+    "register": {
+      "title": "Créer votre compte",
+      "subtitle": "Fini les « tu l'as regardé sans moi ?! ».",
+      "submit": "Créer mon compte",
+      "hasAccount": "Déjà un compte ?",
+      "login": "Se connecter"
+    },
+    "checkEmail": {
+      "title": "Regardez vos emails",
+      "body": "Si tout est en ordre, un email vient de partir vers {email}. Cliquez sur le lien qu'il contient pour continuer.",
+      "spam": "Rien reçu ? Jetez un œil aux indésirables, ou renvoyez le lien.",
+      "resend": "Renvoyer le lien",
+      "resent": "C'est reparti. Un nouveau lien arrive (s'il en est parti un il y a plus d'une minute).",
+      "back": "Retour à la connexion"
+    },
+    "verify": {
+      "title": "Confirmation de votre adresse",
+      "loading": "Un instant, on vérifie votre lien…",
+      "success": "Adresse confirmée, bienvenue !",
+      "failed": "Ce lien est invalide ou a expiré. Connectez-vous pour en recevoir un nouveau.",
+      "continue": "C'est parti"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "body": "Indiquez votre email : on vous envoie un lien pour en choisir un nouveau.",
+      "submit": "Envoyer le lien",
+      "sent": "Si un compte existe pour {email}, un lien vient de partir. Il est valable 1 heure."
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "submit": "Enregistrer",
+      "success": "Mot de passe changé. Par sécurité, vous êtes déconnecté de tous vos appareils.",
+      "login": "Se connecter"
+    },
+    "link": {
+      "title": "Ajouter un mot de passe",
+      "loading": "Un instant, on ajoute votre mot de passe…",
+      "success": "C'est fait : vous pouvez maintenant vous connecter avec Google ou avec votre mot de passe.",
+      "continue": "Continuer"
+    },
+    "missingToken": "Ce lien est incomplet. Copiez-le en entier depuis l'email."
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire.",
+    "email": "Cette adresse email ne semble pas valide.",
+    "passwordTooShort": "Au moins 8 caractères.",
+    "passwordTooLong": "128 caractères maximum.",
+    "displayNameTooLong": "50 caractères maximum.",
+    "invalidToken": "Lien invalide.",
+    "invalid": "Valeur invalide."
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
+    "EMAIL_NOT_VERIFIED": "Votre adresse n'est pas encore confirmée.",
+    "INVALID_TOKEN": "Ce lien est invalide ou a expiré.",
+    "TOO_MANY_REQUESTS": "Doucement ! Trop d'essais, réessayez dans une minute.",
+    "VALIDATION_ERROR": "Certains champs sont à corriger.",
+    "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant."
+  }
+}
