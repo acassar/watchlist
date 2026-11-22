@@ -27,6 +27,8 @@ model User {
   emailTokens        EmailToken[]
   memberships        GroupMember[]
   createdInvitations Invitation[]
+  addedTitles        GroupTitle[]
+  statuses           MemberStatus[]
 
   @@map("users")
 }
@@ -96,6 +98,7 @@ model Group {
 
   members     GroupMember[]
   invitations Invitation[]
+  titles      GroupTitle[]
 
   @@map("groups")
 }
@@ -138,4 +141,82 @@ model Invitation {
 
   @@index([groupId])
   @@map("invitations")
+}
+
+/// Service d'origine d'un titre (même valeurs que MediaSourceType dans shared).
+enum MediaSource {
+  YOUTUBE
+  TMDB
+  MANUAL
+
+  @@map("media_source")
+}
+
+/// Avis d'un membre. PENDING n'est pas stocké : c'est l'absence de ligne.
+enum WatchStatus {
+  OK_ALONE
+  TOGETHER
+  NOT_INTERESTED
+
+  @@map("watch_status")
+}
+
+/// Cache des métadonnées d'un titre, partagé entre groupes : une vidéo n'est
+/// résolue qu'une fois. Rafraîchi après 30 jours (règles de l'API YouTube).
+model MediaItem {
+  id           String      @id @default(uuid()) @db.Uuid
+  source       MediaSource
+  externalId   String      @map("external_id")
+  url          String
+  title        String
+  /// Hotlink chez le service (décision D6) : aucune image stockée chez nous.
+  thumbnailUrl String?     @map("thumbnail_url")
+  author       String?
+  durationSec  Int?        @map("duration_sec")
+  fetchedAt    DateTime    @map("fetched_at") @db.Timestamptz(3)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  groupTitles GroupTitle[]
+
+  @@unique([source, externalId])
+  @@map("media_items")
+}
+
+/// Un titre dans la liste d'un groupe.
+model GroupTitle {
+  id                String    @id @default(uuid()) @db.Uuid
+  groupId           String    @map("group_id") @db.Uuid
+  mediaItemId       String    @map("media_item_id") @db.Uuid
+  /// Null si l'auteur a supprimé son compte. S'il a seulement quitté le groupe,
+  /// l'id reste (affiché « ancien membre », étape 6).
+  addedById         String?   @map("added_by") @db.Uuid
+  addedAt           DateTime  @default(now()) @map("added_at") @db.Timestamptz(3)
+  /// Vu ensemble : le titre sort des listes actives (étape 6).
+  watchedTogetherAt DateTime? @map("watched_together_at") @db.Timestamptz(3)
+
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  mediaItem MediaItem      @relation(fields: [mediaItemId], references: [id], onDelete: Restrict)
+  addedBy   User?          @relation(fields: [addedById], references: [id], onDelete: SetNull)
+  statuses  MemberStatus[]
+
+  @@unique([groupId, mediaItemId])
+  @@index([groupId, addedAt])
+  @@map("group_titles")
+}
+
+/// Avis d'un membre sur un titre de son groupe.
+model MemberStatus {
+  groupTitleId   String      @map("group_title_id") @db.Uuid
+  userId         String      @map("user_id") @db.Uuid
+  status         WatchStatus
+  /// Vu seul : ne retire le titre que des listes de ce membre (étape 6).
+  watchedAloneAt DateTime?   @map("watched_alone_at") @db.Timestamptz(3)
+  updatedAt      DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  groupTitle GroupTitle @relation(fields: [groupTitleId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupTitleId, userId])
+  @@index([userId])
+  @@map("member_statuses")
 }

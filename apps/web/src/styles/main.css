@@ -17,3 +17,11 @@
   color: rgb(var(--v-theme-primary));
   text-underline-offset: 2px;
 }
+
+/* Poignée des panneaux du bas (groupes, ajout d'un titre). */
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(var(--v-theme-on-surface), 0.24);
+}

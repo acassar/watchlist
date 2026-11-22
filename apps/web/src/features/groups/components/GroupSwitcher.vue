@@ -112,12 +112,6 @@ async function go(to: Parameters<typeof router.push>[0]) {
   border-color: rgba(var(--v-theme-on-surface), 0.16);
   background: rgb(var(--v-theme-surface));
 }
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(var(--v-theme-on-surface), 0.24);
-}
 .group-row {
   min-height: 56px;
   background: rgb(var(--v-theme-surface-variant));

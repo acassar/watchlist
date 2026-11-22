@@ -1,8 +1,22 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useGroupsStore } from '@/features/groups/store';
+import TitleRow from '@/features/titles/components/TitleRow.vue';
+import { useTitlesStore } from '@/features/titles/store';
 
 defineProps<{ view: 'alone' | 'together' | 'pending' }>();
 const groups = useGroupsStore();
+const titles = useTitlesStore();
+
+// Étape 5 : la liste complète du groupe, la même sous chaque onglet.
+// Les trois vues filtrées remplacent cette liste à l'étape 6.
+watch(
+  () => groups.activeGroup?.id,
+  (groupId) => {
+    if (groupId) titles.load(groupId).catch(() => undefined);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -44,7 +58,22 @@ const groups = useGroupsStore();
       <h1 class="font-display text-headline-small mb-4">
         {{ $t(`views.${view}`) }}
       </h1>
-      <p class="text-medium-emphasis">{{ $t('empty') }}</p>
+      <div v-if="titles.titles.length" class="title-list" data-test="titles">
+        <TitleRow
+          v-for="title in titles.titles"
+          :key="title.id"
+          :title="title"
+        />
+      </div>
+      <v-alert
+        v-else-if="titles.status === 'error'"
+        type="error"
+        variant="tonal"
+        :text="$t('titles.loadError')"
+      />
+      <p v-else-if="titles.status === 'ready'" class="text-medium-emphasis">
+        {{ $t('titles.empty') }}
+      </p>
     </template>
   </v-container>
 </template>
@@ -52,5 +81,9 @@ const groups = useGroupsStore();
 <style scoped>
 .empty-state {
   max-width: 400px;
+}
+/* Place pour le bouton « + » sous la dernière ligne. */
+.title-list {
+  padding-bottom: 80px;
 }
 </style>

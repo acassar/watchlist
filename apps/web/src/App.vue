@@ -5,25 +5,44 @@ import {
   mdiAccountGroup,
   mdiHelpCircleOutline,
   mdiLogout,
+  mdiPlus,
 } from '@mdi/js';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
 import { pendingInvite } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
+import AddTitleSheet from '@/features/titles/components/AddTitleSheet.vue';
+import { useTitlesStore } from '@/features/titles/store';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const groups = useGroupsStore();
+const titles = useTitlesStore();
 const bare = computed(() => route.meta.layout === 'auth');
+const adding = ref(false);
+const addedTo = ref<string | null>(null);
+const addedSnackbar = computed({
+  get: () => addedTo.value !== null,
+  set: (open: boolean) => {
+    if (!open) addedTo.value = null;
+  },
+});
+// Le « + » n'a de sens que sur les listes, une fois un groupe choisi.
+const canAdd = computed(
+  () =>
+    !!groups.activeGroup &&
+    ['alone', 'together', 'pending'].includes(String(route.name)),
+);
 
 // Mes groupes se chargent dès qu'on est connecté, et repartent de zéro au changement de compte.
 watch(
   () => auth.user?.id,
   (userId) => {
     groups.reset();
+    titles.reset();
     if (userId) groups.load().catch(() => undefined);
   },
   { immediate: true },
@@ -78,6 +97,27 @@ async function logout() {
         <router-view />
       </v-main>
 
+      <template v-if="canAdd">
+        <v-btn
+          class="add-fab"
+          color="primary"
+          size="large"
+          :icon="mdiPlus"
+          :aria-label="$t('titles.addButton')"
+          data-test="add-fab"
+          @click="adding = true"
+        />
+        <AddTitleSheet v-model="adding" @added="(name) => (addedTo = name)" />
+      </template>
+      <v-snackbar
+        v-model="addedSnackbar"
+        :timeout="3000"
+        location="top"
+        data-test="added"
+      >
+        {{ $t('titles.added', { name: addedTo ?? '' }) }}
+      </v-snackbar>
+
       <!-- Mobile d'abord : les trois vues principales en barre du bas. -->
       <v-bottom-navigation grow>
         <v-btn to="/alone" :prepend-icon="mdiAccount">{{
@@ -97,5 +137,12 @@ async function logout() {
 <style scoped>
 .brand {
   font-weight: 600;
+}
+/* Au-dessus de la barre d'onglets (56 px), à portée de pouce. */
+.add-fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(56px + 16px + env(safe-area-inset-bottom));
+  z-index: 1005;
 }
 </style>

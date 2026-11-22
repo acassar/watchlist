@@ -13,7 +13,6 @@
     "together": "À regarder ensemble",
     "pending": "En attente de votre avis"
   },
-  "empty": "Rien ici pour l'instant.",
   "account": {
     "menu": "Mon compte",
     "logout": "Se déconnecter"
@@ -98,7 +97,8 @@
     "invalidToken": "Lien invalide.",
     "invalid": "Valeur invalide.",
     "groupNameTooLong": "50 caractères maximum.",
-    "invitationCode": "Un code fait 8 caractères, lettres et chiffres."
+    "invitationCode": "Un code fait 8 caractères, lettres et chiffres.",
+    "mediaUrl": "Collez un lien (il commence par https://)."
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
@@ -112,7 +112,12 @@
     "OWNER_ONLY": "Seul le propriétaire du groupe peut faire ça.",
     "CANNOT_REMOVE_SELF": "Pour partir, utilisez « Quitter le groupe ».",
     "NOT_FOUND": "Introuvable.",
-    "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant."
+    "UNKNOWN": "Oups, quelque chose s'est mal passé. Réessayez dans un instant.",
+    "UNSUPPORTED_URL": "Ce lien n'est pas pris en charge. Pour l'instant, Canapact lit les liens YouTube.",
+    "MEDIA_NOT_FOUND": "Vidéo introuvable : elle est peut-être privée ou supprimée.",
+    "MEDIA_UNAVAILABLE": "YouTube ne répond pas. Réessayez dans un instant.",
+    "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
+    "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…"
   },
   "common": {
     "back": "Retour",
@@ -204,6 +209,29 @@
       "owner": "{name} deviendra propriétaire. Vos avis seront supprimés, les titres que vous avez ajoutés restent.",
       "member": "Vos avis sur les titres du groupe seront supprimés. Les titres que vous avez ajoutés restent.",
       "confirm": "Quitter"
+    }
+  },
+  "titles": {
+    "addButton": "Ajouter un titre",
+    "added": "Ajouté à « {name} »",
+    "empty": "Rien ici pour l'instant. Appuyez sur « + » pour ajouter une vidéo.",
+    "loadError": "Impossible de charger la liste. Vérifiez votre connexion.",
+    "status": {
+      "OK_ALONE": "Sans moi, ok",
+      "TOGETHER": "Ensemble",
+      "NOT_INTERESTED": "Pas pour moi"
+    },
+    "add": {
+      "title": "Ajouter un titre",
+      "inGroup": "Dans « {name} »",
+      "paste": "Coller le lien",
+      "link": "Lien YouTube",
+      "placeholder": "https://youtu.be/…",
+      "preview": "Aperçu",
+      "noLink": "Collez un lien YouTube (il commence par https://).",
+      "clipboardDenied": "Impossible de lire le presse-papiers. Collez le lien dans le champ.",
+      "yourStatus": "Et vous ?",
+      "submit": "Ajouter"
     }
   }
 }
