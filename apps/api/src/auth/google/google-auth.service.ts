@@ -33,10 +33,11 @@ export class GoogleLoginError extends Error {
  *    d'autre et un mot de passe à lui, en attendant que la victime arrive par
  *    Google. Rien de ce compte n'a été prouvé : son mot de passe et ses liens
  *    en attente sont effacés, puis le compte est lié à Google. Le propriétaire
- *    pourra ajouter un mot de passe plus tard via le lien de confirmation.
+ *    pourra ajouter un mot de passe plus tard : le lien reçu par email lui fait
+ *    choisir le sien (celui d'une inscription n'est jamais repris).
  *
  * Dans l'autre sens (poser un mot de passe sur un compte Google), AuthService.register
- * exige déjà le clic sur un lien envoyé par email.
+ * envoie un lien par email, et le mot de passe se choisit après le clic.
  */
 @Injectable()
 export class GoogleAuthService {

@@ -341,21 +341,31 @@ describe('Connexion avec Google (e2e)', () => {
       expect(user.passwordHash).toBeNull();
     });
 
-    it('laisse ensuite le vrai propriétaire ajouter son mot de passe par email', async () => {
+    it('laisse ensuite le vrai propriétaire choisir son mot de passe par email', async () => {
       await signInWithGoogle(googleUser);
-      await register({ password: 'mon-vrai-mot-de-passe' });
+      // L'inconnu revient à la charge avec une nouvelle inscription.
+      await register({ password: 'mot-de-passe-de-l-inconnu' });
 
       expect(t.mail.to(email).at(-1)?.subject).toBe(
         'Ajouter un mot de passe à votre compte',
       );
+      // Le propriétaire clique le lien : il choisit son mot de passe, celui de
+      // l'inscription n'est pas repris.
       await http()
         .post('/api/auth/password/link/confirm')
-        .send({ token: lastTokenSentTo(t.mail, email) })
+        .send({
+          token: lastTokenSentTo(t.mail, email),
+          password: 'mon-vrai-mot-de-passe',
+        })
         .expect(200);
       await http()
         .post('/api/auth/login')
         .send({ email, password: 'mon-vrai-mot-de-passe' })
         .expect(200);
+      await http()
+        .post('/api/auth/login')
+        .send({ email, password: 'mot-de-passe-de-l-inconnu' })
+        .expect(401);
     });
   });
 });

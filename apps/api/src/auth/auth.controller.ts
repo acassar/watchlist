@@ -156,13 +156,14 @@ export class AuthController {
   @Post('password/link/confirm')
   @HttpCode(HttpStatus.OK)
   async confirmLinkPassword(
-    @Body(new ZodValidationPipe(tokenRequestSchema)) body: TokenRequest,
+    @Body(new ZodValidationPipe(resetPasswordRequestSchema))
+    body: ResetPasswordRequest,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
     return this.respond(
       res,
-      await this.auth.confirmLinkPassword(body.token, req.get('user-agent')),
+      await this.auth.confirmLinkPassword(body, req.get('user-agent')),
     );
   }
 

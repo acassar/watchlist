@@ -72,7 +72,8 @@
     },
     "link": {
       "title": "Ajouter un mot de passe",
-      "loading": "Un instant, on ajoute votre mot de passe…",
+      "body": "Choisissez le mot de passe qui vous servira à vous connecter par email, en plus de Google.",
+      "submit": "Enregistrer",
       "success": "C'est fait : vous pouvez maintenant vous connecter avec Google ou avec votre mot de passe.",
       "continue": "Continuer"
     },

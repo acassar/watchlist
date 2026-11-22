@@ -84,9 +84,9 @@ export function linkPasswordTemplate(name: string, url: string): Template {
       greeting: `Bonsoir ${name},`,
       paragraphs: [
         'Quelqu’un (vous, on espère) vient de s’inscrire avec votre adresse, qui est déjà liée à votre compte Google sur Canapact.',
-        'Confirmez pour pouvoir aussi vous connecter avec ce mot de passe. Votre compte et vos groupes restent les mêmes.',
+        'Pour pouvoir aussi vous connecter par email, choisissez votre mot de passe avec le lien ci-dessous. Votre compte et vos groupes restent les mêmes.',
       ],
-      action: { label: 'Oui, ajouter ce mot de passe', url },
+      action: { label: 'Choisir mon mot de passe', url },
       footer:
         'Ce lien est valable 24 heures. Ce n’est pas vous ? Ignorez cet email : rien ne change et personne n’aura accès à votre compte.',
     }),
