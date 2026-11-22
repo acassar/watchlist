@@ -100,7 +100,7 @@ export class AuthService {
         LINK_PASSWORD_TTL_MS,
         passwordHash,
       );
-      if (token) await this.mail.sendLinkPassword(existing, token);
+      if (token) this.mail.sendLinkPassword(existing, token);
       return;
     }
 
@@ -109,7 +109,7 @@ export class AuthService {
       return;
     }
 
-    await this.mail.sendAlreadyRegistered(existing);
+    this.mail.sendAlreadyRegistered(existing);
   }
 
   /** Renvoie le lien de vérification si le compte existe et n'est pas encore vérifié. */
@@ -190,7 +190,7 @@ export class AuthService {
       'RESET_PASSWORD',
       RESET_PASSWORD_TTL_MS,
     );
-    if (token) await this.mail.sendResetPassword(user, token);
+    if (token) this.mail.sendResetPassword(user, token);
   }
 
   /**
@@ -243,7 +243,7 @@ export class AuthService {
       VERIFY_EMAIL_TTL_MS,
       passwordHash,
     );
-    if (token) await this.mail.sendVerifyEmail(user, token);
+    if (token) this.mail.sendVerifyEmail(user, token);
   }
 
   private async openSession(user: User, userAgent?: string): Promise<Session> {
