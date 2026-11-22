@@ -33,6 +33,8 @@ En dev, les emails (vérification, mot de passe oublié) ne partent pas : ils s'
 - Toutes les routes API exigent un JWT, sauf celles marquées `@Public()`.
 - Emails via un adaptateur (`MAIL_TRANSPORT`) : `console` en dev, `memory` en test, `brevo` en prod (`BREVO_API_KEY`).
 - Rate limiting par IP sur les routes d'auth (`AUTH_RATE_LIMIT` par minute). Derrière Nginx, régler `TRUST_PROXY`.
+- « Se connecter avec Google » (Passport, OAuth 2.0 + PKCE) : activé seulement si `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` sont renseignés (sinon le bouton est masqué). URI de redirection à déclarer chez Google : `${APP_URL}/api/auth/google/callback`. L'état OAuth vit dans un cookie signé (pas de session serveur).
+- Liaison Google ↔ email automatique quand l'adresse est vérifiée des deux côtés. Un compte email jamais vérifié est repris par le propriétaire prouvé de l'adresse (mot de passe et liens en attente effacés : protection contre le pré-détournement de compte). Ajouter un mot de passe à un compte Google exige le clic sur un lien envoyé par email.
 
 | Route                                  | Rôle                                                    |
 | -------------------------------------- | ------------------------------------------------------- |
@@ -44,7 +46,10 @@ En dev, les emails (vérification, mot de passe oublié) ne partent pas : ils s'
 | `POST /api/auth/logout`                | Déconnexion de cet appareil                             |
 | `POST /api/auth/password/forgot`       | Envoie un lien de réinitialisation                      |
 | `POST /api/auth/password/reset`        | Nouveau mot de passe, ferme toutes les sessions         |
-| `POST /api/auth/password/link/confirm` | Ajout d'un mot de passe à un compte Google (étape 3)    |
+| `POST /api/auth/password/link/confirm` | Ajout d'un mot de passe à un compte Google              |
+| `GET /api/auth/providers`              | Moyens de connexion activés (`{ google }`)              |
+| `GET /api/auth/google?next=/chemin`    | Départ vers Google (redirection)                        |
+| `GET /api/auth/google/callback`        | Retour de Google : session puis redirection vers `next` |
 | `GET /api/me`                          | Profil de l'utilisateur connecté                        |
 
 ## Commandes

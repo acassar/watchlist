@@ -2,13 +2,16 @@
 import {
   AuthErrorCode,
   emailSchema,
+  isGoogleErrorCode,
   loginRequestSchema,
 } from '@watchlist/shared';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiRequestError } from '@/api/http';
 import { authApi } from '../api';
 import AuthLayout from '../components/AuthLayout.vue';
+import GoogleButton from '../components/GoogleButton.vue';
 import PasswordField from '../components/PasswordField.vue';
 import { safeRedirect } from '../redirect';
 import { useAuthStore } from '../store';
@@ -17,12 +20,20 @@ import { apiErrorMessage, zodRule } from '../validation';
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 const notVerified = ref(false);
+
+/** Retour d'une connexion Google qui n'a pas abouti (`/login?error=google_…`). */
+const googleError = computed(() =>
+  isGoogleErrorCode(route.query.error)
+    ? t(`auth.google.errors.${route.query.error}`)
+    : null,
+);
 
 async function submit(event: Promise<{ valid: boolean }>) {
   if (!(await event).valid) return;
@@ -60,6 +71,16 @@ async function resend() {
 
 <template>
   <AuthLayout :title="$t('auth.login.title')">
+    <v-alert
+      v-if="googleError"
+      type="warning"
+      variant="tonal"
+      class="mb-4"
+      :text="googleError"
+      data-test="google-error"
+    />
+    <GoogleButton :next="route.query.redirect" />
+
     <v-form validate-on="submit lazy" @submit.prevent="submit">
       <v-text-field
         v-model="email"

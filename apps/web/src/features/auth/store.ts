@@ -1,4 +1,9 @@
-import type { AuthResponse, AuthUser, LoginRequest } from '@watchlist/shared';
+import type {
+  AuthProviders,
+  AuthResponse,
+  AuthUser,
+  LoginRequest,
+} from '@watchlist/shared';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { ApiRequestError, setAuthHooks } from '@/api/http';
@@ -18,6 +23,10 @@ export const useAuthStore = defineStore('auth', () => {
   /** `unknown` tant que la session n'a pas été restaurée au démarrage. */
   const status = ref<'unknown' | 'authenticated' | 'anonymous'>('unknown');
   const isAuthenticated = computed(() => status.value === 'authenticated');
+
+  /** Moyens de connexion activés côté serveur (bouton Google). */
+  const providers = ref<AuthProviders | null>(null);
+  let providersPromise: Promise<AuthProviders> | null = null;
 
   let initPromise: Promise<void> | null = null;
   let refreshPromise: Promise<boolean> | null = null;
@@ -67,6 +76,15 @@ export const useAuthStore = defineStore('auth', () => {
     return initPromise;
   }
 
+  /** Charge une fois les moyens de connexion ; en cas d'erreur, Google reste masqué. */
+  function loadProviders(): Promise<AuthProviders> {
+    providersPromise ??= authApi
+      .providers()
+      .catch(() => ({ google: false }))
+      .then((value) => (providers.value = value));
+    return providersPromise;
+  }
+
   async function login(credentials: LoginRequest) {
     applySession(await authApi.login(credentials));
   }
@@ -88,6 +106,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     init,
     refresh,
+    providers,
+    loadProviders,
     login,
     logout,
     applySession,

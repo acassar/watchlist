@@ -2,18 +2,28 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { ThrottlerModule } from '@nestjs/throttler';
 import type { Env } from '../config.js';
 import { ACCESS_TOKEN_TTL_SECONDS } from './auth.constants.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { EmailTokenService } from './email-token.service.js';
+import { GoogleAuthController } from './google/google-auth.controller.js';
+import {
+  GoogleAuthGuard,
+  GoogleEnabledGuard,
+} from './google/google-auth.guard.js';
+import { GoogleAuthService } from './google/google-auth.service.js';
+import { GoogleStrategy } from './google/google.strategy.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { PasswordService } from './password.service.js';
 import { RefreshTokenService } from './refresh-token.service.js';
 
 @Module({
   imports: [
+    // Sans session Express : l'état OAuth vit dans un cookie signé (CookieStateStore).
+    PassportModule.register({ session: false }),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => ({
@@ -33,12 +43,16 @@ import { RefreshTokenService } from './refresh-token.service.js';
       ],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, GoogleAuthController],
   providers: [
     AuthService,
     PasswordService,
     RefreshTokenService,
     EmailTokenService,
+    GoogleStrategy,
+    GoogleAuthService,
+    GoogleEnabledGuard,
+    GoogleAuthGuard,
     // Toutes les routes exigent un JWT, sauf celles marquées @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],

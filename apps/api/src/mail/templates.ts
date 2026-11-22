@@ -112,3 +112,21 @@ export function alreadyRegisteredTemplate(
     }),
   };
 }
+
+export function googleLinkedTemplate(
+  name: string,
+  forgotUrl: string,
+): Template {
+  return {
+    subject: 'Votre compte Google est lié à Canapact',
+    ...layout({
+      greeting: `Bonsoir ${name},`,
+      paragraphs: [
+        'Vous venez de vous connecter à Canapact avec Google pour la première fois. Les deux sont maintenant liés : Google ou votre mot de passe, au choix, vous retrouvez le même compte et les mêmes groupes.',
+        `Ce n’est pas vous ? Changez votre mot de passe sans attendre : ${forgotUrl}, et vérifiez la sécurité de votre compte Google.`,
+      ],
+      footer:
+        'Cet email est envoyé pour votre sécurité, aucune action n’est nécessaire si c’était bien vous.',
+    }),
+  };
+}

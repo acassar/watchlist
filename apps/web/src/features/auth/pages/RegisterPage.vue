@@ -9,6 +9,7 @@ import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authApi } from '../api';
 import AuthLayout from '../components/AuthLayout.vue';
+import GoogleButton from '../components/GoogleButton.vue';
 import PasswordField from '../components/PasswordField.vue';
 import { apiErrorMessage, zodRule } from '../validation';
 
@@ -47,6 +48,8 @@ async function submit(event: Promise<{ valid: boolean }>) {
     :title="$t('auth.register.title')"
     :subtitle="$t('auth.register.subtitle')"
   >
+    <GoogleButton :next="route.query.redirect" />
+
     <v-form validate-on="submit lazy" @submit.prevent="submit">
       <v-text-field
         v-model="displayName"

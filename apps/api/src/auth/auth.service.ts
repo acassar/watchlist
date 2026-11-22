@@ -246,7 +246,8 @@ export class AuthService {
     if (token) this.mail.sendVerifyEmail(user, token);
   }
 
-  private async openSession(user: User, userAgent?: string): Promise<Session> {
+  /** Ouvre une session (JWT + refresh token) pour un utilisateur déjà authentifié. */
+  async openSession(user: User, userAgent?: string): Promise<Session> {
     return {
       accessToken: await this.signAccessToken(user.id),
       refreshToken: await this.refreshTokens.issue(user.id, userAgent),
@@ -259,7 +260,7 @@ export class AuthService {
   }
 }
 
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   return (
     typeof error === 'object' &&
     error !== null &&
