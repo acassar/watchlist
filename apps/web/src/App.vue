@@ -3,11 +3,12 @@ import {
   mdiAccount,
   mdiAccountCircleOutline,
   mdiAccountGroup,
+  mdiGestureSwipe,
   mdiHelpCircleOutline,
   mdiLogout,
   mdiPlus,
 } from '@mdi/js';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
@@ -15,6 +16,7 @@ import { pendingInvite } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
 import AddTitleSheet from '@/features/titles/components/AddTitleSheet.vue';
 import { useTitlesStore } from '@/features/titles/store';
+import { swipeTutorial } from '@/features/titles/tutorial';
 
 const route = useRoute();
 const router = useRouter();
@@ -47,6 +49,20 @@ watch(
   },
   { immediate: true },
 );
+
+// Pas de temps réel (décision D8) : retour sur l'app = listes rechargées.
+function onVisible() {
+  if (document.visibilityState === 'visible' && auth.user) titles.refresh();
+}
+onMounted(() => document.addEventListener('visibilitychange', onVisible));
+onBeforeUnmount(() =>
+  document.removeEventListener('visibilitychange', onVisible),
+);
+
+async function replayTutorial() {
+  await router.push({ name: 'pending' });
+  swipeTutorial.show();
+}
 
 async function logout() {
   await auth.logout().catch(() => undefined);
@@ -83,6 +99,12 @@ async function logout() {
                 :subtitle="auth.user.email"
               />
               <v-divider />
+              <v-list-item
+                :prepend-icon="mdiGestureSwipe"
+                :title="$t('tutorial.replay')"
+                data-test="replay-tutorial"
+                @click="replayTutorial"
+              />
               <v-list-item
                 :prepend-icon="mdiLogout"
                 :title="$t('account.logout')"
@@ -126,9 +148,17 @@ async function logout() {
         <v-btn to="/together" :prepend-icon="mdiAccountGroup">{{
           $t('nav.together')
         }}</v-btn>
-        <v-btn to="/pending" :prepend-icon="mdiHelpCircleOutline">{{
-          $t('nav.pending')
-        }}</v-btn>
+        <v-btn to="/pending" data-test="tab-pending">
+          <v-badge
+            :model-value="titles.pendingCount > 0"
+            :content="titles.pendingCount"
+            color="primary"
+            data-test="pending-badge"
+          >
+            <v-icon :icon="mdiHelpCircleOutline" />
+          </v-badge>
+          <span>{{ $t('nav.pending') }}</span>
+        </v-btn>
       </v-bottom-navigation>
     </template>
   </v-app>

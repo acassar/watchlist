@@ -11,7 +11,16 @@
   "views": {
     "alone": "Je peux regarder seul",
     "together": "À regarder ensemble",
-    "pending": "En attente de votre avis"
+    "pending": "En attente de votre avis",
+    "aloneHint": "Tout le monde a dit « sans moi, ok » ou n'est pas intéressé : foncez.",
+    "togetherHint": "Quelqu'un veut le voir avec vous. Promis, on attend.",
+    "aloneEmpty": "Rien à regarder seul pour l'instant. Appuyez sur « + » pour ajouter une vidéo.",
+    "togetherEmpty": "Rien à regarder ensemble pour l'instant. Appuyez sur « + » pour ajouter une vidéo.",
+    "waiting": "En attente des autres",
+    "waitingHint": "Vous avez dit « sans moi, ok », mais quelqu'un n'a pas encore répondu.",
+    "pendingCount": "Aucun titre n'attend votre avis | 1 titre attend votre avis | {n} titres attendent votre avis",
+    "pendingDoneTitle": "Tout est à jour !",
+    "pendingDone": "Vous avez donné votre avis sur tous les titres. Allez, un plaid et on lance quelque chose."
   },
   "account": {
     "menu": "Mon compte",
@@ -98,7 +107,8 @@
     "invalid": "Valeur invalide.",
     "groupNameTooLong": "50 caractères maximum.",
     "invitationCode": "Un code fait 8 caractères, lettres et chiffres.",
-    "mediaUrl": "Collez un lien (il commence par https://)."
+    "mediaUrl": "Collez un lien (il commence par https://).",
+    "dateInFuture": "Cette date est dans le futur."
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email ou mot de passe incorrect.",
@@ -123,7 +133,8 @@
     "back": "Retour",
     "cancel": "Annuler",
     "close": "Fermer",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "undo": "Annuler"
   },
   "groups": {
     "name": "Nom du groupe",
@@ -232,6 +243,62 @@
       "clipboardDenied": "Impossible de lire le presse-papiers. Collez le lien dans le champ.",
       "yourStatus": "Et vous ?",
       "submit": "Ajouter"
+    },
+    "open": "Ouvrir « {title} » sur YouTube",
+    "watchOnYoutube": "Voir sur YouTube",
+    "yourStatus": "Votre avis",
+    "addedBy": "Ajouté par {name}",
+    "addedByDeleted": "Ajouté par un compte supprimé",
+    "formerMember": "un ancien membre",
+    "memberStatus": "{name} : {status}",
+    "notCounted": "(arrivé après l'ajout, ne bloque pas)",
+    "changeMine": "Mon avis : {status}. Changer",
+    "statusLabel": {
+      "OK_ALONE": "sans moi, ok",
+      "TOGETHER": "ensemble",
+      "NOT_INTERESTED": "pas pour moi",
+      "PENDING": "pas encore répondu"
+    },
+    "actions": {
+      "label": "Actions pour « {title} »",
+      "watchedAlone": "Je l'ai vu (seul)",
+      "watchedTogether": "On l'a vu ensemble",
+      "undoTogether": "Pas encore vu ensemble",
+      "undoAlone": "Finalement, pas encore vu",
+      "changeStatus": "Changer mon avis"
+    },
+    "notices": {
+      "watchedAlone": "Vu ! Il sort de vos listes.",
+      "watchedTogether": "Vu ensemble, bravo ! Il sort des listes du groupe.",
+      "backInList": "C'est revenu dans les listes."
     }
+  },
+  "history": {
+    "link": "Déjà vus et écartés",
+    "title": "Déjà vus et écartés",
+    "together": "Vu ensemble le {date}",
+    "alone": "Vu seul le {date}",
+    "archived": "Tout le monde l'a vu ou a passé son tour",
+    "notInterested": "Pas pour moi",
+    "empty": "Rien pour l'instant. Les titres vus ou écartés arriveront ici."
+  },
+  "tutorial": {
+    "title": "Donnez votre avis d'un geste",
+    "body": "Glissez la carte :",
+    "OK_ALONE": {
+      "gesture": "À droite :",
+      "meaning": "les autres peuvent le regarder sans vous."
+    },
+    "TOGETHER": {
+      "gesture": "Vers le haut :",
+      "meaning": "vous voulez le regarder ensemble."
+    },
+    "NOT_INTERESTED": {
+      "gesture": "À gauche :",
+      "meaning": "ça ne vous tente pas, aucune contrainte."
+    },
+    "buttons": "Les trois boutons sous la carte font la même chose. Vous pourrez toujours changer d'avis en touchant votre pastille.",
+    "ok": "Compris",
+    "replay": "Revoir le tuto des gestes"
   }
 }
