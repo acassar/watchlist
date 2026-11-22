@@ -44,6 +44,11 @@ export const envSchema = z
     YOUTUBE_API_KEY: z.string().min(1).optional(),
     /** Résolutions de liens (aperçu ou ajout) par utilisateur et par minute. */
     MEDIA_RATE_LIMIT: z.coerce.number().int().positive().default(30),
+    /**
+     * Rafraîchissement périodique du cache des titres (CGU YouTube : 30 jours
+     * de conservation au plus). Désactivé dans les tests e2e.
+     */
+    MEDIA_REFRESH_ENABLED: booleanFromEnv.default(true),
   })
   .refine((env) => env.MAIL_TRANSPORT !== 'brevo' || !!env.BREVO_API_KEY, {
     message: 'BREVO_API_KEY est obligatoire quand MAIL_TRANSPORT=brevo',

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config.js';
 import { MEDIA_SOURCES, type MediaSource } from './media-source.js';
+import { MediaRefreshService } from './media-refresh.service.js';
 import { MediaSourceRegistry } from './media-source.registry.js';
 import { MediaThrottlerGuard } from './media-throttler.guard.js';
 import { MediaController } from './media.controller.js';
@@ -25,6 +26,7 @@ import { YouTubeSource } from './youtube/youtube.source.js';
     },
     MediaSourceRegistry,
     MediaService,
+    MediaRefreshService,
     MediaThrottlerGuard,
   ],
   exports: [MediaService, MediaThrottlerGuard],

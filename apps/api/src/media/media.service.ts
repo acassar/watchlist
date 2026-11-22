@@ -9,11 +9,18 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { MediaNotFoundError, MediaUnavailableError } from './media-source.js';
 import { MediaSourceRegistry } from './media-source.registry.js';
 
+const DAY_MS = 24 * 3600 * 1000;
+
 /**
  * Les règles de l'API YouTube interdisent de garder ses données plus de
- * 30 jours sans les rafraîchir : au-delà, on redemande avant de resservir.
+ * 30 jours sans les rafraîchir. Deux seuils, avec de la marge :
+ * - au-delà de 28 jours, un aperçu ou un ajout redemande au service ;
+ * - au-delà de 29 jours, MediaRefreshService rafraîchit les titres encore
+ *   dans une liste et supprime les autres. Le jour d'écart évite de supprimer
+ *   une entrée qu'un ajout vient de lire dans le cache.
  */
-export const MEDIA_CACHE_MAX_AGE_MS = 30 * 24 * 3600 * 1000;
+export const MEDIA_CACHE_MAX_AGE_MS = 28 * DAY_MS;
+export const MEDIA_STORAGE_MAX_AGE_MS = 29 * DAY_MS;
 
 export function toMediaInfo(item: MediaItem): MediaInfo {
   return {

@@ -20,6 +20,8 @@ export default defineConfig({
       // Clé factice : YouTube est simulé (voir mockYouTube).
       YOUTUBE_API_KEY: 'e2e-youtube-key',
       MEDIA_RATE_LIMIT: '1000',
+      // Lancé à la main dans les tests (voir titles.e2e-spec).
+      MEDIA_REFRESH_ENABLED: 'false',
     },
   },
 });

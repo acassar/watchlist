@@ -5,11 +5,14 @@ import {
   resetDatabase,
   type TestApp,
 } from './helpers.js';
+import { MediaRefreshService } from '../src/media/media-refresh.service.js';
 import { mockYouTube } from './youtube-mock.js';
 
 type User = Awaited<ReturnType<typeof createUser>>;
 
 const RICK = 'dQw4w9WgXcQ';
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 3600 * 1000);
 const CAT = 'J---aiyznGQ';
 
 // Nécessite une base Postgres (`pnpm db:up`) et DATABASE_URL.
@@ -119,10 +122,10 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
       expect(youtube.calls).toHaveLength(calls);
     });
 
-    it('rafraîchit une vidéo connue depuis plus de 30 jours', async () => {
+    it('rafraîchit une vidéo connue depuis plus de 28 jours', async () => {
       await resolve(adrien, `https://youtu.be/${RICK}`).expect(200);
       await t.prisma.mediaItem.updateMany({
-        data: { fetchedAt: new Date(Date.now() - 31 * 24 * 3600 * 1000) },
+        data: { fetchedAt: daysAgo(28.5) },
       });
       youtube.videos[RICK].title = 'Never Gonna Give You Up (4K)';
 
@@ -249,6 +252,71 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
       expect(await t.prisma.groupTitle.count()).toBe(0);
       expect(await t.prisma.memberStatus.count()).toBe(0);
       expect(await t.prisma.mediaItem.count()).toBe(1);
+    });
+  });
+
+  describe('conservation des données YouTube (30 jours au plus)', () => {
+    const refresh = () => t.app.get(MediaRefreshService).refreshStale();
+    const ageAll = (days: number) =>
+      t.prisma.mediaItem.updateMany({ data: { fetchedAt: daysAgo(days) } });
+
+    it('rafraîchit les titres des listes et supprime les autres', async () => {
+      await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
+        201,
+      );
+      await resolve(adrien, `https://youtu.be/${CAT}`).expect(200);
+      await ageAll(29.5);
+      youtube.videos[RICK].duration = 'PT3M34S';
+
+      expect(await refresh()).toEqual({
+        refreshed: 1,
+        gone: 0,
+        failed: 0,
+        deleted: 1,
+      });
+      const items = await t.prisma.mediaItem.findMany();
+      expect(items).toHaveLength(1);
+      expect(items[0].externalId).toBe(RICK);
+      expect(items[0].durationSec).toBe(214);
+      expect(Date.now() - items[0].fetchedAt.getTime()).toBeLessThan(60_000);
+    });
+
+    it('ne touche pas aux données récentes', async () => {
+      await resolve(adrien, `https://youtu.be/${CAT}`).expect(200);
+      await ageAll(28.5);
+
+      expect(await refresh()).toEqual({
+        refreshed: 0,
+        gone: 0,
+        failed: 0,
+        deleted: 0,
+      });
+      expect(youtube.calls).toHaveLength(2);
+    });
+
+    it('vidéo supprimée : le titre reste, sans la durée', async () => {
+      await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
+        201,
+      );
+      await ageAll(29.5);
+      delete youtube.videos[RICK];
+
+      expect((await refresh()).gone).toBe(1);
+      const [title] = (await list(adrien, groupId).expect(200)).body;
+      expect(title.media.title).toBe('Never Gonna Give You Up');
+      expect(title.media.durationSec).toBeNull();
+    });
+
+    it('YouTube injoignable : rien n’est perdu, nouvel essai plus tard', async () => {
+      await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
+        201,
+      );
+      await ageAll(29.5);
+      youtube.down = true;
+
+      expect((await refresh()).failed).toBe(1);
+      const item = await t.prisma.mediaItem.findFirstOrThrow();
+      expect(item.durationSec).toBe(213);
     });
   });
 });
