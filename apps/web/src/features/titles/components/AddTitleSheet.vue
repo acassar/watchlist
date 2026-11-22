@@ -6,7 +6,7 @@ import {
   WatchStatus,
   type MediaInfo,
 } from '@watchlist/shared';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiErrorMessage } from '@/features/auth/validation';
 import { useGroupsStore } from '@/features/groups/store';
@@ -113,9 +113,13 @@ async function pasteFromClipboard() {
   await resolve();
 }
 
-/** Collage direct dans le champ : aperçu sans appuyer sur un bouton. */
+/**
+ * Collage direct dans le champ : aperçu sans appuyer sur un bouton.
+ * L'événement paste part avant que le texte soit inséré (et avant le v-model) :
+ * un nextTick (microtâche) passerait trop tôt, on attend la tâche suivante.
+ */
 async function onPaste() {
-  await nextTick();
+  await new Promise((done) => setTimeout(done));
   await resolve();
 }
 

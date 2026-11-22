@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { TitleErrorCode } from '@watchlist/shared';
+import { TitleErrorCode, type MediaSourceType } from '@watchlist/shared';
 import { MEDIA_SOURCES, type MediaSource } from './media-source.js';
 
 /** Trouve la source qui sait lire une URL, parmi celles enregistrées. */
@@ -19,5 +19,10 @@ export class MediaSourceRegistry {
       });
     }
     return source;
+  }
+
+  /** La source d'un type donné (null si elle n'est plus active). */
+  byType(type: MediaSourceType): MediaSource | null {
+    return this.sources.find((s) => s.type === type) ?? null;
   }
 }

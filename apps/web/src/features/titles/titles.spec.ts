@@ -278,4 +278,30 @@ describe('ajout d’un titre par lien', () => {
       fetchMock.mock.calls.filter(([u]) => String(u).startsWith('/api/media')),
     ).toHaveLength(1);
   });
+
+  it('collage direct dans le champ : aperçu une fois le texte inséré', async () => {
+    const fetchMock = fetchByUrl({
+      '/api/auth/refresh': [session],
+      '/api/groups': [[200, [nousDeux]]],
+      '/api/groups/g1/titles': [[200, []]],
+      [resolveUrl(LINK)]: [[200, rick]],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await mountApp();
+    await openSheet();
+
+    // Ordre du navigateur : l'événement paste, ses microtâches, puis
+    // l'insertion du texte (événement input).
+    const input = el<HTMLInputElement>('[data-test="link"] input');
+    input.dispatchEvent(new Event('paste', { bubbles: true }));
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    input.value = LINK;
+    input.dispatchEvent(new Event('input'));
+    await settle();
+
+    expect(document.querySelector('[data-test="add-error"]')).toBeNull();
+    expect(el('[data-test="preview"]').textContent).toContain(
+      'Never Gonna Give You Up',
+    );
+  });
 });
