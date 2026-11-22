@@ -10,6 +10,7 @@ import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
+import { pendingInvite } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
 
 const route = useRoute();
@@ -30,6 +31,8 @@ watch(
 
 async function logout() {
   await auth.logout().catch(() => undefined);
+  // Appareil partagé : une invitation laissée de côté ne doit pas suivre le compte suivant.
+  pendingInvite.clear();
   await router.replace({ name: 'login' });
 }
 </script>

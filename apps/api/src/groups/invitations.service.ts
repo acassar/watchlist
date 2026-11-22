@@ -22,7 +22,7 @@ import { generateToken, hashToken } from '../auth/tokens.js';
 import type { Env } from '../config.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { Membership } from './group-member.guard.js';
+import { groupNotFound, type Membership } from './group-member.guard.js';
 import { lockGroup } from './groups.service.js';
 import { generateInvitationCode } from './invitation-code.js';
 
@@ -98,28 +98,48 @@ export class InvitationsService {
     options: { expiresInDays: number; maxUses: number | null },
   ): Promise<CreatedInvitation> {
     const { groupId, userId } = membership;
-    if ((await this.list(groupId)).length >= GROUP_MAX_ACTIVE_INVITATIONS) {
-      throw new ConflictException({
-        code: GroupErrorCode.TOO_MANY_INVITATIONS,
-        message: "Trop d'invitations en cours : révoquez-en une",
-      });
-    }
-
     const token = generateToken();
     const expiresAt = new Date(Date.now() + options.expiresInDays * DAY_MS);
     // Collision de code très improbable (31^8 combinaisons) : on retente quand même.
     for (let attempt = 0; ; attempt++) {
       try {
-        const row = await this.prisma.invitation.create({
-          data: {
-            groupId,
-            createdById: userId,
-            tokenHash: hashToken(token),
-            code: generateInvitationCode(),
-            expiresAt,
-            maxUses: options.maxUses,
-          },
-          include: withAuthor,
+        const row = await this.prisma.$transaction(async (tx) => {
+          // Sous le verrou du groupe : la limite d'invitations tient même avec
+          // des créations simultanées, et un membre qui part en même temps ne
+          // laisse pas derrière lui une invitation active (detachMember a déjà
+          // révoqué les siennes, et l'appartenance est relue ici).
+          if (!(await lockGroup(tx, groupId))) throw groupNotFound();
+          const member = await tx.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId } },
+          });
+          if (!member) throw groupNotFound();
+
+          const now = new Date();
+          const active = await tx.invitation.findMany({
+            where: { groupId, ...activeWhere(now) },
+            select: { uses: true, maxUses: true },
+          });
+          const usable = active.filter(
+            (i) => i.maxUses === null || i.uses < i.maxUses,
+          );
+          if (usable.length >= GROUP_MAX_ACTIVE_INVITATIONS) {
+            throw new ConflictException({
+              code: GroupErrorCode.TOO_MANY_INVITATIONS,
+              message: "Trop d'invitations en cours : révoquez-en une",
+            });
+          }
+
+          return tx.invitation.create({
+            data: {
+              groupId,
+              createdById: userId,
+              tokenHash: hashToken(token),
+              code: generateInvitationCode(),
+              expiresAt,
+              maxUses: options.maxUses,
+            },
+            include: withAuthor,
+          });
         });
         // Fragment (#) : le jeton ne part ni dans les logs du serveur ni dans le Referer.
         return {
@@ -166,10 +186,12 @@ export class InvitationsService {
     lookup: InvitationLookup,
   ): Promise<InvitationPreview> {
     const invitation = await this.findUsable(lookup);
-    const group = await this.prisma.group.findUniqueOrThrow({
+    const group = await this.prisma.group.findUnique({
       where: { id: invitation.groupId },
       include: { _count: { select: { members: true } } },
     });
+    // Groupe supprimé entre-temps (dernier membre parti) : invitation morte.
+    if (!group) throw invitationInvalid();
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: group.id, userId } },
     });
