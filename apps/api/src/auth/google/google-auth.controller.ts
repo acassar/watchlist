@@ -16,6 +16,10 @@ import {
   type GoogleCallbackRequest,
 } from './google-auth.guard.js';
 import { GoogleAuthService, GoogleLoginError } from './google-auth.service.js';
+import {
+  GOOGLE_STATE_COOKIE_NAME,
+  GOOGLE_STATE_COOKIE_PATH,
+} from './google.constants.js';
 
 /**
  * Connexion avec Google. Ce sont des navigations du navigateur (pas des appels
@@ -65,6 +69,14 @@ export class GoogleAuthController {
     @Res() res: Response,
   ): Promise<void> {
     res.setHeader('Cache-Control', 'no-store');
+    // Déjà effacé si l'état a été vérifié, mais pas quand Google renvoie une
+    // erreur (annulation) : Passport s'arrête alors avant le CookieStateStore.
+    res.clearCookie(GOOGLE_STATE_COOKIE_NAME, {
+      httpOnly: true,
+      secure: this.secureCookie,
+      sameSite: 'lax',
+      path: GOOGLE_STATE_COOKIE_PATH,
+    });
     if (req.googleError || !req.user) {
       return this.fail(res, req.googleError ?? GoogleErrorCode.FAILED);
     }

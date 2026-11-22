@@ -61,8 +61,10 @@ export class AuthService {
    * Inscription. La réponse est toujours la même (« vérifiez vos emails ») pour ne
    * pas révéler si un compte existe ; c'est l'email reçu qui diffère :
    * - adresse inconnue : création du compte + lien de vérification ;
-   * - compte sans mot de passe (créé via Google, étape 3) : lien pour confirmer
-   *   l'ajout du mot de passe, qui n'est appliqué qu'après le clic ;
+   * - compte sans mot de passe (créé via Google) : lien pour choisir un mot de
+   *   passe. Celui tapé à l'inscription est ignoré : sinon un inconnu pourrait
+   *   s'inscrire avec l'adresse d'un compte Google et attendre que le vrai
+   *   propriétaire clique « oui » dans l'email pour entrer avec son mot de passe à lui ;
    * - compte jamais vérifié : nouveau lien de vérification qui porte le mot de
    *   passe choisi cette fois-ci (appliqué au clic, voir verifyEmail) ;
    * - compte actif : email « vous avez déjà un compte ».
@@ -98,7 +100,6 @@ export class AuthService {
         existing.id,
         'LINK_PASSWORD',
         LINK_PASSWORD_TTL_MS,
-        passwordHash,
       );
       if (token) this.mail.sendLinkPassword(existing, token);
       return;
@@ -215,13 +216,18 @@ export class AuthService {
     await this.refreshTokens.revokeAllForUser(user.id);
   }
 
-  /** Confirmation de l'ajout d'un mot de passe à un compte qui n'en avait pas (Google). */
+  /**
+   * Ajout d'un mot de passe à un compte qui n'en avait pas (Google), via le lien
+   * reçu par email. Le mot de passe est choisi ici, par la personne qui a ouvert
+   * la boîte mail, jamais repris de l'inscription qui a déclenché l'envoi.
+   */
   async confirmLinkPassword(
-    rawToken: string,
+    dto: ResetPasswordRequest,
     userAgent?: string,
   ): Promise<Session> {
-    const token = await this.emailTokens.consume(rawToken, 'LINK_PASSWORD');
-    if (!token?.passwordHash) throw invalidToken();
+    const passwordHash = await this.passwords.hash(dto.password);
+    const token = await this.emailTokens.consume(dto.token, 'LINK_PASSWORD');
+    if (!token) throw invalidToken();
 
     const current = await this.prisma.user.findUniqueOrThrow({
       where: { id: token.userId },
@@ -229,7 +235,7 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { id: current.id },
       data: {
-        passwordHash: token.passwordHash,
+        passwordHash,
         emailVerifiedAt: current.emailVerifiedAt ?? new Date(),
       },
     });

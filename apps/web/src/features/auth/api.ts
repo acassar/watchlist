@@ -33,11 +33,8 @@ export const authApi = {
     api('/auth/password/forgot', { ...pub, body: { email } }),
   resetPassword: (body: ResetPasswordRequest) =>
     api('/auth/password/reset', { ...pub, body }),
-  confirmLinkPassword: (token: string) =>
-    api<AuthResponse>('/auth/password/link/confirm', {
-      ...pub,
-      body: { token },
-    }),
+  confirmLinkPassword: (body: ResetPasswordRequest) =>
+    api<AuthResponse>('/auth/password/link/confirm', { ...pub, body }),
   providers: () => api<AuthProviders>('/auth/providers', pub),
   me: () => api<AuthUser>('/me'),
 };

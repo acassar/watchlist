@@ -8,10 +8,10 @@ import { useAuthStore } from '../store';
 import { apiErrorMessage, tokenFromHash } from '../validation';
 
 /**
- * Atterrissage des liens qui ouvrent une session au clic :
- * vérification d'email et confirmation d'ajout d'un mot de passe.
+ * Atterrissage des liens qui ouvrent une session au clic : vérification d'email.
+ * (L'ajout d'un mot de passe a sa propre page, LinkPasswordPage, avec un formulaire.)
  */
-const props = defineProps<{ kind: 'verify' | 'link' }>();
+const props = defineProps<{ kind: 'verify' }>();
 
 const route = useRoute();
 const router = useRouter();
@@ -24,7 +24,6 @@ const confirm: Record<
   (token: string) => Promise<AuthResponse>
 > = {
   verify: authApi.verifyEmail,
-  link: authApi.confirmLinkPassword,
 };
 
 onMounted(async () => {
@@ -56,11 +55,7 @@ onMounted(async () => {
         type="success"
         variant="tonal"
         class="mb-4"
-        :text="
-          kind === 'verify'
-            ? $t('auth.verify.success')
-            : $t('auth.link.success')
-        "
+        :text="$t('auth.verify.success')"
       />
       <v-btn to="/" color="primary" size="large" rounded="pill" block>
         {{ $t(`auth.${kind}.continue`) }}
@@ -71,13 +66,7 @@ onMounted(async () => {
         type="error"
         variant="tonal"
         class="mb-4"
-        :text="
-          error
-            ? kind === 'verify'
-              ? $t('auth.verify.failed')
-              : error
-            : $t('auth.missingToken')
-        "
+        :text="error ? $t('auth.verify.failed') : $t('auth.missingToken')"
       />
       <v-btn :to="{ name: 'login' }" variant="tonal" rounded="pill" block>
         {{ $t('auth.checkEmail.back') }}
