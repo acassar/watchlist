@@ -357,7 +357,7 @@ describe('Auth par email (e2e)', () => {
       });
     });
 
-    it("n'ajoute le mot de passe qu'après le clic sur le lien envoyé par email", async () => {
+    it("n'ajoute un mot de passe qu'après le clic sur le lien envoyé par email", async () => {
       await register().expect(202);
 
       const mail = t.mail.to(email).at(-1);
@@ -371,16 +371,45 @@ describe('Auth par email (e2e)', () => {
 
       const confirmed = await http()
         .post('/api/auth/password/link/confirm')
-        .send({ token: lastTokenSentTo(t.mail, email) })
+        .send({
+          token: lastTokenSentTo(t.mail, email),
+          password: 'choisi-au-clic',
+        })
         .expect(200);
       expect(confirmed.body.user.displayName).toBe('Adrien G.');
 
       await http()
         .post('/api/auth/login')
-        .send({ email, password })
+        .send({ email, password: 'choisi-au-clic' })
         .expect(200);
       const user = await t.prisma.user.findUniqueOrThrow({ where: { email } });
       expect(user.googleId).toBe('google-123');
+    });
+
+    it("ignore le mot de passe de l'inscription : un inconnu ne peut pas faire valider le sien", async () => {
+      // Un inconnu s'inscrit avec l'adresse du compte Google, avec son mot de passe.
+      await register().expect(202);
+      // Le vrai propriétaire clique le lien reçu et choisit son mot de passe.
+      await http()
+        .post('/api/auth/password/link/confirm')
+        .send({
+          token: lastTokenSentTo(t.mail, email),
+          password: 'celui-du-proprio',
+        })
+        .expect(200);
+
+      await http()
+        .post('/api/auth/login')
+        .send({ email, password })
+        .expect(401);
+    });
+
+    it('exige un mot de passe valide pour confirmer', async () => {
+      await register().expect(202);
+      await http()
+        .post('/api/auth/password/link/confirm')
+        .send({ token: lastTokenSentTo(t.mail, email) })
+        .expect(400);
     });
 
     it("n'accepte pas un jeton d'un autre type", async () => {

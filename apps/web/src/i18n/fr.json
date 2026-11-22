@@ -1,5 +1,8 @@
 {
-  "app": { "title": "Canapact", "tagline": "Promis, je t'attends." },
+  "app": {
+    "title": "Canapact",
+    "tagline": "Promis, je t'attends."
+  },
   "nav": {
     "alone": "Seul",
     "together": "Ensemble",
@@ -69,11 +72,22 @@
     },
     "link": {
       "title": "Ajouter un mot de passe",
-      "loading": "Un instant, on ajoute votre mot de passe…",
+      "body": "Choisissez le mot de passe qui vous servira à vous connecter par email, en plus de Google.",
+      "submit": "Enregistrer",
       "success": "C'est fait : vous pouvez maintenant vous connecter avec Google ou avec votre mot de passe.",
       "continue": "Continuer"
     },
-    "missingToken": "Ce lien est incomplet. Copiez-le en entier depuis l'email."
+    "missingToken": "Ce lien est incomplet. Copiez-le en entier depuis l'email.",
+    "google": {
+      "continue": "Continuer avec Google",
+      "or": "ou",
+      "errors": {
+        "google_cancelled": "Connexion Google annulée. Vous pouvez réessayer quand vous voulez.",
+        "google_email_not_verified": "Google ne confirme pas l'adresse de ce compte. Utilisez un autre compte Google ou votre email.",
+        "google_account_conflict": "Cette adresse est déjà liée à un autre compte Google. Connectez-vous avec celui-là, ou avec votre mot de passe.",
+        "google_failed": "La connexion Google n'a pas abouti. Réessayez dans un instant."
+      }
+    }
   },
   "validation": {
     "required": "Ce champ est obligatoire.",

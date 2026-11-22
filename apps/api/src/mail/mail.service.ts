@@ -9,6 +9,7 @@ import type { Env } from '../config.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
   alreadyRegisteredTemplate,
+  googleLinkedTemplate,
   linkPasswordTemplate,
   resetPasswordTemplate,
   verifyEmailTemplate,
@@ -77,6 +78,13 @@ export class MailService implements OnApplicationShutdown {
         `${this.appUrl}/login`,
         `${this.appUrl}/forgot-password`,
       ),
+    );
+  }
+
+  sendGoogleLinked(user: Recipient) {
+    return this.deliver(
+      user,
+      googleLinkedTemplate(user.displayName, `${this.appUrl}/forgot-password`),
     );
   }
 

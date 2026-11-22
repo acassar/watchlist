@@ -5,7 +5,7 @@ import { createVuetify } from 'vuetify';
 import App from '@/App.vue';
 import { i18n } from '@/plugins/i18n';
 import { createAppRouter } from '@/router';
-import { fakeUser, jsonResponse } from '@/test/setup';
+import { fakeUser, fetchByUrl } from '@/test/setup';
 
 async function mountLogin(path = '/login') {
   const pinia = createPinia();
@@ -41,19 +41,18 @@ describe('LoginPage', () => {
   });
 
   it('connecte puis renvoie vers la page demandée', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(jsonResponse(401, { code: 'UNAUTHENTICATED' }))
-      .mockResolvedValueOnce(
-        jsonResponse(200, { accessToken: 'jwt', user: fakeUser }),
-      );
+    const fetchMock = fetchByUrl({
+      '/api/auth/refresh': [[401, { code: 'UNAUTHENTICATED' }]],
+      '/api/auth/login': [[200, { accessToken: 'jwt', user: fakeUser }]],
+    });
     vi.stubGlobal('fetch', fetchMock);
     const { wrapper, router } = await mountLogin('/login?redirect=/pending');
 
     await fillAndSubmit(wrapper);
 
-    const [url, init] = fetchMock.mock.calls[1] as [string, RequestInit];
-    expect(url).toBe('/api/auth/login');
+    const [, init] = fetchMock.mock.calls.find(
+      ([url]) => url === '/api/auth/login',
+    ) as unknown as [string, RequestInit];
     expect(JSON.parse(init.body as string)).toEqual({
       email: 'adrien@exemple.fr',
       password: 'secret',
@@ -64,12 +63,12 @@ describe('LoginPage', () => {
   it('propose de renvoyer le lien si l’adresse n’est pas confirmée', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(jsonResponse(401, { code: 'UNAUTHENTICATED' }))
-        .mockResolvedValueOnce(
-          jsonResponse(403, { code: 'EMAIL_NOT_VERIFIED', message: 'x' }),
-        ),
+      fetchByUrl({
+        '/api/auth/refresh': [[401, { code: 'UNAUTHENTICATED' }]],
+        '/api/auth/login': [
+          [403, { code: 'EMAIL_NOT_VERIFIED', message: 'x' }],
+        ],
+      }),
     );
     const { wrapper } = await mountLogin();
 
@@ -82,17 +81,74 @@ describe('LoginPage', () => {
   it('affiche un message clair si les identifiants sont faux', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(jsonResponse(401, { code: 'UNAUTHENTICATED' }))
-        .mockResolvedValueOnce(
-          jsonResponse(401, { code: 'INVALID_CREDENTIALS', message: 'x' }),
-        ),
+      fetchByUrl({
+        '/api/auth/refresh': [[401, { code: 'UNAUTHENTICATED' }]],
+        '/api/auth/login': [
+          [401, { code: 'INVALID_CREDENTIALS', message: 'x' }],
+        ],
+      }),
     );
     const { wrapper } = await mountLogin();
 
     await fillAndSubmit(wrapper);
 
     expect(wrapper.text()).toContain('Email ou mot de passe incorrect.');
+  });
+
+  describe('connexion avec Google', () => {
+    const anonymous = { '/api/auth/refresh': [[401, {}]] } as const;
+
+    it('masque le bouton quand Google n’est pas configuré', async () => {
+      vi.stubGlobal('fetch', fetchByUrl({ ...anonymous }));
+      const { wrapper } = await mountLogin();
+      expect(wrapper.find('[data-test="google-login"]').exists()).toBe(false);
+    });
+
+    it('envoie vers Google en gardant la page demandée', async () => {
+      vi.stubGlobal(
+        'fetch',
+        fetchByUrl({
+          ...anonymous,
+          '/api/auth/providers': [[200, { google: true }]],
+        }),
+      );
+      const { wrapper } = await mountLogin('/login?redirect=/together');
+
+      const button = wrapper.find('[data-test="google-login"]');
+      expect(button.text()).toContain('Continuer avec Google');
+      expect(button.attributes('href')).toBe(
+        '/api/auth/google?next=%2Ftogether',
+      );
+    });
+
+    it('n’envoie jamais vers un autre site après Google', async () => {
+      vi.stubGlobal(
+        'fetch',
+        fetchByUrl({
+          ...anonymous,
+          '/api/auth/providers': [[200, { google: true }]],
+        }),
+      );
+      const { wrapper } = await mountLogin('/login?redirect=//evil.example');
+      expect(
+        wrapper.find('[data-test="google-login"]').attributes('href'),
+      ).toBe('/api/auth/google?next=%2F');
+    });
+
+    it('explique un échec au retour de Google', async () => {
+      vi.stubGlobal('fetch', fetchByUrl({ ...anonymous }));
+      const { wrapper } = await mountLogin(
+        '/login?error=google_account_conflict',
+      );
+      expect(wrapper.find('[data-test="google-error"]').text()).toContain(
+        'déjà liée à un autre compte Google',
+      );
+    });
+
+    it('ignore un code d’erreur inconnu', async () => {
+      vi.stubGlobal('fetch', fetchByUrl({ ...anonymous }));
+      const { wrapper } = await mountLogin('/login?error=<script>');
+      expect(wrapper.find('[data-test="google-error"]').exists()).toBe(false);
+    });
   });
 });

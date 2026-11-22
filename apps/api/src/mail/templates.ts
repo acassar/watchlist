@@ -84,9 +84,9 @@ export function linkPasswordTemplate(name: string, url: string): Template {
       greeting: `Bonsoir ${name},`,
       paragraphs: [
         'Quelqu’un (vous, on espère) vient de s’inscrire avec votre adresse, qui est déjà liée à votre compte Google sur Canapact.',
-        'Confirmez pour pouvoir aussi vous connecter avec ce mot de passe. Votre compte et vos groupes restent les mêmes.',
+        'Pour pouvoir aussi vous connecter par email, choisissez votre mot de passe avec le lien ci-dessous. Votre compte et vos groupes restent les mêmes.',
       ],
-      action: { label: 'Oui, ajouter ce mot de passe', url },
+      action: { label: 'Choisir mon mot de passe', url },
       footer:
         'Ce lien est valable 24 heures. Ce n’est pas vous ? Ignorez cet email : rien ne change et personne n’aura accès à votre compte.',
     }),
@@ -109,6 +109,24 @@ export function alreadyRegisteredTemplate(
       action: { label: 'Me connecter', url: loginUrl },
       footer:
         'Ce n’est pas vous ? Ignorez cet email, votre compte n’a pas changé.',
+    }),
+  };
+}
+
+export function googleLinkedTemplate(
+  name: string,
+  forgotUrl: string,
+): Template {
+  return {
+    subject: 'Votre compte Google est lié à Canapact',
+    ...layout({
+      greeting: `Bonsoir ${name},`,
+      paragraphs: [
+        'Vous venez de vous connecter à Canapact avec Google pour la première fois. Les deux sont maintenant liés : Google ou votre mot de passe, au choix, vous retrouvez le même compte et les mêmes groupes.',
+        `Ce n’est pas vous ? Changez votre mot de passe sans attendre : ${forgotUrl}, et vérifiez la sécurité de votre compte Google.`,
+      ],
+      footer:
+        'Cet email est envoyé pour votre sécurité, aucune action n’est nécessaire si c’était bien vous.',
     }),
   };
 }

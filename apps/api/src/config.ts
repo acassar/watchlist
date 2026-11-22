@@ -30,10 +30,22 @@ export const envSchema = z
     MAIL_FROM_EMAIL: z.email().default('bonjour@canapact.local'),
     MAIL_FROM_NAME: z.string().min(1).default('Canapact'),
     BREVO_API_KEY: z.string().optional(),
+    /**
+     * Identifiants OAuth « Se connecter avec Google » (console Google Cloud, type
+     * « Application Web »). Les deux ou aucun : sans eux, le bouton Google est masqué.
+     * URI de redirection à déclarer : `${APP_URL}/api/auth/google/callback`.
+     */
+    GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+    GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   })
   .refine((env) => env.MAIL_TRANSPORT !== 'brevo' || !!env.BREVO_API_KEY, {
     message: 'BREVO_API_KEY est obligatoire quand MAIL_TRANSPORT=brevo',
     path: ['BREVO_API_KEY'],
+  })
+  .refine((env) => !!env.GOOGLE_CLIENT_ID === !!env.GOOGLE_CLIENT_SECRET, {
+    message:
+      'GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET vont ensemble : renseignez les deux ou aucun',
+    path: ['GOOGLE_CLIENT_SECRET'],
   });
 export type Env = z.infer<typeof envSchema>;
 

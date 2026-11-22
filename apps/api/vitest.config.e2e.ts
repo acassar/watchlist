@@ -14,6 +14,9 @@ export default defineConfig({
       MAIL_TRANSPORT: 'memory',
       APP_URL: 'http://canapact.test',
       AUTH_RATE_LIMIT: '1000',
+      // Identifiants factices : les échanges avec Google sont simulés (voir mockGoogle).
+      GOOGLE_CLIENT_ID: 'e2e-client-id.apps.googleusercontent.com',
+      GOOGLE_CLIENT_SECRET: 'e2e-client-secret',
     },
   },
 });

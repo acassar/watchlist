@@ -1,7 +1,9 @@
 import {
   emailSchema,
+  isGoogleErrorCode,
   loginRequestSchema,
   registerRequestSchema,
+  safeRedirectPath,
 } from './index.js';
 
 describe('schémas d’authentification', () => {
@@ -48,5 +50,31 @@ describe('schémas d’authentification', () => {
     expect(
       loginRequestSchema.safeParse({ email: 'a@b.fr', password: 'x' }).success,
     ).toBe(true);
+  });
+});
+
+describe('safeRedirectPath', () => {
+  it('garde un chemin interne', () => {
+    expect(safeRedirectPath('/together?g=1')).toBe('/together?g=1');
+  });
+
+  it.each([
+    'https://evil.example',
+    '//evil.example',
+    '/\\evil.example',
+    '/\t/evil.example',
+    'alone',
+    undefined,
+    42,
+  ])('refuse %s', (value) => {
+    expect(safeRedirectPath(value)).toBe('/');
+  });
+});
+
+describe('isGoogleErrorCode', () => {
+  it('reconnaît les codes connus seulement', () => {
+    expect(isGoogleErrorCode('google_cancelled')).toBe(true);
+    expect(isGoogleErrorCode('autre')).toBe(false);
+    expect(isGoogleErrorCode(undefined)).toBe(false);
   });
 });

@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { GoogleStrategy } from '../src/auth/google/google.strategy.js';
 import { MAIL_TRANSPORT } from '../src/mail/mail-transport.js';
 import { MemoryMailTransport } from '../src/mail/memory.transport.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -48,4 +49,55 @@ export function refreshCookieFrom(headers: Record<string, unknown>) {
   const cookie = cookies.find((c) => c.startsWith('canapact_rt='));
   const value = cookie?.split(';')[0].split('=')[1];
   return value ? { value, raw: cookie! } : undefined;
+}
+
+/** Profil renvoyé par l'endpoint userinfo de Google (champs OpenID Connect). */
+export interface FakeGoogleUser {
+  sub: string;
+  email?: string;
+  email_verified?: boolean;
+  name?: string;
+}
+
+/**
+ * Remplace les deux appels réseau de la stratégie Google (échange du code,
+ * lecture du profil) : tout le reste (redirection, cookie d'état, PKCE, liaison
+ * des comptes) passe par le vrai code. Renvoie de quoi choisir le prochain
+ * profil et inspecter le dernier échange.
+ */
+export function mockGoogle(app: INestApplication) {
+  const strategy = app.get(GoogleStrategy) as unknown as {
+    _oauth2: {
+      getOAuthAccessToken: (
+        code: string,
+        params: Record<string, string>,
+        cb: (err: unknown, accessToken?: string) => void,
+      ) => void;
+    };
+    userProfile: (
+      accessToken: string,
+      done: (err: unknown, profile?: unknown) => void,
+    ) => void;
+  };
+  const state: {
+    next: FakeGoogleUser | null;
+    lastTokenRequest: { code: string; params: Record<string, string> } | null;
+  } = { next: null, lastTokenRequest: null };
+
+  strategy._oauth2.getOAuthAccessToken = (code, params, cb) => {
+    state.lastTokenRequest = { code, params };
+    cb(null, 'fake-access-token');
+  };
+  strategy.userProfile = (_accessToken, done) => {
+    const user = state.next;
+    if (!user) return done(new Error('Aucun profil Google simulé'));
+    done(null, {
+      provider: 'google',
+      id: user.sub,
+      displayName: user.name ?? '',
+      emails: user.email ? [{ value: user.email }] : undefined,
+      _json: user,
+    });
+  };
+  return state;
 }

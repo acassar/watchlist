@@ -80,8 +80,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/link-password',
     name: 'link-password',
-    component: () => import('@/features/auth/pages/EmailLinkPage.vue'),
-    props: { kind: 'link' },
+    component: () => import('@/features/auth/pages/LinkPasswordPage.vue'),
     meta: authPage,
   },
   { path: '/:pathMatch(.*)*', redirect: '/' },

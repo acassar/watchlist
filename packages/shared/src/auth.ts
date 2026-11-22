@@ -104,3 +104,57 @@ export interface ApiError {
   message: string;
   issues?: { path: string; message: string }[];
 }
+
+/** Moyens de connexion activés sur ce serveur (le bouton Google n'apparaît que s'il est configuré). */
+export interface AuthProviders {
+  google: boolean;
+}
+
+/**
+ * Échecs de la connexion Google. L'API redirige vers `/login?error=<code>` :
+ * le front affiche le message correspondant.
+ */
+export const GoogleErrorCode = {
+  /** L'utilisateur a annulé sur l'écran de Google. */
+  CANCELLED: 'google_cancelled',
+  /** Google ne garantit pas que l'adresse appartient à ce compte Google. */
+  EMAIL_NOT_VERIFIED: 'google_email_not_verified',
+  /** Le compte Canapact de cette adresse est déjà lié à un autre compte Google. */
+  ACCOUNT_CONFLICT: 'google_account_conflict',
+  /** Tout le reste : lien expiré, état invalide, Google injoignable… */
+  FAILED: 'google_failed',
+} as const;
+export type GoogleErrorCode =
+  (typeof GoogleErrorCode)[keyof typeof GoogleErrorCode];
+
+export function isGoogleErrorCode(value: unknown): value is GoogleErrorCode {
+  return (
+    typeof value === 'string' &&
+    (Object.values(GoogleErrorCode) as string[]).includes(value)
+  );
+}
+
+/**
+ * Chemin interne vers lequel revenir après connexion. Refuse tout ce qui
+ * pourrait sortir du site (`//autre.site`, `/\\autre.site`, URL absolue) :
+ * pas de redirection ouverte.
+ */
+export function safeRedirectPath(value: unknown): string {
+  return typeof value === 'string' &&
+    value.length <= 2000 &&
+    value.startsWith('/') &&
+    !value.startsWith('//') &&
+    !value.startsWith('/\\') &&
+    // Caractères de contrôle (dont tab / retour ligne que les navigateurs ignorent).
+    !hasControlCharacter(value)
+    ? value
+    : '/';
+}
+
+function hasControlCharacter(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code < 0x20 || code === 0x7f) return true;
+  }
+  return false;
+}

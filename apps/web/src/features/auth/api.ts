@@ -1,4 +1,5 @@
 import type {
+  AuthProviders,
   AuthResponse,
   AuthUser,
   LoginRequest,
@@ -9,6 +10,14 @@ import { api } from '@/api/http';
 
 /** Routes d'auth : publiques, donc sans JWT ni retentative après refresh. */
 const pub = { auth: false } as const;
+
+/**
+ * Départ de la connexion Google : une navigation complète (pas un fetch), car
+ * Google affiche sa propre page. `next` = où revenir une fois connecté.
+ */
+export function googleLoginUrl(next: string): string {
+  return `/api/auth/google?next=${encodeURIComponent(next)}`;
+}
 
 export const authApi = {
   register: (body: RegisterRequest) => api('/auth/register', { ...pub, body }),
@@ -24,10 +33,8 @@ export const authApi = {
     api('/auth/password/forgot', { ...pub, body: { email } }),
   resetPassword: (body: ResetPasswordRequest) =>
     api('/auth/password/reset', { ...pub, body }),
-  confirmLinkPassword: (token: string) =>
-    api<AuthResponse>('/auth/password/link/confirm', {
-      ...pub,
-      body: { token },
-    }),
+  confirmLinkPassword: (body: ResetPasswordRequest) =>
+    api<AuthResponse>('/auth/password/link/confirm', { ...pub, body }),
+  providers: () => api<AuthProviders>('/auth/providers', pub),
   me: () => api<AuthUser>('/me'),
 };
