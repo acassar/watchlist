@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
@@ -31,7 +32,7 @@ export async function createTestApp(): Promise<TestApp> {
 /** Vide les tables entre deux tests. */
 export async function resetDatabase(prisma: PrismaService) {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE users, refresh_tokens, email_tokens CASCADE',
+    'TRUNCATE TABLE users, refresh_tokens, email_tokens, groups, group_members, invitations CASCADE',
   );
 }
 
@@ -100,4 +101,17 @@ export function mockGoogle(app: INestApplication) {
     });
   };
   return state;
+}
+
+/** Crée un compte vérifié et renvoie son id et un en-tête d'auth prêt à l'emploi. */
+export async function createUser(t: TestApp, displayName: string) {
+  const user = await t.prisma.user.create({
+    data: {
+      email: `${displayName.toLowerCase()}@exemple.fr`,
+      displayName,
+      emailVerifiedAt: new Date(),
+    },
+  });
+  const token = await t.app.get(JwtService).signAsync({ sub: user.id });
+  return { id: user.id, auth: { authorization: `Bearer ${token}` } };
 }

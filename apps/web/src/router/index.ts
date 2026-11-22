@@ -5,6 +5,7 @@ import {
   type Router,
 } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
+import { pendingInvite } from '@/features/groups/storage';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -39,6 +40,25 @@ export const routes: RouteRecordRaw[] = [
     name: 'pending',
     component: () => import('@/pages/TitleListPage.vue'),
     props: { view: 'pending' },
+  },
+  {
+    path: '/groups/new',
+    name: 'group-new',
+    component: () => import('@/features/groups/pages/CreateGroupPage.vue'),
+  },
+  {
+    path: '/groups/:groupId',
+    name: 'group',
+    component: () => import('@/features/groups/pages/GroupSettingsPage.vue'),
+    props: true,
+  },
+  {
+    // Lien d'invitation (#token=…) ou saisie d'un code. Public : un invité
+    // sans compte y apprend qu'il doit d'abord se connecter.
+    path: '/join',
+    name: 'join',
+    component: () => import('@/features/groups/pages/JoinGroupPage.vue'),
+    meta: authPage,
   },
   {
     path: '/login',
@@ -96,6 +116,10 @@ export function installAuthGuard(router: Router) {
       return { name: 'login', query: { redirect: to.fullPath } };
     }
     if (to.meta.guestOnly && auth.isAuthenticated) return '/';
+    // Invitation ouverte avant de se connecter : on y revient une fois connecté.
+    if (auth.isAuthenticated && to.name !== 'join' && pendingInvite.get()) {
+      return { name: 'join' };
+    }
     return true;
   });
 }

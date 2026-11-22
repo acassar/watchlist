@@ -9,4 +9,9 @@ export const i18n = createI18n<[MessageSchema], 'fr'>({
   locale: 'fr',
   fallbackLocale: 'fr',
   messages: { fr },
+  datetimeFormats: {
+    fr: {
+      short: { day: 'numeric', month: 'long' },
+    },
+  },
 });

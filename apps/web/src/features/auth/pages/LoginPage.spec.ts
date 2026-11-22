@@ -57,7 +57,10 @@ describe('LoginPage', () => {
       email: 'adrien@exemple.fr',
       password: 'secret',
     });
-    expect(router.currentRoute.value.path).toBe('/pending');
+    // La page cible est chargée à la demande : on attend la fin de la navigation.
+    await vi.waitFor(() =>
+      expect(router.currentRoute.value.path).toBe('/pending'),
+    );
   });
 
   it('propose de renvoyer le lien si l’adresse n’est pas confirmée', async () => {
