@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { WatchStatus, type MediaSourceType } from './enums.js';
+import {
+  WatchStatus,
+  type MediaSourceType,
+  type MemberStatus,
+} from './enums.js';
+import type { TitleView } from './views.js';
 
 /**
  * Contrats de l'ajout de titres (étape 5). Le front ne sait rien des services
@@ -66,15 +71,41 @@ export interface MediaInfo {
   durationSec: number | null;
 }
 
-/** Titre de la liste d'un groupe. */
+/** Avis d'un membre actuel du groupe sur un titre. */
+export interface TitleMember {
+  userId: string;
+  displayName: string;
+  status: MemberStatus;
+  /** « Vu seul » : le titre ne sort que des listes de ce membre. */
+  watchedAloneAt: string | null;
+  /**
+   * Compte comme contrainte sur ce titre : arrivé avant son ajout, ou arrivé
+   * après mais a donné son avis.
+   */
+  counted: boolean;
+}
+
+/** Titre de la liste d'un groupe, vu par le membre connecté. */
 export interface GroupTitle {
   id: string;
   media: MediaInfo;
   addedAt: string;
   /** Null si l'auteur a supprimé son compte. */
-  addedBy: { userId: string; displayName: string } | null;
+  addedBy: {
+    userId: string;
+    displayName: string;
+    /** A quitté le groupe : affiché « ancien membre ». */
+    formerMember: boolean;
+  } | null;
   /** Mon avis ; PENDING si je n'en ai pas encore donné. */
-  myStatus: WatchStatus | 'PENDING';
+  myStatus: MemberStatus;
+  myWatchedAloneAt: string | null;
+  /** Vu ensemble : sorti des listes de tout le groupe. */
+  watchedTogetherAt: string | null;
+  /** Membres actuels, moi en premier puis par ordre d'arrivée. */
+  members: TitleMember[];
+  /** Où le titre se range pour moi (calculé par l'API). */
+  view: TitleView;
 }
 
 export const TitleErrorCode = {

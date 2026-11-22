@@ -1,5 +1,4 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import type { GroupTitle, MediaInfo } from '@watchlist/shared';
 import { createPinia, setActivePinia } from 'pinia';
 import { createMemoryHistory } from 'vue-router';
 import { createVuetify } from 'vuetify';
@@ -7,32 +6,13 @@ import App from '@/App.vue';
 import { i18n } from '@/plugins/i18n';
 import { createAppRouter } from '@/router';
 import { fakeUser, fetchByUrl } from '@/test/setup';
+import { rick, titleOf } from '@/test/titles';
 
 const session = [200, { accessToken: 'jwt', user: fakeUser }] as const;
 const nousDeux = { id: 'g1', name: 'Nous deux', role: 'OWNER', memberCount: 2 };
 const LINK = 'https://youtu.be/dQw4w9WgXcQ?si=partage';
 const resolveUrl = (url: string) =>
   `/api/media/resolve?${new URLSearchParams({ url })}`;
-
-const rick: MediaInfo = {
-  source: 'YOUTUBE',
-  externalId: 'dQw4w9WgXcQ',
-  url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-  title: 'Never Gonna Give You Up',
-  thumbnailUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-  author: 'Rick Astley',
-  durationSec: 213,
-};
-
-function titleOf(media: MediaInfo, id = 't1'): GroupTitle {
-  return {
-    id,
-    media,
-    addedAt: '2026-11-22T21:00:00.000Z',
-    addedBy: { userId: 'u1', displayName: 'Adrien' },
-    myStatus: 'OK_ALONE',
-  };
-}
 
 async function settle() {
   await flushPromises();
@@ -63,7 +43,9 @@ function el<T extends HTMLElement = HTMLElement>(selector: string): T {
 /** Corps JSON du dernier appel à une URL. */
 function sentTo(fetchMock: ReturnType<typeof fetchByUrl>, url: string) {
   const call = fetchMock.mock.calls
-    .filter(([u]) => u === url)
+    .filter(
+      (c) => c[0] === url && (c as unknown as [string, RequestInit])[1]?.body,
+    )
     .at(-1) as unknown as [string, RequestInit] | undefined;
   return call ? JSON.parse(call[1].body as string) : undefined;
 }
@@ -114,6 +96,7 @@ describe('ajout d’un titre par lien', () => {
       '/api/groups/g1/titles': [
         [200, []],
         [201, titleOf(rick)],
+        [200, [titleOf(rick)]],
       ],
       [resolveUrl(LINK)]: [[200, rick]],
     });
@@ -159,7 +142,8 @@ describe('ajout d’un titre par lien', () => {
       '/api/groups': [[200, [nousDeux]]],
       '/api/groups/g1/titles': [
         [200, []],
-        [201, { ...titleOf(rick), myStatus: 'TOGETHER' }],
+        [201, titleOf(rick, { mine: 'TOGETHER', view: 'TOGETHER' })],
+        [200, [titleOf(rick, { mine: 'TOGETHER', view: 'TOGETHER' })]],
       ],
       [resolveUrl(LINK)]: [[200, rick]],
     });

@@ -177,10 +177,13 @@ export class GroupsService {
    * Ce qui arrive à un membre qui part (de lui-même ou retiré) :
    * - son appartenance disparaît ;
    * - ses invitations encore actives sont révoquées (il ne fait plus partie du groupe) ;
-   * - à partir de l'étape 6 : ses statuts sont supprimés, ses titres restent
-   *   avec l'auteur « ancien membre ».
+   * - ses avis sur les titres du groupe sont supprimés (ses contraintes
+   *   disparaissent) ; ses titres restent, auteur affiché « ancien membre ».
    */
   private async detachMember(tx: Tx, groupId: string, userId: string) {
+    await tx.memberStatus.deleteMany({
+      where: { userId, groupTitle: { groupId } },
+    });
     await tx.invitation.updateMany({
       where: { groupId, createdById: userId, revokedAt: null },
       data: { revokedAt: new Date() },

@@ -42,6 +42,11 @@ export const routes: RouteRecordRaw[] = [
     props: { view: 'pending' },
   },
   {
+    path: '/history',
+    name: 'history',
+    component: () => import('@/pages/HistoryPage.vue'),
+  },
+  {
     path: '/groups/new',
     name: 'group-new',
     component: () => import('@/features/groups/pages/CreateGroupPage.vue'),

@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import { mdiPlayCircleOutline } from '@mdi/js';
 
-defineProps<{ src: string | null; width: number }>();
+/** `width` en pixels, ou une largeur CSS (« 100% » pour les grandes cartes). */
+defineProps<{ src: string | null; width: number | string }>();
 </script>
 
 <template>
   <!-- Hotlink de la miniature (décision D6), sans envoyer l'adresse de la page. -->
-  <div class="thumb rounded-lg" :style="{ width: `${width}px` }">
+  <div
+    class="thumb rounded-lg"
+    :style="{ width: typeof width === 'number' ? `${width}px` : width }"
+  >
     <img
       v-if="src"
       :src="src"
       alt=""
       loading="lazy"
       referrerpolicy="no-referrer"
+      draggable="false"
       class="thumb-img"
     />
     <v-icon v-else :icon="mdiPlayCircleOutline" class="thumb-icon" />
