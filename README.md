@@ -8,7 +8,8 @@ Watchlist partagée « seul ou ensemble » : pour chaque titre, chaque membre du
 apps/web         Vue 3 + Vite + Vuetify (PWA, mobile d'abord)
 apps/api         NestJS + Prisma (PostgreSQL)
 packages/shared  Types, enums et schémas Zod communs au front et à l'API
-docker/          Compose de développement (et plus tard de production)
+docker/          Compose de développement
+deploy/          Production : compose, Nginx, sauvegardes, guide (deploy/README.md)
 ```
 
 ## Démarrer en local
@@ -91,3 +92,7 @@ En dev, les emails (vérification, mot de passe oublié) ne partent pas : ils s'
 | `pnpm --filter @watchlist/api test:e2e` | Tests de bout en bout de l'API (Postgres requis) |
 | `pnpm build`                            | Build de production                              |
 | `pnpm format`                           | Prettier                                         |
+
+## Déploiement
+
+Chaque merge sur `main` (CI verte) publie les images sur GHCR et met à jour le VPS. Guide et mise en place : [deploy/README.md](deploy/README.md).
