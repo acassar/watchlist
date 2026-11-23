@@ -158,7 +158,8 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       <li>
         <strong>Hébergement</strong> :
         <LegalValue :value="host.name" /> (serveurs en
-        <LegalValue :value="host.location" />), qui stocke la base de données.
+        <LegalValue :value="host.location" />), qui stocke la base de données
+        et, chiffrées avant l'envoi, ses sauvegardes (Swiss Backup).
       </li>
       <li>
         <strong>Brevo</strong> (Sendinblue SAS, France) envoie les emails du
@@ -178,11 +179,6 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
         <a :href="GOOGLE_PERMISSIONS" target="_blank" rel="noopener"
           >paramètres de votre compte Google</a
         >.
-      </li>
-      <li>
-        <strong>Backblaze</strong> (Backblaze, Inc., États-Unis) conserve une
-        copie des sauvegardes sur des serveurs aux Pays-Bas. Elles sont
-        chiffrées avant l'envoi : Backblaze ne peut pas les lire.
       </li>
       <li><strong>YouTube (Google)</strong> : voir la section suivante.</li>
     </ul>

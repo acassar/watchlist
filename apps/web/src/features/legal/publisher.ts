@@ -44,7 +44,7 @@ export const operations = {
   backupsRetention: '30 jours',
   /** Où sont stockées les sauvegardes (prestataire et pays). */
   backupsLocation:
-    'sur notre serveur en Suisse et, chiffrées, chez Backblaze, sur des serveurs aux Pays-Bas',
+    "sur notre serveur et, chiffrées, dans le service Swiss Backup d'Infomaniak, en Suisse",
 } as const;
 
 /** Date de dernière mise à jour des textes, affichée en tête de page. */
