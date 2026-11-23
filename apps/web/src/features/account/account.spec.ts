@@ -54,8 +54,7 @@ async function type(selector: string, value: string) {
 
 function bodyOf(fetchMock: ReturnType<typeof fetchByUrl>, url: string) {
   const call = fetchMock.mock.calls.find(([u]) => u === url) as
-    | [string, RequestInit]
-    | undefined;
+    [string, RequestInit] | undefined;
   return call ? (JSON.parse(String(call[1].body)) as unknown) : undefined;
 }
 
