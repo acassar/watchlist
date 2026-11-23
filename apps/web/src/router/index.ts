@@ -185,9 +185,35 @@ export function installAuthGuard(router: Router) {
   });
 }
 
+const RELOAD_KEY = 'canapact.chunkReload';
+
+/**
+ * Recharge la page une seule fois par adresse : si le morceau manque encore
+ * après le rechargement (hors ligne, déploiement cassé), on n'entre pas dans
+ * une boucle de rechargements ; l'erreur reste visible.
+ */
+export function reloadOnce(path: string) {
+  try {
+    if (sessionStorage.getItem(RELOAD_KEY) === path) return;
+    sessionStorage.setItem(RELOAD_KEY, path);
+  } catch {
+    // Stockage indisponible : on recharge quand même (au pire une fois de trop).
+  }
+  window.location.assign(path);
+}
+
 export function createAppRouter(history = createWebHistory()) {
   const router = createRouter({ history, routes });
   installAuthGuard(router);
+  // Navigation réussie : un futur déploiement pourra de nouveau recharger.
+  router.afterEach((_to, _from, failure) => {
+    if (failure) return;
+    try {
+      sessionStorage.removeItem(RELOAD_KEY);
+    } catch {
+      // Rien à faire.
+    }
+  });
   // Nouvelle version déployée pendant que l'app était ouverte : les morceaux
   // de l'ancienne n'existent plus. On recharge la page demandée.
   router.onError((error, to) => {
@@ -197,7 +223,7 @@ export function createAppRouter(history = createWebHistory()) {
         error.message,
       )
     ) {
-      window.location.assign(to.fullPath);
+      reloadOnce(to.fullPath);
     }
   });
   return router;
