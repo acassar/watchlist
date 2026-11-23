@@ -41,9 +41,10 @@ export const operations = {
   /** Journaux du reverse proxy (IP, date, adresse demandée). 1 an au plus. */
   serverLogsRetention: '14 jours',
   /** Sauvegardes pg_dump quotidiennes hors du VPS (décision D9). */
-  backupsRetention: `${TODO} durée de conservation des sauvegardes`,
+  backupsRetention: '30 jours',
   /** Où sont stockées les sauvegardes (prestataire et pays). */
-  backupsLocation: `${TODO} prestataire et pays des sauvegardes`,
+  backupsLocation:
+    'sur notre serveur en Suisse et, chiffrées, chez Backblaze, sur des serveurs aux Pays-Bas',
 } as const;
 
 /** Date de dernière mise à jour des textes, affichée en tête de page. */

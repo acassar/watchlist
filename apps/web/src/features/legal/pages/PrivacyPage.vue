@@ -179,6 +179,11 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
           >paramètres de votre compte Google</a
         >.
       </li>
+      <li>
+        <strong>Backblaze</strong> (Backblaze, Inc., États-Unis) conserve une
+        copie des sauvegardes sur des serveurs aux Pays-Bas. Elles sont
+        chiffrées avant l'envoi : Backblaze ne peut pas les lire.
+      </li>
       <li><strong>YouTube (Google)</strong> : voir la section suivante.</li>
     </ul>
     <p>
