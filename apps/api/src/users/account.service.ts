@@ -15,6 +15,7 @@ import {
 import type { AuthenticatedUser } from '../auth/current-user.decorator.js';
 import { PasswordService } from '../auth/password.service.js';
 import { GroupsService, lockGroup } from '../groups/groups.service.js';
+import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const iso = (date: Date) => date.toISOString();
@@ -102,6 +103,8 @@ export class AccountService {
         googleId: user.googleId,
         createdAt: iso(user.createdAt),
         updatedAt: iso(user.updatedAt),
+        lastActiveAt: iso(user.lastActiveAt),
+        inactivityWarnedAt: isoOrNull(user.inactivityWarnedAt),
       },
       sessions: user.refreshTokens.map((t) => ({
         createdAt: iso(t.createdAt),
@@ -198,31 +201,55 @@ export class AccountService {
       });
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      const departed = new Set<string>();
-      const departAll = async () => {
-        const memberships = await tx.groupMember.findMany({
-          where: { userId, groupId: { notIn: [...departed] } },
-          select: { groupId: true },
-        });
-        // Verrous toujours pris dans le même ordre : deux suppressions
-        // simultanées dans des groupes communs ne peuvent pas s'interbloquer.
-        for (const groupId of memberships.map((m) => m.groupId).sort()) {
-          if (await lockGroup(tx, groupId)) {
-            await this.groups.depart(tx, groupId, userId);
+    await this.erase(userId);
+  }
+
+  /**
+   * Suppression réelle, sans vérification d'identité : pour delete() ci-dessus
+   * et la purge des comptes inactifs. `stillEligible` est relu une fois le
+   * compte verrouillé (plus aucune connexion ne peut le modifier) : s'il
+   * renvoie false, rien n'est supprimé et erase() renvoie false.
+   */
+  async erase(
+    userId: string,
+    stillEligible?: (tx: Prisma.TransactionClient) => Promise<boolean>,
+  ): Promise<boolean> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const departed = new Set<string>();
+        const departAll = async () => {
+          const memberships = await tx.groupMember.findMany({
+            where: { userId, groupId: { notIn: [...departed] } },
+            select: { groupId: true },
+          });
+          // Verrous toujours pris dans le même ordre : deux suppressions
+          // simultanées dans des groupes communs ne peuvent pas s'interbloquer.
+          for (const groupId of memberships.map((m) => m.groupId).sort()) {
+            if (await lockGroup(tx, groupId)) {
+              await this.groups.depart(tx, groupId, userId);
+            }
+            departed.add(groupId);
           }
-          departed.add(groupId);
-        }
-      };
-      await departAll();
-      // Verrou sur le compte : tant qu'il est tenu, aucun groupe ne peut être
-      // créé ni rejoint à son nom (la clé étrangère attend). Un groupe créé
-      // juste avant est rattrapé par le second passage, sinon il resterait
-      // sans membre ni propriétaire après la cascade.
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
-      await departAll();
-      // deleteMany : pas d'erreur si une requête parallèle l'a déjà supprimé.
-      await tx.user.deleteMany({ where: { id: userId } });
-    });
+        };
+        await departAll();
+        // Verrou sur le compte : tant qu'il est tenu, aucun groupe ne peut être
+        // créé ni rejoint à son nom (la clé étrangère attend). Un groupe créé
+        // juste avant est rattrapé par le second passage, sinon il resterait
+        // sans membre ni propriétaire après la cascade.
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
+        if (stillEligible && !(await stillEligible(tx)))
+          throw new NotEligible();
+        await departAll();
+        // deleteMany : pas d'erreur si une requête parallèle l'a déjà supprimé.
+        await tx.user.deleteMany({ where: { id: userId } });
+      });
+      return true;
+    } catch (error) {
+      // Annule aussi les départs de groupe déjà faits dans la transaction.
+      if (error instanceof NotEligible) return false;
+      throw error;
+    }
   }
 }
+
+class NotEligible extends Error {}

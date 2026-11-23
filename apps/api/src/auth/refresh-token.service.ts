@@ -103,6 +103,13 @@ export class RefreshTokenService {
 
   private async create(userId: string, familyId: string, userAgent?: string) {
     const token = generateToken();
+    // Connexion ou rafraîchissement (toutes les 15 minutes d'utilisation au
+    // plus) : la personne est active, la purge des comptes inactifs repart de
+    // zéro et une éventuelle prévenance est oubliée (voir RetentionService).
+    await this.prisma.user.updateMany({
+      where: { id: userId },
+      data: { lastActiveAt: new Date(), inactivityWarnedAt: null },
+    });
     await this.prisma.refreshToken.create({
       data: {
         userId,
