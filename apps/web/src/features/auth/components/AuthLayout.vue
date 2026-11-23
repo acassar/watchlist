@@ -29,6 +29,16 @@ defineProps<{ title: string; subtitle?: string }>();
     <div class="text-center mt-4">
       <slot name="footer" />
     </div>
+
+    <nav class="legal-links text-body-small mt-6" :aria-label="$t('legal.nav')">
+      <router-link :to="{ name: 'legal-notice' }">{{
+        $t('legal.notice')
+      }}</router-link>
+      <router-link :to="{ name: 'privacy' }">{{
+        $t('legal.privacy')
+      }}</router-link>
+      <router-link :to="{ name: 'terms' }">{{ $t('legal.terms') }}</router-link>
+    </nav>
   </v-container>
 </template>
 
@@ -36,5 +46,11 @@ defineProps<{ title: string; subtitle?: string }>();
 .auth-layout {
   max-width: 440px;
   min-height: 100dvh;
+}
+.legal-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
 }
 </style>

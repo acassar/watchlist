@@ -16,11 +16,17 @@ declare module 'vue-router' {
     guestOnly?: boolean;
     /** `auth` : écran plein, sans barre d'onglets. */
     layout?: 'auth';
+    /**
+     * Page légale : toujours lisible, connecté ou non, même quand une
+     * invitation ou un partage attendent.
+     */
+    legal?: boolean;
   }
 }
 
 const authPage = { public: true, layout: 'auth' } as const;
 const guestPage = { ...authPage, guestOnly: true } as const;
+const legalPage = { ...authPage, legal: true } as const;
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/alone' },
@@ -104,6 +110,29 @@ export const routes: RouteRecordRaw[] = [
     meta: authPage,
   },
   {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('@/features/account/pages/AccountSettingsPage.vue'),
+  },
+  {
+    path: '/legal/notice',
+    name: 'legal-notice',
+    component: () => import('@/features/legal/pages/LegalNoticePage.vue'),
+    meta: legalPage,
+  },
+  {
+    path: '/legal/privacy',
+    name: 'privacy',
+    component: () => import('@/features/legal/pages/PrivacyPage.vue'),
+    meta: legalPage,
+  },
+  {
+    path: '/legal/terms',
+    name: 'terms',
+    component: () => import('@/features/legal/pages/TermsPage.vue'),
+    meta: legalPage,
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/features/auth/pages/LoginPage.vue'),
@@ -162,6 +191,7 @@ export function installAuthGuard(router: Router) {
       return { name: 'login', query: { redirect: to.fullPath } };
     }
     if (to.meta.guestOnly && auth.isAuthenticated) return '/';
+    if (to.meta.legal) return true;
     // Invitation ouverte avant de se connecter : on y revient une fois connecté.
     if (
       auth.isAuthenticated &&

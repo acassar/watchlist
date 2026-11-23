@@ -22,6 +22,7 @@ export default defineConfig({
       MEDIA_RATE_LIMIT: '1000',
       // Lancé à la main dans les tests (voir titles.e2e-spec).
       MEDIA_REFRESH_ENABLED: 'false',
+      RETENTION_PURGE_ENABLED: 'false',
     },
   },
 });

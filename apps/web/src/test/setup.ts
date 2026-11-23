@@ -33,6 +33,7 @@ export const fakeUser = {
   email: 'adrien@exemple.fr',
   displayName: 'Adrien',
   emailVerified: true,
+  hasPassword: true,
 };
 
 type Reply = readonly [status: number, body?: unknown];

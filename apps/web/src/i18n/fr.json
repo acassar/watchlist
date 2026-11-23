@@ -24,7 +24,8 @@
   },
   "account": {
     "menu": "Mon compte",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "settings": "Réglages"
   },
   "auth": {
     "email": "Email",
@@ -49,7 +50,10 @@
       "subtitle": "Fini les « tu l'as regardé sans moi ?! ».",
       "submit": "Créer mon compte",
       "hasAccount": "Déjà un compte ?",
-      "login": "Se connecter"
+      "login": "Se connecter",
+      "legal": "En créant un compte, vous acceptez les {terms} et la {privacy}.",
+      "legalTerms": "conditions d'utilisation",
+      "legalPrivacy": "politique de confidentialité"
     },
     "checkEmail": {
       "title": "Regardez vos emails",
@@ -127,7 +131,8 @@
     "MEDIA_NOT_FOUND": "Vidéo introuvable : elle est peut-être privée ou supprimée.",
     "MEDIA_UNAVAILABLE": "YouTube ne répond pas. Réessayez dans un instant.",
     "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
-    "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…"
+    "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…",
+    "CONFIRMATION_MISMATCH": "L'adresse ne correspond pas à votre compte."
   },
   "common": {
     "back": "Retour",
@@ -249,7 +254,7 @@
     "watchOnYoutube": "Voir sur YouTube",
     "yourStatus": "Votre avis",
     "addedBy": "Ajouté par {name}",
-    "addedByDeleted": "Ajouté par un compte supprimé",
+    "addedByDeleted": "Ajouté par un ancien membre",
     "formerMember": "un ancien membre",
     "memberStatus": "{name} : {status}",
     "notCounted": "(arrivé après l'ajout, ne bloque pas)",
@@ -321,5 +326,39 @@
       "openList": "Voir la liste",
       "another": "Ajouter une autre vidéo"
     }
+  },
+  "legal": {
+    "nav": "Informations légales",
+    "notice": "Mentions légales",
+    "privacy": "Confidentialité",
+    "privacyTitle": "Politique de confidentialité",
+    "terms": "CGU",
+    "termsTitle": "Conditions générales d'utilisation",
+    "updatedAt": "Dernière mise à jour : {date}"
+  },
+  "settings": {
+    "title": "Réglages",
+    "account": "Mon compte",
+    "data": "Mes données",
+    "export": "Télécharger mes données",
+    "exportHint": "Un fichier JSON avec tout ce que Canapact garde sur vous : compte, groupes, titres ajoutés, avis.",
+    "exported": "Fichier téléchargé.",
+    "legal": "Informations légales",
+    "danger": "Supprimer mon compte",
+    "deleteHint": "Définitif : votre compte et vos avis sont effacés tout de suite.",
+    "delete": {
+      "title": "Supprimer votre compte ?",
+      "intro": "C'est définitif, et on ne pourra rien récupérer :",
+      "point1": "votre compte, vos sessions et tous vos avis sont effacés ;",
+      "point2": "les titres que vous avez ajoutés restent dans vos groupes, signés « ancien membre » ;",
+      "point3": "dans les groupes dont vous êtes propriétaire, la main passe au membre arrivé le plus tôt ;",
+      "point4": "les groupes où vous êtes seul·e sont supprimés avec leur liste.",
+      "exportFirst": "Pensez à télécharger vos données avant.",
+      "confirmEmail": "Retapez votre adresse email ({email})",
+      "password": "Votre mot de passe",
+      "submit": "Supprimer définitivement",
+      "wrongPassword": "Mot de passe incorrect."
+    },
+    "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez."
   }
 }

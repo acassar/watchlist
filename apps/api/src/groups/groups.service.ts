@@ -114,27 +114,36 @@ export class GroupsService {
   async leave(groupId: string, userId: string): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       if (!(await lockGroup(tx, groupId))) throw groupNotFound();
-      const members = await tx.groupMember.findMany({
-        where: { groupId },
-        orderBy: [{ joinedAt: 'asc' }, { userId: 'asc' }],
-      });
-      const me = members.find((m) => m.userId === userId);
-      if (!me) throw groupNotFound();
-
-      const others = members.filter((m) => m.userId !== userId);
-      if (others.length === 0) {
-        // Cascade : membres, invitations (et plus tard titres et statuts).
-        await tx.group.delete({ where: { id: groupId } });
-        return;
-      }
-      if (me.role === GroupRole.OWNER) {
-        await tx.groupMember.update({
-          where: { groupId_userId: { groupId, userId: others[0].userId } },
-          data: { role: GroupRole.OWNER },
-        });
-      }
-      await this.detachMember(tx, groupId, userId);
+      if (!(await this.depart(tx, groupId, userId))) throw groupNotFound();
     });
+  }
+
+  /**
+   * Départ d'un membre, à appeler sous `lockGroup` (quitter le groupe,
+   * supprimer son compte). Renvoie false s'il n'en faisait pas partie.
+   */
+  async depart(tx: Tx, groupId: string, userId: string): Promise<boolean> {
+    const members = await tx.groupMember.findMany({
+      where: { groupId },
+      orderBy: [{ joinedAt: 'asc' }, { userId: 'asc' }],
+    });
+    const me = members.find((m) => m.userId === userId);
+    if (!me) return false;
+
+    const others = members.filter((m) => m.userId !== userId);
+    if (others.length === 0) {
+      // Cascade : membres, invitations, titres et statuts.
+      await tx.group.delete({ where: { id: groupId } });
+      return true;
+    }
+    if (me.role === GroupRole.OWNER) {
+      await tx.groupMember.update({
+        where: { groupId_userId: { groupId, userId: others[0].userId } },
+        data: { role: GroupRole.OWNER },
+      });
+    }
+    await this.detachMember(tx, groupId, userId);
+    return true;
   }
 
   /** Le propriétaire retire un membre du groupe. */

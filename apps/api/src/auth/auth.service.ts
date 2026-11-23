@@ -36,6 +36,7 @@ export function toAuthUser(user: User): AuthUser {
     email: user.email,
     displayName: user.displayName,
     emailVerified: user.emailVerifiedAt !== null,
+    hasPassword: user.passwordHash !== null,
   };
 }
 

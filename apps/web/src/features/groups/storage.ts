@@ -114,3 +114,14 @@ export const pendingShare = {
     write(SHARE_KEY, null);
   },
 };
+
+/**
+ * Compte supprimé : on efface aussi ce que cet appareil retenait de lui
+ * (groupe actif, dernier groupe d'ajout) et ce qui attendait d'être ajouté.
+ */
+export function forgetUser(userId: string) {
+  write(activeKey(userId), null);
+  write(lastAddKey(userId), null);
+  pendingInvite.clear();
+  pendingShare.clear();
+}
