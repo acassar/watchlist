@@ -12,7 +12,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
-import { pendingInvite } from '@/features/groups/storage';
+import { pendingInvite, pendingShare } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
 import AddTitleSheet from '@/features/titles/components/AddTitleSheet.vue';
 import { useTitlesStore } from '@/features/titles/store';
@@ -66,8 +66,10 @@ async function replayTutorial() {
 
 async function logout() {
   await auth.logout().catch(() => undefined);
-  // Appareil partagé : une invitation laissée de côté ne doit pas suivre le compte suivant.
+  // Appareil partagé : une invitation ou un partage laissés de côté ne doivent
+  // pas suivre le compte suivant.
   pendingInvite.clear();
+  pendingShare.clear();
   await router.replace({ name: 'login' });
 }
 </script>

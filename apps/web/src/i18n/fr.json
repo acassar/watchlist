@@ -134,7 +134,8 @@
     "cancel": "Annuler",
     "close": "Fermer",
     "save": "Enregistrer",
-    "undo": "Annuler"
+    "undo": "Annuler",
+    "retry": "Réessayer"
   },
   "groups": {
     "name": "Nom du groupe",
@@ -300,5 +301,25 @@
     "buttons": "Les trois boutons sous la carte font la même chose. Vous pourrez toujours changer d'avis en touchant votre pastille.",
     "ok": "Compris",
     "replay": "Revoir le tuto des gestes"
+  },
+  "share": {
+    "chooseGroup": "Ajouter à quel groupe ?",
+    "changeGroup": "Changer",
+    "loadError": "Impossible de charger vos groupes. Vérifiez votre connexion.",
+    "empty": {
+      "title": "Aucun lien dans ce partage",
+      "body": "Partagez une vidéo depuis l'app YouTube, ou collez son lien.",
+      "paste": "Coller un lien"
+    },
+    "noGroup": {
+      "title": "Il vous faut un groupe",
+      "body": "Créez un groupe ou rejoignez celui de votre moitié : la vidéo vous attend, on l'ajoute juste après."
+    },
+    "done": {
+      "title": "Ajouté à « {name} » !",
+      "body": "Promis, on vous attend. Vous pouvez retourner sur YouTube.",
+      "openList": "Voir la liste",
+      "another": "Ajouter une autre vidéo"
+    }
   }
 }

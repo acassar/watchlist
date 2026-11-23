@@ -4,3 +4,4 @@ export * from './auth.js';
 export * from './groups.js';
 export * from './titles.js';
 export * from './views.js';
+export * from './youtube.js';

@@ -9,6 +9,7 @@ import {
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useAuthStore } from '@/features/auth/store';
+import { lastAddGroupMemory } from '@/features/groups/storage';
 import { titlesApi } from './api';
 
 /** Changement local appliqué avant la réponse de l'API (mise à jour optimiste). */
@@ -114,6 +115,8 @@ export const useTitlesStore = defineStore('titles', () => {
 
   async function add(id: string, body: AddTitleRequest): Promise<GroupTitle> {
     const title = await titlesApi.add(id, body);
+    // Proposé en tête du prochain « Ajouter à quel groupe ? ».
+    if (auth.user) lastAddGroupMemory.set(auth.user.id, id);
     if (groupId.value === id) {
       titles.value = [title, ...titles.value.filter((t) => t.id !== title.id)];
       refresh();

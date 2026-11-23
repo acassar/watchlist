@@ -74,6 +74,13 @@ En dev, les emails (vérification, mot de passe oublié) ne partent pas : ils s'
 | `POST /api/invitations/preview`                         | Aperçu avant de rejoindre (`token`/`code`) |
 | `POST /api/invitations/accept`                          | Rejoindre (`token` ou `code`)              |
 
+## PWA et partage
+
+- PWA installable (`vite-plugin-pwa`, `apps/web/vite.config.ts`) : manifest « Canapact », icônes dans `apps/web/public/` (source `icon.svg`). Le service worker ne met en cache que l'interface ; `/api` passe toujours par le réseau (pas de mode hors ligne pour les données). Il n'est actif qu'en build (`pnpm --filter @watchlist/web build && pnpm --filter @watchlist/web preview`), et seulement en HTTPS ou sur `localhost`.
+- Android : `share_target` en GET vers `/share`. L'app YouTube met souvent le lien dans `text` : on prend la première URL YouTube de n'importe quel champ (`findSharedLink`, dans `@watchlist/shared`).
+- Écran « Ajouter à quel groupe ? » : toujours affiché, dernier groupe utilisé en tête, sauté s'il n'y a qu'un groupe. Non connecté : le lien est gardé 24 h sur l'appareil pendant la connexion ou l'inscription, puis on y revient.
+- iOS (pas de Web Share Target) : bouton « Coller le lien » dans le « + » et sur la page `/add` (aussi en raccourci de l'icône). Le Raccourci Apple viendra plus tard.
+
 ## Commandes
 
 | Commande                                | Rôle                                             |
