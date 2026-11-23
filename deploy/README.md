@@ -8,8 +8,12 @@ URL : https://canapact.adrien-cassar.fr
 merge sur main ─> CI verte ─> workflow Deploy
    1. construit les images api et web, les publie sur GHCR
       (ghcr.io/acassar/watchlist-api|web, tags <sha> et latest)
-   2. SSH sur le VPS (utilisateur deploy) : copie compose.yml et backup.sh
-      dans /srv/canapact, docker compose pull puis up --wait
+   2. SSH sur le VPS (utilisateur deploy), deploy.sh dans /srv/canapact :
+      a. tire les images de ce commit (rien n'est arrêté si ça échoue)
+      b. applique les migrations, le site actuel continue de tourner
+         (si elles échouent, on s'arrête là : le site reste sur l'ancienne version)
+      c. remplace api et web (up --wait) ; si la nouvelle version n'est pas en
+         bonne santé, relance automatiquement la précédente
    3. vérifie https://canapact.adrien-cassar.fr/api/health
 ```
 
@@ -23,6 +27,7 @@ Internet ─443─> Nginx du VPS (TLS Let's Encrypt, journaux)
 ```
 
 - Le service `migrate` applique les migrations Prisma avant chaque démarrage de l'API.
+- `/srv/canapact/compose.yml` est figé sur le SHA déployé : un `docker compose up -d` lancé à la main garde la même version. La version précédente est gardée dans `compose.prev.yml`, et ses images restent sur le VPS.
 - Les secrets de l'application vivent uniquement sur le VPS, dans `/srv/canapact/.env` (modèle : `env.prod.example`). GitHub ne connaît que l'accès SSH.
 - `TRUST_PROXY=loopback,uniquelocal` : l'API voit l'IP du client (rate limiting). Le Nginx du VPS écrase `X-Forwarded-For` pour qu'un client ne puisse pas la falsifier.
 - Les images sont tirées avec le jeton temporaire du job GitHub : pas de jeton GHCR stocké sur le VPS.
@@ -36,6 +41,7 @@ Internet ─443─> Nginx du VPS (TLS Let's Encrypt, journaux)
 | `env.prod.example`                | Modèle de `/srv/canapact/.env`                              |
 | `nginx/web.conf`                  | Nginx du conteneur web (cache PWA, en-têtes, relais `/api`) |
 | `nginx/canapact.host.conf`        | Site à ajouter au Nginx du VPS                              |
+| `deploy.sh`                       | Mise à jour sur le VPS (lancé par le workflow)              |
 | `backup.sh`                       | Sauvegarde quotidienne `pg_dump` (+ copie hors VPS)         |
 | `../.github/workflows/deploy.yml` | Workflow de déploiement                                     |
 
@@ -123,12 +129,26 @@ Après une modification de `.env` : `cd /srv/canapact && docker compose up -d`.
 cd /srv/canapact
 docker compose ps                     # état
 docker compose logs -f api            # journaux de l'API
-IMAGE_TAG=<sha> docker compose up -d  # revenir à une version précédente
+docker compose up -d                  # après une modification du .env (même version)
 ./backup.sh                           # sauvegarde immédiate
 ```
+
+Revenir à une version précédente : onglet Actions > Deploy > Run workflow (branche `main`), avec le SHA de la version voulue. L'image est redéployée telle quelle, sans reconstruction. Les migrations ne sont jamais annulées : l'ancienne version tourne sur le schéma actuel (sans souci tant que les migrations ne font qu'ajouter).
+
+Si une migration a échoué au déploiement, le site est resté sur l'ancienne version mais Prisma bloque les déploiements suivants (erreur P3009). Corriger la migration dans une PR, puis sur le VPS, avant de merger :
+
+```bash
+cd /srv/canapact
+# compose.next.yml = la version qui a échoué, restée là
+docker compose -f compose.next.yml run --rm migrate node_modules/.bin/prisma migrate resolve --rolled-back <nom_de_la_migration>
+```
+
+Avant ça, vérifier si la migration a été appliquée en partie (tables ou colonnes déjà créées) et remettre la base dans l'état d'avant si besoin.
 
 Restauration d'une sauvegarde (écrase la base) :
 
 ```bash
+docker compose stop api
 docker compose exec -T postgres pg_restore -U canapact -d canapact --clean --if-exists < backups/<fichier>.dump
+docker compose start api
 ```

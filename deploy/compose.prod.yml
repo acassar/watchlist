@@ -1,6 +1,7 @@
 # Production sur le VPS (copié en /srv/canapact/compose.yml par le déploiement).
 # Les secrets vivent dans /srv/canapact/.env (modèle : deploy/env.prod.example),
-# jamais dans le dépôt. Version déployée : IMAGE_TAG (SHA du commit, ou latest).
+# jamais dans le dépôt. Version : le workflow remplace la variable des images par
+# le SHA déployé (compose.yml sur le VPS est donc figé sur une version).
 name: canapact
 
 x-logging:

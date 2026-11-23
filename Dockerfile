@@ -22,6 +22,7 @@ RUN pnpm --filter @watchlist/shared build \
 # API autonome : dépendances de prod seulement (Prisma CLI compris, pour les migrations).
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm --filter @watchlist/api deploy --prod --legacy /out \
+ && rm -rf /out/dist /out/src /out/test /out/*.tsbuildinfo /out/vitest.config*.ts \
  && cp -r apps/api/dist /out/dist
 
 # --- API NestJS. La même image applique les migrations (service « migrate » du compose).

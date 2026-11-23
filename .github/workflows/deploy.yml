@@ -1,14 +1,21 @@
 name: Deploy
 
 # Après chaque CI verte sur main (donc après chaque merge) : images Docker
-# publiées sur GHCR, puis mise à jour du VPS en SSH. Relançable à la main
-# (onglet Actions > Deploy > Run workflow).
+# publiées sur GHCR, puis mise à jour du VPS en SSH (deploy/deploy.sh).
+# À la main (onglet Actions > Deploy > Run workflow, branche main) : sans SHA,
+# reconstruit et déploie main ; avec le SHA d'une version déjà publiée, la
+# redéploie telle quelle (retour en arrière, sans reconstruire).
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
   workflow_dispatch:
+    inputs:
+      sha:
+        description: SHA (40 caractères) d'une version déjà publiée, pour revenir en arrière. Vide = déployer main.
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -20,12 +27,17 @@ concurrency:
 
 env:
   IMAGE_PREFIX: ghcr.io/acassar/watchlist
-  # Commit testé par la CI (workflow_run) ou commit choisi (lancement manuel).
-  SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+  # Version choisie (retour en arrière), commit testé par la CI (workflow_run)
+  # ou tête de main (lancement manuel).
+  SHA: ${{ inputs.sha || github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
   images:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    # Lancement manuel : depuis main seulement, sinon une branche quelconque
+    # publierait le tag latest.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.sha == '') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -59,6 +71,10 @@ jobs:
 
   deploy:
     needs: images
+    # Après des images fraîches, ou directement pour un retour en arrière.
+    if: >-
+      always() && (needs.images.result == 'success' ||
+      (needs.images.result == 'skipped' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.sha != ''))
     runs-on: ubuntu-latest
     # Secrets VPS_* rangés dans l'environnement « production » (Settings > Environments).
     environment:
@@ -89,27 +105,24 @@ jobs:
           printf 'Host vps\n  HostName %s\n  Port %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n' \
             "$VPS_HOST" "$VPS_PORT" "$VPS_USER" > ~/.ssh/config
 
-      - name: Copie du compose et du script de sauvegarde
+      - name: Compose de cette version
         run: |
-          scp deploy/compose.prod.yml vps:/srv/canapact/compose.yml
-          scp deploy/backup.sh vps:/srv/canapact/backup.sh
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "SHA invalide : $SHA"; exit 1; }
+          # Version écrite en dur : un `docker compose up -d` lancé plus tard sur
+          # le VPS (après une modification du .env) garde la même version.
+          sed "s/\${IMAGE_TAG:-latest}/$SHA/g" deploy/compose.prod.yml > compose.next.yml
+          test "$(grep -c "watchlist-[a-z]*:$SHA\$" compose.next.yml)" -eq 3
 
-      - name: Mise à jour des conteneurs
+      - name: Copie des fichiers
+        run: scp compose.next.yml deploy/deploy.sh deploy/backup.sh vps:/srv/canapact/
+
+      - name: Migrations et mise à jour des conteneurs
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
-        run: |
-          # Le jeton GitHub de ce job (valable pendant le job seulement) sert à
-          # tirer les images, puis la session GHCR est fermée.
-          printf '%s' "$GHCR_TOKEN" | ssh vps "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
-          ssh vps "set -e
-            cd /srv/canapact
-            chmod +x backup.sh
-            export IMAGE_TAG='$SHA'
-            docker compose pull --quiet || { docker logout ghcr.io; exit 1; }
-            docker logout ghcr.io
-            docker compose up -d --wait --wait-timeout 180 --remove-orphans
-            docker image prune -f"
+        # Jeton du job (valable pendant le job seulement) passé sur l'entrée
+        # standard : il n'apparaît ni dans la commande ni sur le disque du VPS.
+        run: printf '%s' "$GHCR_TOKEN" | ssh vps "bash /srv/canapact/deploy.sh '$SHA' '$GHCR_USER'"
 
       - name: Vérification publique
         run: curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors https://canapact.adrien-cassar.fr/api/health
