@@ -23,7 +23,8 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        orientation: 'portrait',
+        // Pas d'« orientation » imposée : paysage possible (tablette, support,
+        // accessibilité WCAG 1.3.4).
         // Couleurs du thème sombre (plugins/vuetify.ts) : pas de flash blanc au lancement.
         background_color: '#1d1520',
         theme_color: '#1d1520',
