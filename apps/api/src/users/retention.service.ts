@@ -156,11 +156,19 @@ export class RetentionService
     for (const { id } of candidates) {
       // Même suppression que celle demandée depuis les réglages. Les critères
       // sont relus sous verrou : une connexion à la dernière minute gagne.
-      const erased = await this.accounts.erase(
-        id,
-        async (tx) => (await tx.user.count({ where: { id, ...where } })) > 0,
-      );
-      if (erased) deleted++;
+      // Une erreur sur un compte ne bloque ni les suivants ni les
+      // prévenances : on le note et on réessaie le lendemain.
+      try {
+        const erased = await this.accounts.erase(
+          id,
+          async (tx) => (await tx.user.count({ where: { id, ...where } })) > 0,
+        );
+        if (erased) deleted++;
+      } catch (error: unknown) {
+        this.logger.error(
+          `Suppression pour inactivité en échec (${id}) : ${String(error)}`,
+        );
+      }
     }
     return deleted;
   }

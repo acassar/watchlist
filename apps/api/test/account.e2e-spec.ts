@@ -4,6 +4,7 @@ import { PasswordService } from '../src/auth/password.service.js';
 import { RefreshTokenService } from '../src/auth/refresh-token.service.js';
 import { generateToken, hashToken } from '../src/auth/tokens.js';
 import { MailService } from '../src/mail/mail.service.js';
+import { AccountService } from '../src/users/account.service.js';
 import { RetentionService } from '../src/users/retention.service.js';
 import {
   createTestApp,
@@ -556,6 +557,35 @@ describe('Export et suppression du compte (e2e)', () => {
       expect(send).toHaveBeenCalledTimes(3);
       expect(await exists(adrien.id)).toBe(true);
       send.mockRestore();
+    });
+
+    it('une suppression en échec ne bloque pas les autres', async () => {
+      for (const id of [adrien.id, camille.id]) {
+        await setUser(id, {
+          lastActiveAt: new Date(Date.now() - 3 * YEAR - 2 * DAY),
+          inactivityWarnedAt: new Date(Date.now() - 31 * DAY),
+        });
+      }
+      await setUser(sam.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR + 20 * DAY),
+      });
+      const accounts = t.app.get(AccountService);
+      const erase = accounts.erase.bind(accounts);
+      const spy = vi
+        .spyOn(accounts, 'erase')
+        .mockImplementation((id, stillEligible) =>
+          id === adrien.id
+            ? Promise.reject(new Error('interblocage'))
+            : erase(id, stillEligible),
+        );
+
+      expect(await purge()).toMatchObject({
+        inactiveAccounts: 1,
+        inactivityWarnings: 1,
+      });
+      expect(await exists(adrien.id)).toBe(true);
+      expect(await exists(camille.id)).toBe(false);
+      spy.mockRestore();
     });
 
     it('une connexion annule la prévenance et repart pour 3 ans', async () => {
