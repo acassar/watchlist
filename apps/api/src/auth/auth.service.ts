@@ -174,7 +174,7 @@ export class AuthService {
       where: { id: result.userId },
     });
     return {
-      accessToken: await this.signAccessToken(user.id),
+      accessToken: await this.signAccessToken(user.id, result.authTime),
       refreshToken: result.token,
       user: toAuthUser(user),
     };
@@ -256,14 +256,22 @@ export class AuthService {
   /** Ouvre une session (JWT + refresh token) pour un utilisateur déjà authentifié. */
   async openSession(user: User, userAgent?: string): Promise<Session> {
     return {
-      accessToken: await this.signAccessToken(user.id),
+      accessToken: await this.signAccessToken(user.id, new Date()),
       refreshToken: await this.refreshTokens.issue(user.id, userAgent),
       user: toAuthUser(user),
     };
   }
 
-  private signAccessToken(userId: string) {
-    return this.jwt.signAsync({ sub: userId });
+  /**
+   * `auth_time` (claim standard OpenID) : heure de la connexion, conservée au
+   * fil des rafraîchissements. Les actions sensibles exigent une connexion
+   * récente quand aucun mot de passe ne peut être redemandé.
+   */
+  private signAccessToken(userId: string, authTime: Date) {
+    return this.jwt.signAsync({
+      sub: userId,
+      auth_time: Math.floor(authTime.getTime() / 1000),
+    });
   }
 }
 

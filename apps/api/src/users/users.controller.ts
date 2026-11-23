@@ -72,7 +72,7 @@ export class UsersController {
     body: DeleteAccountRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    await this.account.delete(current.id, body);
+    await this.account.delete(current, body);
     clearRefreshCookie(res, this.secureCookie);
   }
 }

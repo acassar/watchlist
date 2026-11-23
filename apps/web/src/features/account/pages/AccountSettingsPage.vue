@@ -8,6 +8,7 @@ import {
   mdiShieldAccountOutline,
 } from '@mdi/js';
 import {
+  AccountErrorCode,
   AuthErrorCode,
   deleteAccountRequestSchema,
   emailSchema,
@@ -16,6 +17,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ApiRequestError } from '@/api/http';
+import { googleLoginUrl } from '@/features/auth/api';
 import PasswordField from '@/features/auth/components/PasswordField.vue';
 import { useAuthStore } from '@/features/auth/store';
 import { apiErrorMessage, zodRule } from '@/features/auth/validation';
@@ -53,6 +55,9 @@ const confirmEmail = ref('');
 const password = ref('');
 const deleting = ref(false);
 const deleteError = ref<string | null>(null);
+/** Compte Google : la connexion est trop ancienne, il faut la refaire. */
+const reauthRequired = ref(false);
+const reauthUrl = googleLoginUrl('/settings');
 const hasPassword = computed(() => auth.user?.hasPassword ?? false);
 const emailMatches = computed(() => {
   const parsed = emailSchema.safeParse(confirmEmail.value);
@@ -67,6 +72,7 @@ watch(deleteOpen, (open) => {
   confirmEmail.value = '';
   password.value = '';
   deleteError.value = null;
+  reauthRequired.value = false;
 });
 
 async function deleteAccount() {
@@ -74,6 +80,7 @@ async function deleteAccount() {
   if (!user || !canDelete.value) return;
   deleting.value = true;
   deleteError.value = null;
+  reauthRequired.value = false;
   try {
     await accountApi.delete(
       deleteAccountRequestSchema.parse({
@@ -86,6 +93,13 @@ async function deleteAccount() {
     auth.clearSession();
     await router.replace({ name: 'login', query: { deleted: '1' } });
   } catch (e) {
+    if (
+      e instanceof ApiRequestError &&
+      e.code === AccountErrorCode.REAUTH_REQUIRED
+    ) {
+      reauthRequired.value = true;
+      return;
+    }
     deleteError.value =
       e instanceof ApiRequestError &&
       e.code === AuthErrorCode.INVALID_CREDENTIALS
@@ -225,6 +239,24 @@ async function deleteAccount() {
               autocomplete="current-password"
               data-test="confirm-password"
             />
+            <v-alert
+              v-if="reauthRequired"
+              type="info"
+              variant="tonal"
+              class="mt-2"
+              data-test="reauth-required"
+            >
+              <p class="mb-2">{{ $t('settings.delete.reauth') }}</p>
+              <v-btn
+                :href="reauthUrl"
+                variant="flat"
+                rounded="pill"
+                size="small"
+                data-test="reauth-google"
+              >
+                {{ $t('settings.delete.reauthButton') }}
+              </v-btn>
+            </v-alert>
             <v-alert
               v-if="deleteError"
               type="error"

@@ -23,7 +23,15 @@ export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>;
 export const AccountErrorCode = {
   /** L'adresse retapée ne correspond pas au compte. */
   CONFIRMATION_MISMATCH: 'CONFIRMATION_MISMATCH',
+  /**
+   * Compte sans mot de passe (Google) : la dernière connexion date de plus de
+   * REAUTH_MAX_AGE_SECONDS. Il faut se reconnecter avec Google, puis réessayer.
+   */
+  REAUTH_REQUIRED: 'REAUTH_REQUIRED',
 } as const;
+
+/** Âge maximal de la connexion pour supprimer un compte sans mot de passe. */
+export const REAUTH_MAX_AGE_SECONDS = 10 * 60;
 export type AccountErrorCode =
   (typeof AccountErrorCode)[keyof typeof AccountErrorCode];
 
@@ -51,11 +59,23 @@ export interface AccountExport {
     createdAt: string;
     updatedAt: string;
   };
-  /** Sessions ouvertes (une par appareil connecté), encore valides. */
+  /**
+   * Jetons de session stockés : un par rafraîchissement, les révoqués étant
+   * gardés jusqu'à leur expiration. `active` : session encore utilisable.
+   */
   sessions: {
     createdAt: string;
     expiresAt: string;
+    revokedAt: string | null;
+    active: boolean;
     userAgent: string | null;
+  }[];
+  /** Liens envoyés par email (confirmation, mot de passe), jusqu'à expiration. */
+  emailLinks: {
+    type: 'VERIFY_EMAIL' | 'RESET_PASSWORD' | 'LINK_PASSWORD';
+    createdAt: string;
+    expiresAt: string;
+    usedAt: string | null;
   }[];
   groups: {
     id: string;
@@ -65,10 +85,13 @@ export interface AccountExport {
     /** Prénoms affichés des autres membres : on les voit dans l'app. */
     otherMembers: string[];
   }[];
-  /** Titres que la personne a ajoutés. */
+  /**
+   * Titres que la personne a ajoutés. Dans un groupe qu'elle a quitté, le nom
+   * du groupe et la date de visionnage ensemble sont nuls.
+   */
   addedTitles: {
     groupId: string;
-    groupName: string;
+    groupName: string | null;
     title: string;
     url: string;
     source: MediaSourceType;
@@ -85,10 +108,10 @@ export interface AccountExport {
     watchedAloneAt: string | null;
     updatedAt: string;
   }[];
-  /** Invitations qu'elle a créées. */
+  /** Invitations qu'elle a créées (nom du groupe nul si elle l'a quitté). */
   invitations: {
     groupId: string;
-    groupName: string;
+    groupName: string | null;
     code: string;
     createdAt: string;
     expiresAt: string;

@@ -112,6 +112,9 @@ export async function createUser(t: TestApp, displayName: string) {
       emailVerifiedAt: new Date(),
     },
   });
-  const token = await t.app.get(JwtService).signAsync({ sub: user.id });
+  // Connexion « à l'instant » (auth_time) : comme après un vrai login.
+  const token = await t.app
+    .get(JwtService)
+    .signAsync({ sub: user.id, auth_time: Math.floor(Date.now() / 1000) });
   return { id: user.id, auth: { authorization: `Bearer ${token}` } };
 }

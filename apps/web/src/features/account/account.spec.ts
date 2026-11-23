@@ -172,6 +172,31 @@ describe('réglages du compte', () => {
       'ne correspond pas',
     );
   });
+
+  it('propose de se reconnecter avec Google quand la connexion est trop ancienne', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [googleSession],
+        '/api/groups': [[200, []]],
+        '/api/me/delete': [[403, { code: 'REAUTH_REQUIRED', message: '' }]],
+      }),
+    );
+    await mountAt('/settings');
+
+    el('[data-test="delete-account"]').click();
+    await settle();
+    await type('[data-test="confirm-email"]', 'adrien@exemple.fr');
+    el('[data-test="confirm-delete"]').click();
+    await settle();
+
+    expect(el('[data-test="reauth-required"]').textContent).toContain(
+      'reconnectez-vous avec Google',
+    );
+    expect(el<HTMLAnchorElement>('[data-test="reauth-google"]').href).toContain(
+      '/api/auth/google?next=%2Fsettings',
+    );
+  });
 });
 
 describe('pages légales', () => {

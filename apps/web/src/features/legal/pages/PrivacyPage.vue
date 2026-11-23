@@ -72,7 +72,9 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             </td>
             <td>Rester connecté, repérer un vol de session</td>
             <td>
-              30 jours après la dernière utilisation, ou jusqu'à la déconnexion
+              30 jours après la dernière utilisation, puis supprimées dans la
+              journée. Une session fermée (déconnexion) ne sert plus, mais sa
+              trace est gardée jusqu'à cette échéance pour repérer un vol.
             </td>
           </tr>
           <tr>
@@ -91,7 +93,9 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             <td>Partager une liste avec vos proches</td>
             <td>
               Jusqu'à ce que vous quittiez le groupe ou supprimiez votre compte.
-              Le nom du groupe et ses titres restent pour les autres membres.
+              Le nom du groupe et ses titres restent pour les autres membres ;
+              les invitations que vous avez créées restent liées à votre compte
+              (désactivées) jusqu'à sa suppression.
             </td>
           </tr>
           <tr>

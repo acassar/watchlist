@@ -3,7 +3,7 @@
  *
  * ⚠️ À COMPLÉTER AVANT LA MISE EN LIGNE. Aucune de ces valeurs ne doit être
  * inventée : chaque champ marqué `TODO` est affiché tel quel, en évidence,
- * tant qu'il n'est pas rempli (voir LegalPlaceholder.vue).
+ * tant qu'il n'est pas rempli (voir LegalValue.vue).
  */
 
 /** Préfixe reconnu par les pages légales pour signaler un champ à remplir. */

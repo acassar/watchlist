@@ -33,8 +33,17 @@ export class JwtAuthGuard implements CanActivate {
     if (scheme !== 'Bearer' || !token) throw unauthenticated();
 
     try {
-      const payload = await this.jwt.verifyAsync<{ sub: string }>(token);
-      request.user = { id: payload.sub };
+      const payload = await this.jwt.verifyAsync<{
+        sub: string;
+        auth_time?: number;
+      }>(token);
+      request.user = {
+        id: payload.sub,
+        authTime:
+          typeof payload.auth_time === 'number'
+            ? new Date(payload.auth_time * 1000)
+            : null,
+      };
       return true;
     } catch {
       throw unauthenticated();

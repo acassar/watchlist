@@ -1,5 +1,8 @@
+import { JwtService } from '@nestjs/jwt';
 import request from 'supertest';
 import { PasswordService } from '../src/auth/password.service.js';
+import { RefreshTokenService } from '../src/auth/refresh-token.service.js';
+import { generateToken, hashToken } from '../src/auth/tokens.js';
 import { RetentionService } from '../src/users/retention.service.js';
 import {
   createTestApp,
@@ -58,6 +61,20 @@ describe('Export et suppression du compte (e2e)', () => {
       .send({ url: `https://youtu.be/${id}`, status })
       .expect(201);
     return res.body.id as string;
+  }
+
+  /** Ajoute un jeton valide à la famille et renvoie sa valeur brute. */
+  async function currentToken(userId: string, familyId: string) {
+    const raw = generateToken();
+    await t.prisma.refreshToken.create({
+      data: {
+        userId,
+        familyId,
+        tokenHash: hashToken(raw),
+        expiresAt: new Date(Date.now() + 1e9),
+      },
+    });
+    return raw;
   }
 
   const remove = (user: User, body: Record<string, unknown>) =>
@@ -160,6 +177,38 @@ describe('Export et suppression du compte (e2e)', () => {
       expect(raw).not.toMatch(/hash/i);
     });
 
+    it('ne révèle plus rien d’un groupe quitté', async () => {
+      const groupId = await createGroup(adrien, 'Ancienne coloc');
+      await join(camille, groupId, adrien);
+      const rickId = await add(adrien, groupId, RICK);
+      await http()
+        .post(`/api/groups/${groupId}/leave`)
+        .set(adrien.auth)
+        .expect((r) => expect(r.status).toBeLessThan(300));
+      await t.prisma.group.update({
+        where: { id: groupId },
+        data: { name: 'Nouveau nom' },
+      });
+      await t.prisma.groupTitle.update({
+        where: { id: rickId },
+        data: { watchedTogetherAt: new Date() },
+      });
+
+      const res = await http()
+        .get('/api/me/export')
+        .set(adrien.auth)
+        .expect(200);
+
+      expect(res.body.groups).toEqual([]);
+      expect(res.body.addedTitles).toMatchObject([
+        { groupId, groupName: null, watchedTogetherAt: null },
+      ]);
+      expect(res.body.invitations).toMatchObject([
+        { groupId, groupName: null },
+      ]);
+      expect(JSON.stringify(res.body)).not.toContain('Nouveau nom');
+    });
+
     it('exige d’être connecté', async () => {
       await http().get('/api/me/export').expect(401);
     });
@@ -218,6 +267,41 @@ describe('Export et suppression du compte (e2e)', () => {
         204,
       );
       expect(await t.prisma.user.count({ where: { id: adrien.id } })).toBe(0);
+    });
+
+    it('sans mot de passe, exige une connexion récente', async () => {
+      const oldLogin = Math.floor(Date.now() / 1000) - 3600;
+      const staleToken = await t.app
+        .get(JwtService)
+        .signAsync({ sub: adrien.id, auth_time: oldLogin });
+
+      const res = await http()
+        .post('/api/me/delete')
+        .set({ authorization: `Bearer ${staleToken}` })
+        .send({ confirmEmail: 'adrien@exemple.fr' })
+        .expect(403);
+      expect(res.body.code).toBe('REAUTH_REQUIRED');
+      expect(await t.prisma.user.count({ where: { id: adrien.id } })).toBe(1);
+    });
+
+    it('le rafraîchissement garde l’heure de la connexion', async () => {
+      const loginAt = new Date(Date.now() - 3600_000);
+      const familyId = crypto.randomUUID();
+      // Premier jeton de la session, déjà utilisé, puis le jeton courant.
+      await t.prisma.refreshToken.create({
+        data: {
+          userId: adrien.id,
+          familyId,
+          tokenHash: 'premier',
+          createdAt: loginAt,
+          revokedAt: new Date(),
+          expiresAt: new Date(Date.now() + 1e9),
+        },
+      });
+      const rotated = await t.app
+        .get(RefreshTokenService)
+        .rotate(await currentToken(adrien.id, familyId));
+      expect(rotated).toMatchObject({ ok: true, authTime: loginAt });
     });
 
     it('dans un groupe partagé : avis supprimés, titres gardés, propriété transmise', async () => {

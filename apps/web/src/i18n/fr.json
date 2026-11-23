@@ -357,7 +357,9 @@
       "confirmEmail": "Retapez votre adresse email ({email})",
       "password": "Votre mot de passe",
       "submit": "Supprimer définitivement",
-      "wrongPassword": "Mot de passe incorrect."
+      "wrongPassword": "Mot de passe incorrect.",
+      "reauth": "Par sécurité, reconnectez-vous avec Google, puis recommencez la suppression.",
+      "reauthButton": "Se reconnecter avec Google"
     },
     "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez."
   }
