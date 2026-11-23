@@ -4,6 +4,8 @@ import type { Request } from 'express';
 /** Identité portée par le JWT d'accès. */
 export interface AuthenticatedUser {
   id: string;
+  /** Heure de la connexion (claim `auth_time`), null pour un ancien jeton. */
+  authTime: Date | null;
 }
 
 export type AuthenticatedRequest = Request & { user?: AuthenticatedUser };

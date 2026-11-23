@@ -49,6 +49,12 @@ export const envSchema = z
      * de conservation au plus). Désactivé dans les tests e2e.
      */
     MEDIA_REFRESH_ENABLED: booleanFromEnv.default(true),
+    /**
+     * Purge quotidienne des données arrivées au bout de leur durée de
+     * conservation (RGPD) : sessions et liens expirés, comptes jamais
+     * confirmés. Désactivée dans les tests e2e (appelée à la main).
+     */
+    RETENTION_PURGE_ENABLED: booleanFromEnv.default(true),
   })
   .refine((env) => env.MAIL_TRANSPORT !== 'brevo' || !!env.BREVO_API_KEY, {
     message: 'BREVO_API_KEY est obligatoire quand MAIL_TRANSPORT=brevo',

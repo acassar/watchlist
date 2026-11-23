@@ -56,5 +56,7 @@ import { RefreshTokenService } from './refresh-token.service.js';
     // Toutes les routes exigent un JWT, sauf celles marquées @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
+  // La suppression du compte redemande le mot de passe.
+  exports: [PasswordService],
 })
 export class AuthModule {}

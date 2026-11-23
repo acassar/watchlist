@@ -2,7 +2,8 @@
 import { mdiArrowLeft } from '@mdi/js';
 import { useRouter } from 'vue-router';
 
-defineProps<{ title: string }>();
+/** `wrap` : titre long sur plusieurs lignes plutôt que tronqué. */
+defineProps<{ title: string; wrap?: boolean }>();
 const router = useRouter();
 
 /** Retour à la page précédente, ou aux listes si on arrive directement ici. */
@@ -21,7 +22,10 @@ function back() {
       class="ml-n2"
       @click="back"
     />
-    <h1 class="font-display text-headline-small text-truncate flex-grow-1">
+    <h1
+      class="font-display text-headline-small flex-grow-1"
+      :class="wrap ? 'text-wrap' : 'text-truncate'"
+    >
       {{ title }}
     </h1>
     <slot name="actions" />

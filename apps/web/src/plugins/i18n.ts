@@ -12,6 +12,7 @@ export const i18n = createI18n<[MessageSchema], 'fr'>({
   datetimeFormats: {
     fr: {
       short: { day: 'numeric', month: 'long' },
+      long: { day: 'numeric', month: 'long', year: 'numeric' },
     },
   },
 });

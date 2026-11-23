@@ -3,6 +3,7 @@ import {
   mdiAccount,
   mdiAccountCircleOutline,
   mdiAccountGroup,
+  mdiCogOutline,
   mdiGestureSwipe,
   mdiHelpCircleOutline,
   mdiLogout,
@@ -101,6 +102,12 @@ async function logout() {
                 :subtitle="auth.user.email"
               />
               <v-divider />
+              <v-list-item
+                :to="{ name: 'settings' }"
+                :prepend-icon="mdiCogOutline"
+                :title="$t('account.settings')"
+                data-test="open-settings"
+              />
               <v-list-item
                 :prepend-icon="mdiGestureSwipe"
                 :title="$t('tutorial.replay')"

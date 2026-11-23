@@ -72,6 +72,14 @@ async function resend() {
 <template>
   <AuthLayout :title="$t('auth.login.title')">
     <v-alert
+      v-if="route.query.deleted === '1'"
+      type="success"
+      variant="tonal"
+      class="mb-4"
+      :text="$t('settings.deleted')"
+      data-test="account-deleted"
+    />
+    <v-alert
       v-if="googleError"
       type="warning"
       variant="tonal"

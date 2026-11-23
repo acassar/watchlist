@@ -77,6 +77,8 @@ export interface AuthUser {
   email: string;
   displayName: string;
   emailVerified: boolean;
+  /** Faux pour un compte créé avec Google sans mot de passe. */
+  hasPassword: boolean;
 }
 
 /** Réponse des routes qui ouvrent une session (connexion, refresh, vérification). */

@@ -5,7 +5,14 @@ import { REFRESH_TOKEN_TTL_MS } from './auth.constants.js';
 import { generateToken, hashToken } from './tokens.js';
 
 export type RotateResult =
-  { ok: true; token: string; userId: string } | { ok: false };
+  | {
+      ok: true;
+      token: string;
+      userId: string;
+      /** Heure de la connexion qui a ouvert cette session (voir authTime). */
+      authTime: Date;
+    }
+  | { ok: false };
 
 /**
  * Refresh tokens rotatifs : chaque utilisation en délivre un nouveau et révoque
@@ -49,7 +56,26 @@ export class RefreshTokenService {
       existing.familyId,
       userAgent,
     );
-    return { ok: true, token, userId: existing.userId };
+    return {
+      ok: true,
+      token,
+      userId: existing.userId,
+      authTime: await this.authTime(existing.familyId, existing.createdAt),
+    };
+  }
+
+  /**
+   * Heure de la connexion : le premier jeton de la famille. La purge supprime
+   * les jetons expirés (30 jours) : l'heure obtenue n'est alors jamais plus
+   * récente que la réalité de moins de 30 jours, donc jamais « récente ».
+   */
+  private async authTime(familyId: string, fallback: Date): Promise<Date> {
+    const first = await this.prisma.refreshToken.findFirst({
+      where: { familyId },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    });
+    return first?.createdAt ?? fallback;
   }
 
   /** Déconnexion de cet appareil. */

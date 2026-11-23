@@ -81,6 +81,26 @@ async function submit(event: Promise<{ valid: boolean }>) {
         class="mb-4"
       />
 
+      <!-- Accepter les CGU avant de créer le compte, y compris avec Google (plus haut). -->
+      <i18n-t
+        keypath="auth.register.legal"
+        tag="p"
+        class="text-body-small text-medium-emphasis mb-4"
+        data-test="register-legal"
+        scope="global"
+      >
+        <template #terms>
+          <router-link :to="{ name: 'terms' }">{{
+            $t('auth.register.legalTerms')
+          }}</router-link>
+        </template>
+        <template #privacy>
+          <router-link :to="{ name: 'privacy' }">{{
+            $t('auth.register.legalPrivacy')
+          }}</router-link>
+        </template>
+      </i18n-t>
+
       <v-alert
         v-if="error"
         type="error"
