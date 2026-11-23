@@ -54,7 +54,8 @@ async function type(selector: string, value: string) {
 
 function bodyOf(fetchMock: ReturnType<typeof fetchByUrl>, url: string) {
   const call = fetchMock.mock.calls.find(([u]) => u === url) as
-    [string, RequestInit] | undefined;
+    | [string, RequestInit]
+    | undefined;
   return call ? (JSON.parse(String(call[1].body)) as unknown) : undefined;
 }
 
@@ -222,10 +223,11 @@ describe('pages légales', () => {
     const text = document.body.textContent ?? '';
     expect(text).toContain('Brevo');
     expect(text).toContain("Services d'API YouTube");
-    // Les champs de l'éditeur restent à remplir, bien visibles.
-    expect(
-      document.querySelectorAll('[data-test="legal-todo"]').length,
-    ).toBeGreaterThan(0);
+    expect(text).toContain('Backblaze');
+    // Tous les champs de l'éditeur sont remplis : plus rien « À COMPLÉTER ».
+    expect(document.querySelectorAll('[data-test="legal-todo"]')).toHaveLength(
+      0,
+    );
     const hrefs = [...document.querySelectorAll('a')].map((a) =>
       a.getAttribute('href'),
     );
