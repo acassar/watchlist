@@ -1,0 +1,71 @@
+# Production sur le VPS (copié en /srv/canapact/compose.yml par le déploiement).
+# Les secrets vivent dans /srv/canapact/.env (modèle : deploy/env.prod.example),
+# jamais dans le dépôt. Version déployée : IMAGE_TAG (SHA du commit, ou latest).
+name: canapact
+
+x-logging:
+  &logging # Journaux des conteneurs tournés : 3 fichiers de 10 Mo au plus par service.
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: canapact
+      POSTGRES_DB: canapact
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U canapact -d canapact']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: *logging
+
+  # Applique les migrations Prisma puis s'arrête ; l'API attend qu'il ait réussi.
+  migrate:
+    image: ghcr.io/acassar/watchlist-api:${IMAGE_TAG:-latest}
+    command: ['node_modules/.bin/prisma', 'migrate', 'deploy']
+    environment:
+      DATABASE_URL: postgresql://canapact:${POSTGRES_PASSWORD}@postgres:5432/canapact
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    logging: *logging
+
+  api:
+    image: ghcr.io/acassar/watchlist-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://canapact:${POSTGRES_PASSWORD}@postgres:5432/canapact
+      APP_URL: ${APP_URL:-https://canapact.adrien-cassar.fr}
+      COOKIE_SECURE: 'true'
+      # Chaîne : client -> Nginx du VPS -> conteneur web -> API. Les deux relais
+      # ont des IP locales (127.0.0.1 / réseau Docker) : Express remonte
+      # X-Forwarded-For jusqu'à la première IP publique, celle du client.
+      TRUST_PROXY: loopback,uniquelocal
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    logging: *logging
+
+  web:
+    image: ghcr.io/acassar/watchlist-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    # Accessible seulement depuis le VPS : le Nginx de l'hôte relaie vers ce port.
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  pgdata:

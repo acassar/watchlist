@@ -1,0 +1,12 @@
+# Contexte de build Docker : uniquement les sources, rien de local.
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+apps/api/src/generated
+.git
+.github
+docker
+*.log

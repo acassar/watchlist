@@ -1,0 +1,115 @@
+name: Deploy
+
+# Après chaque CI verte sur main (donc après chaque merge) : images Docker
+# publiées sur GHCR, puis mise à jour du VPS en SSH. Relançable à la main
+# (onglet Actions > Deploy > Run workflow).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Un déploiement à la fois, sans en annuler un en cours.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/acassar/watchlist
+  # Commit testé par la CI (workflow_run) ou commit choisi (lancement manuel).
+  SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  images:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        target: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.target }}:${{ env.SHA }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.target }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ env.SHA }}
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    # Secrets VPS_* rangés dans l'environnement « production » (Settings > Environments).
+    environment:
+      name: production
+      url: https://canapact.adrien-cassar.fr
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+          sparse-checkout: deploy
+
+      - name: Clé SSH et empreinte du VPS
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Empreinte épinglée : on refuse tout serveur qui ne serait pas le VPS.
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host vps\n  HostName %s\n  Port %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n' \
+            "$VPS_HOST" "$VPS_PORT" "$VPS_USER" > ~/.ssh/config
+
+      - name: Copie du compose et du script de sauvegarde
+        run: |
+          scp deploy/compose.prod.yml vps:/srv/canapact/compose.yml
+          scp deploy/backup.sh vps:/srv/canapact/backup.sh
+
+      - name: Mise à jour des conteneurs
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          # Le jeton GitHub de ce job (valable pendant le job seulement) sert à
+          # tirer les images, puis la session GHCR est fermée.
+          printf '%s' "$GHCR_TOKEN" | ssh vps "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
+          ssh vps "set -e
+            cd /srv/canapact
+            chmod +x backup.sh
+            export IMAGE_TAG='$SHA'
+            docker compose pull --quiet || { docker logout ghcr.io; exit 1; }
+            docker logout ghcr.io
+            docker compose up -d --wait --wait-timeout 180 --remove-orphans
+            docker image prune -f"
+
+      - name: Vérification publique
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors https://canapact.adrien-cassar.fr/api/health

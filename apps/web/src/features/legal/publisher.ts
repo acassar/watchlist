@@ -28,11 +28,11 @@ export const publisher = {
 
 export const host = {
   /** Hébergeur du VPS (raison sociale). */
-  name: `${TODO} nom de l'hébergeur`,
-  address: `${TODO} adresse de l'hébergeur`,
+  name: 'Infomaniak Network SA',
+  address: 'Rue Eugène-Marziano 25, 1227 Les Acacias (GE), Suisse',
   phone: `${TODO} téléphone de l'hébergeur`,
   /** Pays où se trouvent les serveurs (et donc la base de données). */
-  location: `${TODO} pays du datacenter`,
+  location: 'Suisse',
 } as const;
 
 /** Ce qui dépend du déploiement (étape 7), pas du code. */
