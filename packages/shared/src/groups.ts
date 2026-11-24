@@ -11,6 +11,12 @@ export const GROUP_NAME_MAX_LENGTH = 50;
 export const GROUP_MAX_MEMBERS = 20;
 /** Invitations encore utilisables par groupe : au-delà, il faut en révoquer. */
 export const GROUP_MAX_ACTIVE_INVITATIONS = 20;
+/**
+ * Groupes par utilisateur, créés ou rejoints. Un seul pour l'instant : la
+ * limite pourra monter si l'app prend et que la demande arrive. Ceux qui sont
+ * déjà dans plusieurs groupes les gardent.
+ */
+export const USER_MAX_GROUPS = 1;
 export const INVITATION_DEFAULT_TTL_DAYS = 7;
 export const INVITATION_MAX_TTL_DAYS = 30;
 
@@ -155,6 +161,8 @@ export const GroupErrorCode = {
   OWNER_ONLY: 'OWNER_ONLY',
   /** Pour partir soi-même, c'est « Quitter le groupe ». */
   CANNOT_REMOVE_SELF: 'CANNOT_REMOVE_SELF',
+  /** Déjà dans USER_MAX_GROUPS groupes. */
+  TOO_MANY_GROUPS: 'TOO_MANY_GROUPS',
 } as const;
 export type GroupErrorCode =
   (typeof GroupErrorCode)[keyof typeof GroupErrorCode];

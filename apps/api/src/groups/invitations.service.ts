@@ -23,7 +23,7 @@ import type { Env } from '../config.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { groupNotFound, type Membership } from './group-member.guard.js';
-import { lockGroup } from './groups.service.js';
+import { assertGroupRoom, lockGroup } from './groups.service.js';
 import { generateInvitationCode } from './invitation-code.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -245,6 +245,7 @@ export class InvitationsService {
           message: 'Ce groupe est complet',
         });
       }
+      await assertGroupRoom(tx, userId);
 
       await tx.groupMember.create({
         data: { groupId: group.id, userId, role: GroupRole.MEMBER },

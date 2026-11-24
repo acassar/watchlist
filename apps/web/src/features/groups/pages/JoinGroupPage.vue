@@ -93,6 +93,8 @@ onMounted(async () => {
     // Le jeton ne reste pas dans l'historique du navigateur.
     await router.replace({ name: 'join' });
   }
+  // Pour savoir d'avance si la limite d'un groupe est atteinte.
+  if (auth.isAuthenticated && groups.status === 'idle') void groups.load();
   const token = fromLink ?? pendingInvite.get();
   if (token && auth.isAuthenticated) {
     checkingLink.value = true;
@@ -159,6 +161,22 @@ onMounted(async () => {
           @click="openGroup(preview.groupId)"
         >
           {{ $t('groups.join.open') }}
+        </v-btn>
+      </template>
+      <!-- Un seul groupe pour l'instant : inutile de proposer de rejoindre. -->
+      <template v-else-if="groups.atGroupLimit">
+        <v-alert
+          variant="tonal"
+          class="mb-4"
+          data-test="group-limit"
+          :title="$t('groups.limit.title')"
+          :text="$t('groups.limit.body')"
+        />
+        <p class="text-body-medium text-medium-emphasis mb-6">
+          {{ $t('groups.limit.leaveHint') }}
+        </p>
+        <v-btn variant="text" rounded="pill" block @click="later">
+          {{ $t('groups.join.back') }}
         </v-btn>
       </template>
       <template v-else>

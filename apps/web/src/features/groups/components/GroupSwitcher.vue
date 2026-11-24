@@ -80,7 +80,16 @@ async function go(to: Parameters<typeof router.push>[0]) {
           />
         </div>
 
-        <div class="d-flex ga-2 mt-2">
+        <!-- Un seul groupe pour l'instant : à la limite, on explique au lieu de proposer. -->
+        <v-alert
+          v-if="groups.atGroupLimit"
+          class="mt-2"
+          variant="tonal"
+          density="compact"
+          :title="$t('groups.limit.title')"
+          :text="$t('groups.limit.body')"
+        />
+        <div v-else class="d-flex ga-2 mt-2">
           <v-btn
             class="flex-1-1 text-none"
             variant="outlined"

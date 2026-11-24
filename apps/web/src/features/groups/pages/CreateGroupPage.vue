@@ -35,40 +35,56 @@ async function submit(event: Promise<{ valid: boolean }>) {
 <template>
   <v-container class="page pa-4">
     <PageHeader :title="$t('groups.create.title')" />
-    <p class="text-body-medium text-medium-emphasis mb-6">
-      {{ $t('groups.create.body') }}
-    </p>
-    <v-form validate-on="submit lazy" @submit.prevent="submit">
-      <v-text-field
-        v-model="name"
-        :label="$t('groups.name')"
-        :placeholder="$t('groups.create.placeholder')"
-        :rules="[zodRule(groupNameSchema)]"
-        :counter="50"
-        maxlength="50"
-        autocomplete="off"
-        variant="outlined"
-        autofocus
-        class="mb-2"
-      />
+    <template v-if="groups.atGroupLimit">
       <v-alert
-        v-if="error"
-        type="error"
         variant="tonal"
-        class="mb-4"
-        :text="error"
+        class="mb-6"
+        :title="$t('groups.limit.title')"
+        :text="$t('groups.limit.body')"
       />
-      <v-btn
-        type="submit"
-        color="primary"
-        size="large"
-        rounded="pill"
-        block
-        :loading="loading"
-      >
-        {{ $t('groups.create.submit') }}
+      <p class="text-body-medium text-medium-emphasis mb-6">
+        {{ $t('groups.limit.leaveHint') }}
+      </p>
+      <v-btn color="primary" size="large" rounded="pill" block to="/">
+        {{ $t('groups.join.back') }}
       </v-btn>
-    </v-form>
+    </template>
+    <template v-else>
+      <p class="text-body-medium text-medium-emphasis mb-6">
+        {{ $t('groups.create.body') }}
+      </p>
+      <v-form validate-on="submit lazy" @submit.prevent="submit">
+        <v-text-field
+          v-model="name"
+          :label="$t('groups.name')"
+          :placeholder="$t('groups.create.placeholder')"
+          :rules="[zodRule(groupNameSchema)]"
+          :counter="50"
+          maxlength="50"
+          autocomplete="off"
+          variant="outlined"
+          autofocus
+          class="mb-2"
+        />
+        <v-alert
+          v-if="error"
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          :text="error"
+        />
+        <v-btn
+          type="submit"
+          color="primary"
+          size="large"
+          rounded="pill"
+          block
+          :loading="loading"
+        >
+          {{ $t('groups.create.submit') }}
+        </v-btn>
+      </v-form>
+    </template>
   </v-container>
 </template>
 

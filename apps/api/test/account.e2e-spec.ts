@@ -359,7 +359,10 @@ describe('Export et suppression du compte (e2e)', () => {
       const solo = await createGroup(adrien, 'Rien que moi');
       await add(adrien, solo, RICK);
       const shared = await createGroup(camille, 'Nous deux');
-      await join(adrien, shared, camille);
+      // Plusieurs groupes : possible pour les comptes d'avant la limite.
+      await t.prisma.groupMember.create({
+        data: { groupId: shared, userId: adrien.id, role: 'MEMBER' },
+      });
 
       await remove(adrien, { confirmEmail: 'adrien@exemple.fr' }).expect(204);
 

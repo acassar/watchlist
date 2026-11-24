@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { GROUP_MAX_ACTIVE_TITLES } from '@watchlist/shared';
 import {
   createTestApp,
   createUser,
@@ -215,6 +216,59 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
 
       expect(await t.prisma.mediaItem.count()).toBe(1);
       expect(await t.prisma.groupTitle.count()).toBe(2);
+    });
+
+    describe(`${GROUP_MAX_ACTIVE_TITLES} titres en cours au plus`, () => {
+      /** Remplit la liste de titres en cours, sans passer par YouTube. */
+      async function fill(count: number, watchedTogetherAt: Date | null) {
+        for (let i = 0; i < count; i++) {
+          const media = await t.prisma.mediaItem.create({
+            data: {
+              source: 'YOUTUBE',
+              externalId: `seed${String(i).padStart(7, '0')}`,
+              url: `https://youtu.be/seed${i}`,
+              title: `Titre ${i}`,
+              fetchedAt: new Date(),
+            },
+          });
+          await t.prisma.groupTitle.create({
+            data: { groupId, mediaItemId: media.id, watchedTogetherAt },
+          });
+        }
+      }
+
+      it('refuse un ajout quand la liste en cours est pleine', async () => {
+        await fill(GROUP_MAX_ACTIVE_TITLES, null);
+        const res = await add(adrien, groupId, {
+          url: `https://youtu.be/${RICK}`,
+        }).expect(409);
+        expect(res.body.code).toBe('TOO_MANY_ACTIVE_TITLES');
+        expect(youtube.calls.length).toBeGreaterThan(0);
+      });
+
+      it('ne compte pas les titres vus ensemble', async () => {
+        await fill(GROUP_MAX_ACTIVE_TITLES - 1, null);
+        await add(adrien, groupId, { url: `https://youtu.be/${CAT}` }).expect(
+          201,
+        );
+        const cat = await t.prisma.groupTitle.findFirstOrThrow({
+          where: { mediaItem: { externalId: CAT } },
+        });
+        await http()
+          .put(`/api/groups/${groupId}/titles/${cat.id}/watched-together`)
+          .set(adrien.auth)
+          .expect(200);
+        await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
+          201,
+        );
+
+        // Liste pleine : annuler le « vu ensemble » la ferait déborder.
+        const res = await http()
+          .delete(`/api/groups/${groupId}/titles/${cat.id}/watched-together`)
+          .set(adrien.auth)
+          .expect(409);
+        expect(res.body.code).toBe('TOO_MANY_ACTIVE_TITLES');
+      });
     });
 
     it('est réservé aux membres du groupe', async () => {

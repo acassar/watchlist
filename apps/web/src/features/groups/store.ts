@@ -1,4 +1,8 @@
-import type { GroupDetail, GroupSummary } from '@watchlist/shared';
+import {
+  USER_MAX_GROUPS,
+  type GroupDetail,
+  type GroupSummary,
+} from '@watchlist/shared';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useAuthStore } from '@/features/auth/store';
@@ -31,6 +35,8 @@ export const useGroupsStore = defineStore('groups', () => {
   const hasNoGroup = computed(
     () => status.value === 'ready' && groups.value.length === 0,
   );
+  /** Plus de place pour créer ou rejoindre un groupe (USER_MAX_GROUPS). */
+  const atGroupLimit = computed(() => groups.value.length >= USER_MAX_GROUPS);
 
   function sortAndSet(list: GroupSummary[]) {
     groups.value = [...list].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
@@ -111,6 +117,7 @@ export const useGroupsStore = defineStore('groups', () => {
     activeGroupId,
     activeGroup,
     hasNoGroup,
+    atGroupLimit,
     load,
     select,
     upsert,

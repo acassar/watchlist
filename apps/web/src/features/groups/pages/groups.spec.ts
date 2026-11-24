@@ -92,7 +92,9 @@ describe('groupes (écrans)', () => {
     expect(sheet?.textContent).toContain('Vos groupes');
     expect(sheet?.textContent).toContain('Nous deux');
     expect(sheet?.textContent).toContain('2 membres');
-    expect(sheet?.textContent).toContain('Rejoindre');
+    // Déjà à la limite d'un groupe : on explique au lieu de proposer.
+    expect(sheet?.textContent).toContain('Un canapé à la fois');
+    expect(sheet?.textContent).not.toContain('Rejoindre');
 
     const rows = [...document.querySelectorAll<HTMLElement>('.group-pick')];
     rows.find((r) => r.textContent?.includes('Nous deux'))!.click();
@@ -102,6 +104,21 @@ describe('groupes (écrans)', () => {
     expect(wrapper.find('[data-test="group-switcher"]').text()).toContain(
       'Nous deux',
     );
+  });
+
+  it('déjà dans un groupe : la création explique la limite', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [session],
+        '/api/groups': [[200, [nousDeux]]],
+      }),
+    );
+    const { wrapper } = await mountAt('/groups/new');
+    await vi.waitFor(() =>
+      expect(wrapper.text()).toContain('Un canapé à la fois'),
+    );
+    expect(wrapper.find('form').exists()).toBe(false);
   });
 
   it('crée un groupe puis ouvre sa page pour inviter', async () => {
@@ -245,6 +262,33 @@ describe('groupes (écrans)', () => {
     expect(router.currentRoute.value.hash).toBe('');
     expect(wrapper.text()).toContain('Créez un compte ou connectez-vous');
     expect(localStorage.getItem('canapact.pendingInvite')).toContain('secret');
+  });
+
+  it('déjà dans un groupe : l’invitation explique la limite au lieu de rejoindre', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [session],
+        '/api/groups': [[200, [coloc]]],
+        '/api/invitations/preview': [
+          [
+            200,
+            {
+              groupId: 'g1',
+              groupName: 'Nous deux',
+              memberCount: 1,
+              invitedBy: 'Camille',
+              alreadyMember: false,
+            },
+          ],
+        ],
+      }),
+    );
+    const { wrapper } = await mountAt('/join#token=secret');
+    await vi.waitFor(() =>
+      expect(wrapper.find('[data-test="group-limit"]').exists()).toBe(true),
+    );
+    expect(wrapper.find('[data-test="accept"]').exists()).toBe(false);
   });
 
   it('une fois connecté, revient sur l’invitation gardée et rejoint le groupe', async () => {
