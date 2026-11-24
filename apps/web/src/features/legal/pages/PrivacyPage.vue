@@ -47,7 +47,7 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             <td>
               Adresse email, prénom ou pseudo affiché, mot de passe (jamais en
               clair : seulement une empreinte Argon2id), date de confirmation de
-              l'adresse, date de votre dernière connexion
+              l'adresse, langue choisie, date de votre dernière connexion
             </td>
             <td>
               Créer et sécuriser votre compte, vous écrire au sujet du compte,
@@ -250,8 +250,8 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       <li>
         dans le stockage du navigateur : le dernier groupe ouvert, le dernier
         groupe où vous avez ajouté un titre, une invitation (7 jours) ou un lien
-        partagé (24 heures) en attente de connexion, et le fait d'avoir vu le
-        tuto ;
+        partagé (24 heures) en attente de connexion, le fait d'avoir vu le tuto
+        et la langue choisie ;
       </li>
       <li>
         le cache de l'app installée (interface seulement, aucune donnée

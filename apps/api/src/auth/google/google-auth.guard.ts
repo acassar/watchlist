@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard, type AuthGuardAuthenticateOptions } from '@nestjs/passport';
-import { GoogleErrorCode, safeRedirectPath } from '@watchlist/shared';
+import { GoogleErrorCode, safeRedirectPath, toLocale } from '@watchlist/shared';
 import type { Request } from 'express';
 import type { Env } from '../../config.js';
 import type { GoogleLoginState } from './cookie-state.store.js';
@@ -66,7 +66,10 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     context: ExecutionContext,
   ): AuthGuardAuthenticateOptions {
     const req = context.switchToHttp().getRequest<Request>();
-    const state: GoogleLoginState = { next: safeRedirectPath(req.query.next) };
+    const state: GoogleLoginState = {
+      next: safeRedirectPath(req.query.next),
+      locale: toLocale(req.query.locale),
+    };
     return {
       // Objet (et non chaîne) : Passport le confie au CookieStateStore. Les types
       // de Passport n'admettent qu'une chaîne, d'où la conversion.

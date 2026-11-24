@@ -26,10 +26,13 @@ describe('Connexion avec Google (e2e)', () => {
   const http = () => request(t.app.getHttpServer());
 
   /** Départ vers Google : renvoie l'URL de Google et le cookie d'état posé. */
-  async function start(next?: string) {
+  async function start(next?: string, locale?: string) {
     const res = await http()
       .get('/api/auth/google')
-      .query(next === undefined ? {} : { next })
+      .query({
+        ...(next === undefined ? {} : { next }),
+        ...(locale === undefined ? {} : { locale }),
+      })
       .expect(302);
     const location = new URL(res.headers.location as string);
     const cookies = (res.headers['set-cookie'] as unknown as string[]) ?? [];
@@ -38,9 +41,13 @@ describe('Connexion avec Google (e2e)', () => {
   }
 
   /** Aller-retour complet chez Google avec le profil donné. */
-  async function signInWithGoogle(user: FakeGoogleUser, next?: string) {
+  async function signInWithGoogle(
+    user: FakeGoogleUser,
+    next?: string,
+    locale?: string,
+  ) {
     google.next = user;
-    const { location, stateCookie } = await start(next);
+    const { location, stateCookie } = await start(next, locale);
     return http()
       .get('/api/auth/google/callback')
       .query({ code: 'code-google', state: location.searchParams.get('state') })
@@ -206,6 +213,23 @@ describe('Connexion avec Google (e2e)', () => {
         .expect(200);
       expect(refreshed.body.user).toMatchObject({ email, emailVerified: true });
       expect(t.mail.to(email)).toHaveLength(0);
+    });
+
+    it('crée le compte dans la langue de l’écran de départ', async () => {
+      await signInWithGoogle(googleUser, undefined, 'en');
+      const user = await t.prisma.user.findUniqueOrThrow({ where: { email } });
+      expect(user.locale).toBe('en');
+    });
+
+    it('garde la langue d’un compte existant et ignore une langue inconnue', async () => {
+      await signInWithGoogle(googleUser, undefined, 'de');
+      expect(
+        (await t.prisma.user.findUniqueOrThrow({ where: { email } })).locale,
+      ).toBe('fr');
+      await signInWithGoogle(googleUser, undefined, 'en');
+      expect(
+        (await t.prisma.user.findUniqueOrThrow({ where: { email } })).locale,
+      ).toBe('fr');
     });
 
     it('reconnaît un compte déjà lié, même si l’adresse Google a changé', async () => {

@@ -5,6 +5,7 @@ import {
   Header,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Res,
   UseGuards,
@@ -13,9 +14,11 @@ import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   deleteAccountRequestSchema,
+  updateLocaleRequestSchema,
   type AccountExport,
   type AuthUser,
   type DeleteAccountRequest,
+  type UpdateLocaleRequest,
 } from '@watchlist/shared';
 import type { Response } from 'express';
 import { toAuthUser } from '../auth/auth.service.js';
@@ -49,6 +52,21 @@ export class UsersController {
     });
     if (!user) throw accountNotFound();
     return toAuthUser(user);
+  }
+
+  /** Langue de l'interface et des emails. */
+  @Patch('locale')
+  async updateLocale(
+    @CurrentUser() current: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateLocaleRequestSchema))
+    body: UpdateLocaleRequest,
+  ): Promise<AuthUser> {
+    const { count } = await this.prisma.user.updateMany({
+      where: { id: current.id },
+      data: { locale: body.locale },
+    });
+    if (count === 0) throw accountNotFound();
+    return this.me(current);
   }
 
   /** Export RGPD : un fichier JSON téléchargé tel quel. */

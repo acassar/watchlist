@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { toLocale, type Locale } from '@watchlist/shared';
 import type { CookieOptions, Request } from 'express';
 import {
   GOOGLE_STATE_COOKIE_NAME,
@@ -10,6 +11,8 @@ import {
 export interface GoogleLoginState {
   /** Chemin interne où renvoyer l'utilisateur une fois connecté. */
   next: string;
+  /** Langue de l'écran de départ : celle du compte s'il est créé au retour. */
+  locale: Locale;
 }
 
 interface StoredState extends GoogleLoginState {
@@ -64,6 +67,7 @@ export class CookieStateStore {
       handle: randomBytes(24).toString('base64url'),
       verifier,
       next: state?.next ?? '/',
+      locale: toLocale(state?.locale),
       expiresAt: Date.now() + GOOGLE_STATE_TTL_MS,
     };
     req.res!.cookie(GOOGLE_STATE_COOKIE_NAME, this.seal(stored), {
@@ -87,7 +91,10 @@ export class CookieStateStore {
       callback(null, false, { message: 'Invalid authorization request state' });
       return;
     }
-    callback(null, stored.verifier, { next: stored.next });
+    callback(null, stored.verifier, {
+      next: stored.next,
+      locale: toLocale(stored.locale),
+    });
   }
 
   private cookieOptions(): CookieOptions {

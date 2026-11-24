@@ -47,16 +47,6 @@ function yearsBefore(date: Date, years: number): Date {
   return result;
 }
 
-/** « 23 décembre 2026 », à l'heure de Paris (le texte de l'email). */
-export function formatDeletionDate(date: Date): string {
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Europe/Paris',
-  }).format(date);
-}
-
 /**
  * Limitation de la conservation (RGPD, art. 5.1.e) : chaque jour, on supprime
  * ce qui ne sert plus. Les durées sont celles de la politique de
@@ -197,6 +187,7 @@ export class RetentionService
         id: true,
         email: true,
         displayName: true,
+        locale: true,
         lastActiveAt: true,
       },
     });
@@ -212,10 +203,7 @@ export class RetentionService
         ),
       );
       try {
-        await this.mail.sendInactivityWarning(
-          user,
-          formatDeletionDate(deletionDate),
-        );
+        await this.mail.sendInactivityWarning(user, deletionDate);
       } catch (error: unknown) {
         // Quota du jour épuisé : les suivantes échoueraient aussi, on reprend demain.
         if (error instanceof MailQuotaExceededError) {

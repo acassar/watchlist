@@ -120,7 +120,7 @@ describe('LoginPage', () => {
       const button = wrapper.find('[data-test="google-login"]');
       expect(button.text()).toContain('Continuer avec Google');
       expect(button.attributes('href')).toBe(
-        '/api/auth/google?next=%2Ftogether',
+        '/api/auth/google?next=%2Ftogether&locale=fr',
       );
     });
 
@@ -135,7 +135,7 @@ describe('LoginPage', () => {
       const { wrapper } = await mountLogin('/login?redirect=//evil.example');
       expect(
         wrapper.find('[data-test="google-login"]').attributes('href'),
-      ).toBe('/api/auth/google?next=%2F');
+      ).toBe('/api/auth/google?next=%2F&locale=fr');
     });
 
     it('explique un échec au retour de Google', async () => {

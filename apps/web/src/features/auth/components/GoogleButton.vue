@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { currentLocale } from '@/features/locale/locale';
 import { googleLoginUrl } from '../api';
 import { safeRedirect } from '../redirect';
 import { useAuthStore } from '../store';
@@ -9,7 +10,9 @@ const props = defineProps<{ next?: unknown }>();
 
 const auth = useAuthStore();
 const leaving = ref(false);
-const href = computed(() => googleLoginUrl(safeRedirect(props.next)));
+const href = computed(() =>
+  googleLoginUrl(safeRedirect(props.next), currentLocale.value),
+);
 
 onMounted(() => {
   void auth.loadProviders();

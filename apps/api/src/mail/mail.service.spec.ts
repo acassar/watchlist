@@ -14,7 +14,7 @@ function quota(allowed = true) {
     tryConsume: vi.fn(() => Promise.resolve(allowed)),
   } as unknown as MailQuotaService;
 }
-const user = { email: 'alice@example.com', displayName: 'Alice' };
+const user = { email: 'alice@example.com', displayName: 'Alice', locale: 'fr' };
 
 function deferredTransport() {
   let release!: () => void;
@@ -93,7 +93,7 @@ describe('MailService', () => {
     const mail = new MailService(transport, quota(false), config);
 
     await expect(
-      mail.sendInactivityWarning(user, '24 décembre 2026'),
+      mail.sendInactivityWarning(user, new Date('2026-12-24T12:00:00Z')),
     ).rejects.toThrow('Quota');
     expect(sent).toHaveLength(0);
   });

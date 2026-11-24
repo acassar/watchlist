@@ -7,6 +7,7 @@ import {
 } from '@watchlist/shared';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { currentLocale } from '@/features/locale/locale';
 import { authApi } from '../api';
 import AuthLayout from '../components/AuthLayout.vue';
 import GoogleButton from '../components/GoogleButton.vue';
@@ -33,6 +34,7 @@ async function submit(event: Promise<{ valid: boolean }>) {
       displayName: displayName.value,
       email: email.value,
       password: password.value,
+      locale: currentLocale.value,
     });
     await authApi.register(body);
     await router.push({ name: 'check-email', state: { email: body.email } });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { emailSchema, PASSWORD_MAX_LENGTH } from './auth.js';
+import type { Locale } from './locale.js';
 import type { GroupRole, MediaSourceType, MemberStatus } from './enums.js';
 
 /**
@@ -36,7 +37,7 @@ export type AccountErrorCode =
   (typeof AccountErrorCode)[keyof typeof AccountErrorCode];
 
 /** Version du format d'export, à incrémenter si sa forme change. */
-export const ACCOUNT_EXPORT_VERSION = 2;
+export const ACCOUNT_EXPORT_VERSION = 3;
 
 /**
  * Export des données (droit d'accès et portabilité, art. 15 et 20 du RGPD) :
@@ -52,6 +53,8 @@ export interface AccountExport {
     id: string;
     email: string;
     displayName: string;
+    /** Langue de l'interface et des emails. */
+    locale: Locale;
     emailVerifiedAt: string | null;
     hasPassword: boolean;
     /** Identifiant du compte Google lié, s'il y en a un. */

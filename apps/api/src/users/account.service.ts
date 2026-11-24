@@ -9,6 +9,7 @@ import {
   AccountErrorCode,
   AuthErrorCode,
   REAUTH_MAX_AGE_SECONDS,
+  toLocale,
   type AccountExport,
   type DeleteAccountRequest,
 } from '@watchlist/shared';
@@ -98,6 +99,7 @@ export class AccountService {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
+        locale: toLocale(user.locale),
         emailVerifiedAt: isoOrNull(user.emailVerifiedAt),
         hasPassword: user.passwordHash !== null,
         googleId: user.googleId,

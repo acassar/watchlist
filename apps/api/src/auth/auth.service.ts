@@ -8,6 +8,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import {
   AuthErrorCode,
+  DEFAULT_LOCALE,
+  toLocale,
   type AuthUser,
   type LoginRequest,
   type RegisterRequest,
@@ -40,6 +42,7 @@ export function toAuthUser(user: User): AuthUser {
     displayName: user.displayName,
     emailVerified: user.emailVerifiedAt !== null,
     hasPassword: user.passwordHash !== null,
+    locale: toLocale(user.locale),
   };
 }
 
@@ -97,6 +100,7 @@ export class AuthService {
             email: dto.email,
             passwordHash,
             displayName: dto.displayName,
+            locale: dto.locale ?? DEFAULT_LOCALE,
           },
         })
         .catch((error: unknown) => {

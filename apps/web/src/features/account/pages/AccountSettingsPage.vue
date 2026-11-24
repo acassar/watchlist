@@ -25,6 +25,8 @@ import { apiErrorMessage, zodRule } from '@/features/auth/validation';
 import PageHeader from '@/features/groups/components/PageHeader.vue';
 import { forgetUser } from '@/features/groups/storage';
 import DonateCard from '@/features/about/components/DonateCard.vue';
+import LanguagePicker from '@/features/locale/LanguagePicker.vue';
+import { currentLocale } from '@/features/locale/locale';
 import { accountApi, downloadJson } from '../api';
 
 const auth = useAuthStore();
@@ -59,7 +61,9 @@ const deleting = ref(false);
 const deleteError = ref<string | null>(null);
 /** Compte Google : la connexion est trop ancienne, il faut la refaire. */
 const reauthRequired = ref(false);
-const reauthUrl = googleLoginUrl('/settings');
+const reauthUrl = computed(() =>
+  googleLoginUrl('/settings', currentLocale.value),
+);
 const hasPassword = computed(() => auth.user?.hasPassword ?? false);
 const emailMatches = computed(() => {
   const parsed = emailSchema.safeParse(confirmEmail.value);
@@ -127,6 +131,14 @@ async function deleteAccount() {
         data-test="settings-user"
       />
     </v-list>
+
+    <h2 class="text-title-small text-medium-emphasis mb-2">
+      {{ $t('settings.language') }}
+    </h2>
+    <p class="text-body-medium text-medium-emphasis mb-3">
+      {{ $t('settings.languageHint') }}
+    </p>
+    <LanguagePicker class="mb-8" />
 
     <h2 class="text-title-small text-medium-emphasis mb-2">
       {{ $t('settings.data') }}

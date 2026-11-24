@@ -110,6 +110,7 @@
     "displayNameTooLong": "50 caractères maximum.",
     "invalidToken": "Lien invalide.",
     "invalid": "Valeur invalide.",
+    "invalidLocale": "Langue non prise en charge.",
     "groupNameTooLong": "50 caractères maximum.",
     "invitationCode": "Un code fait 8 caractères, lettres et chiffres.",
     "mediaUrl": "Collez un lien (il commence par https://).",
@@ -147,6 +148,11 @@
     "save": "Enregistrer",
     "undo": "Annuler",
     "retry": "Réessayer"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
   },
   "groups": {
     "name": "Nom du groupe",
@@ -351,11 +357,14 @@
     "privacyTitle": "Politique de confidentialité",
     "terms": "CGU",
     "termsTitle": "Conditions générales d'utilisation",
-    "updatedAt": "Dernière mise à jour : {date}"
+    "updatedAt": "Dernière mise à jour : {date}",
+    "frenchPrevails": "Ceci est une traduction de confort. En cas de différence, la version française fait foi."
   },
   "settings": {
     "title": "Réglages",
     "account": "Mon compte",
+    "language": "Langue",
+    "languageHint": "Pour l'app et les emails qu'on vous envoie.",
     "data": "Mes données",
     "export": "Télécharger mes données",
     "exportHint": "Un fichier JSON avec tout ce que Canapact garde sur vous : compte, groupes, titres ajoutés, avis.",

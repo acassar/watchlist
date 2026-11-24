@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DISPLAY_NAME_MAX_LENGTH, GoogleErrorCode } from '@watchlist/shared';
+import {
+  DEFAULT_LOCALE,
+  DISPLAY_NAME_MAX_LENGTH,
+  GoogleErrorCode,
+  type Locale,
+} from '@watchlist/shared';
 import type { User } from '../../generated/prisma/client.js';
 import { MailService } from '../../mail/mail.service.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -48,13 +53,19 @@ export class GoogleAuthService {
     private readonly mail: MailService,
   ) {}
 
-  async login(profile: GoogleProfile, userAgent?: string): Promise<Session> {
-    const user = await this.findOrLinkUser(profile);
+  /** `locale` : langue de l'écran de départ, appliquée seulement à un compte créé ici. */
+  async login(
+    profile: GoogleProfile,
+    userAgent?: string,
+    locale?: Locale,
+  ): Promise<Session> {
+    const user = await this.findOrLinkUser(profile, locale ?? DEFAULT_LOCALE);
     return this.auth.openSession(user, userAgent);
   }
 
   private async findOrLinkUser(
     profile: GoogleProfile,
+    locale: Locale,
     retried = false,
   ): Promise<User> {
     const linked = await this.prisma.user.findUnique({
@@ -76,6 +87,7 @@ export class GoogleAuthService {
             googleId: profile.sub,
             displayName: displayNameFrom(profile, email),
             emailVerifiedAt: new Date(),
+            locale,
           },
         });
       }
@@ -106,7 +118,7 @@ export class GoogleAuthService {
         !retried &&
         (isUniqueViolation(error) || error instanceof ConcurrentChange)
       ) {
-        return this.findOrLinkUser(profile, true);
+        return this.findOrLinkUser(profile, locale, true);
       }
       throw error;
     }

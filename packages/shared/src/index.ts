@@ -1,5 +1,6 @@
 export * from './enums.js';
 export * from './health.js';
+export * from './locale.js';
 export * from './auth.js';
 export * from './account.js';
 export * from './groups.js';

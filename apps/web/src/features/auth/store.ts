@@ -2,11 +2,13 @@ import type {
   AuthProviders,
   AuthResponse,
   AuthUser,
+  Locale,
   LoginRequest,
 } from '@watchlist/shared';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { ApiRequestError, setAuthHooks } from '@/api/http';
+import { applyLocale, currentLocale } from '@/features/locale/locale';
 import { authApi } from './api';
 
 /** Verrou partagé entre onglets : un seul refresh à la fois, sinon la rotation croirait à un vol. */
@@ -35,6 +37,10 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = session.accessToken;
     user.value = session.user;
     status.value = 'authenticated';
+    // La langue du compte (celle des emails) l'emporte sur celle de l'appareil.
+    if (session.user.locale !== currentLocale.value) {
+      applyLocale(session.user.locale);
+    }
   }
 
   function clearSession() {
@@ -97,6 +103,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Change la langue de l'interface, et celle du compte (emails) si l'on est
+   * connecté. L'interface bascule tout de suite ; en cas d'échec réseau, elle
+   * reste dans la nouvelle langue et l'erreur remonte à l'appelant.
+   */
+  async function changeLocale(locale: Locale) {
+    applyLocale(locale);
+    if (status.value !== 'authenticated') return;
+    user.value = await authApi.updateLocale(locale);
+  }
+
   setAuthHooks({ getAccessToken: () => accessToken.value, refresh });
 
   return {
@@ -112,5 +129,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     applySession,
     clearSession,
+    changeLocale,
   };
 });

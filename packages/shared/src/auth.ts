@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { localeSchema, type Locale } from './locale.js';
 
 /**
  * Contrats de l'authentification par email, partagés par le front (validation
@@ -46,6 +47,8 @@ export const registerRequestSchema = z.object({
   email: emailSchema,
   password: newPasswordSchema,
   displayName: displayNameSchema,
+  /** Langue de l'écran d'inscription : celle des emails envoyés ensuite. */
+  locale: localeSchema.optional(),
 });
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 
@@ -79,6 +82,8 @@ export interface AuthUser {
   emailVerified: boolean;
   /** Faux pour un compte créé avec Google sans mot de passe. */
   hasPassword: boolean;
+  /** Langue choisie (interface et emails). */
+  locale: Locale;
 }
 
 /** Réponse des routes qui ouvrent une session (connexion, refresh, vérification). */

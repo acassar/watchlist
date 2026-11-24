@@ -19,6 +19,9 @@ model User {
   passwordHash    String?   @map("password_hash")
   googleId        String?   @unique @map("google_id")
   displayName     String    @map("display_name")
+  /// Langue de l'interface et des emails ('fr' | 'en', validée par le schéma
+  /// Zod partagé). Choisie à l'inscription, modifiable dans les réglages.
+  locale          String    @default("fr")
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
