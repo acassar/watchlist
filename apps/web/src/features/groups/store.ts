@@ -10,8 +10,8 @@ import { groupsApi } from './api';
 import { activeGroupMemory } from './storage';
 
 function toSummary(group: GroupDetail | GroupSummary): GroupSummary {
-  const { id, name, role, memberCount } = group;
-  return { id, name, role, memberCount };
+  const { id, name, role, memberCount, activeTitleCount } = group;
+  return { id, name, role, memberCount, activeTitleCount };
 }
 
 /**

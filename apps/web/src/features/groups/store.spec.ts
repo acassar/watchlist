@@ -3,8 +3,20 @@ import { useAuthStore } from '@/features/auth/store';
 import { fakeUser, fetchByUrl } from '@/test/setup';
 import { useGroupsStore } from './store';
 
-const nousDeux = { id: 'g1', name: 'Nous deux', role: 'OWNER', memberCount: 2 };
-const coloc = { id: 'g2', name: 'Coloc', role: 'MEMBER', memberCount: 3 };
+const nousDeux = {
+  id: 'g1',
+  name: 'Nous deux',
+  role: 'OWNER',
+  memberCount: 2,
+  activeTitleCount: 0,
+};
+const coloc = {
+  id: 'g2',
+  name: 'Coloc',
+  role: 'MEMBER',
+  memberCount: 3,
+  activeTitleCount: 0,
+};
 
 describe('store des groupes', () => {
   beforeEach(() => {

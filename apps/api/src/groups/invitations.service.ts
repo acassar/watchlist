@@ -23,6 +23,7 @@ import type { Env } from '../config.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { groupNotFound, type Membership } from './group-member.guard.js';
+import { countActiveTitles } from '../titles/active-titles.js';
 import { assertGroupRoom, lockGroup } from './groups.service.js';
 import { generateInvitationCode } from './invitation-code.js';
 
@@ -237,6 +238,7 @@ export class InvitationsService {
           name: group.name,
           role: existing.role,
           memberCount: members.length,
+          activeTitleCount: await countActiveTitles(tx, group.id),
         };
       }
       if (members.length >= GROUP_MAX_MEMBERS) {
@@ -259,6 +261,7 @@ export class InvitationsService {
         name: group.name,
         role: GroupRole.MEMBER,
         memberCount: members.length + 1,
+        activeTitleCount: await countActiveTitles(tx, group.id),
       };
     });
   }

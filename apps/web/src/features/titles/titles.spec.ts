@@ -9,7 +9,13 @@ import { fakeUser, fetchByUrl } from '@/test/setup';
 import { rick, titleOf } from '@/test/titles';
 
 const session = [200, { accessToken: 'jwt', user: fakeUser }] as const;
-const nousDeux = { id: 'g1', name: 'Nous deux', role: 'OWNER', memberCount: 2 };
+const nousDeux = {
+  id: 'g1',
+  name: 'Nous deux',
+  role: 'OWNER',
+  memberCount: 2,
+  activeTitleCount: 0,
+};
 const LINK = 'https://youtu.be/dQw4w9WgXcQ?si=partage';
 const resolveUrl = (url: string) =>
   `/api/media/resolve?${new URLSearchParams({ url })}`;
@@ -86,6 +92,44 @@ describe('ajout d’un titre par lien', () => {
     expect(row.text()).toContain('Rick Astley · 3:33');
     expect(row.find('img').attributes('src')).toBe(rick.thumbnailUrl);
     expect(row.find('img').attributes('referrerpolicy')).toBe('no-referrer');
+  });
+
+  it('montre le compteur de titres en cours', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [session],
+        '/api/groups': [[200, [{ ...nousDeux, activeTitleCount: 12 }]]],
+        '/api/groups/g1/titles': [[200, [titleOf(rick)]]],
+      }),
+    );
+    const wrapper = await mountApp();
+
+    expect(wrapper.find('[data-test="active-count"]').text()).toBe(
+      '12/50 en cours',
+    );
+  });
+
+  it('liste pleine : l’ajout le dit tout de suite, sans formulaire', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [session],
+        '/api/groups': [[200, [{ ...nousDeux, activeTitleCount: 50 }]]],
+        '/api/groups/g1/titles': [[200, []]],
+      }),
+    );
+    const wrapper = await mountApp();
+    expect(wrapper.find('[data-test="active-count"]').text()).toContain(
+      'Liste pleine',
+    );
+
+    await openSheet();
+    expect(el('[data-test="active-full"]').textContent).toContain(
+      'Regardez-en un ensemble',
+    );
+    expect(document.querySelector('[data-test="link"]')).toBeNull();
+    expect(document.querySelector('[data-test="add-submit"]')).toBeNull();
   });
 
   it('colle le lien, montre l’aperçu et ajoute avec « Sans moi, ok » présélectionné', async () => {

@@ -14,6 +14,7 @@ import {
 } from '@watchlist/shared';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { countActiveTitles } from '../titles/active-titles.js';
 import { groupNotFound } from './group-member.guard.js';
 
 export type Tx = Prisma.TransactionClient;
@@ -65,14 +66,17 @@ export class GroupsService {
       where: { userId },
       include: { group: { include: memberCount } },
     });
-    return memberships
-      .map(({ group, role }) => ({
+    const summaries = [];
+    for (const { group, role } of memberships) {
+      summaries.push({
         id: group.id,
         name: group.name,
         role,
         memberCount: group._count.members,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+        activeTitleCount: await countActiveTitles(this.prisma, group.id),
+      });
+    }
+    return summaries.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
   }
 
   /** Crée un groupe dont l'utilisateur est le propriétaire (et, pour l'instant, le seul membre). */
@@ -118,6 +122,7 @@ export class GroupsService {
       name: group.name,
       role: me.role,
       memberCount: members.length,
+      activeTitleCount: await countActiveTitles(this.prisma, group.id),
       createdAt: group.createdAt.toISOString(),
       members,
     };

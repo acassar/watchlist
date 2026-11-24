@@ -10,12 +10,19 @@ import { useGroupsStore } from '../store';
 
 const session = [200, { accessToken: 'jwt', user: fakeUser }] as const;
 const anonymous = [401, { code: 'UNAUTHENTICATED' }] as const;
-const nousDeux = { id: 'g1', name: 'Nous deux', role: 'OWNER', memberCount: 2 };
+const nousDeux = {
+  id: 'g1',
+  name: 'Nous deux',
+  role: 'OWNER',
+  memberCount: 2,
+  activeTitleCount: 0,
+};
 const coloc = {
   id: 'g2',
   name: 'Coloc Rivoli',
   role: 'MEMBER',
   memberCount: 3,
+  activeTitleCount: 0,
 };
 
 async function settle() {

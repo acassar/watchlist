@@ -9,7 +9,13 @@ import { fakeUser, fetchByUrl } from '@/test/setup';
 import { media, titleOf } from '@/test/titles';
 
 const session = [200, { accessToken: 'jwt', user: fakeUser }] as const;
-const nousDeux = { id: 'g1', name: 'Nous deux', role: 'OWNER', memberCount: 2 };
+const nousDeux = {
+  id: 'g1',
+  name: 'Nous deux',
+  role: 'OWNER',
+  memberCount: 2,
+  activeTitleCount: 0,
+};
 const LIST = '/api/groups/g1/titles';
 
 const alone = titleOf(media(1), { id: 'a1' });

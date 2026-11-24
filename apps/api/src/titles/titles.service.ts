@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import {
   ACTIVE_VIEWS,
-  GROUP_MAX_ACTIVE_TITLES,
   GROUP_MAX_TITLES,
   isCounted,
   TitleErrorCode,
@@ -19,6 +18,7 @@ import { groupNotFound } from '../groups/group-member.guard.js';
 import { lockGroup, type Tx } from '../groups/groups.service.js';
 import { MediaService, toMediaInfo } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { assertActiveRoom, assertActiveWithinLimit } from './active-titles.js';
 
 const titleInclude = {
   mediaItem: true,
@@ -42,25 +42,6 @@ function titleNotFound() {
     code: 'NOT_FOUND',
     message: 'Ce titre ne fait pas partie du groupe',
   });
-}
-
-/**
- * À appeler sous le verrou du groupe avant de remettre un titre en cours
- * (hors verrou : simple pré-contrôle, à refaire ensuite sous verrou).
- */
-async function assertActiveRoom(
-  tx: Tx | PrismaService,
-  groupId: string,
-): Promise<void> {
-  const active = await tx.groupTitle.count({
-    where: { groupId, watchedTogetherAt: null },
-  });
-  if (active >= GROUP_MAX_ACTIVE_TITLES) {
-    throw new ConflictException({
-      code: TitleErrorCode.TOO_MANY_ACTIVE_TITLES,
-      message: 'Trop de titres en cours dans ce groupe',
-    });
-  }
 }
 
 /**
@@ -223,19 +204,13 @@ export class TitlesService {
     watchedAt: Date | null,
   ): Promise<GroupTitle> {
     return this.write(groupId, userId, titleId, async (tx) => {
-      // Annuler un « vu ensemble » remet le titre dans la liste en cours :
-      // même limite qu'un ajout, sinon on la contournerait.
-      if (watchedAt === null) {
-        const current = await tx.groupTitle.findUniqueOrThrow({
-          where: { id: titleId },
-          select: { watchedTogetherAt: true },
-        });
-        if (current.watchedTogetherAt) await assertActiveRoom(tx, groupId);
-      }
       await tx.groupTitle.update({
         where: { id: titleId },
         data: { watchedTogetherAt: watchedAt },
       });
+      // Annuler un « vu ensemble » peut remettre le titre en cours : même
+      // limite qu'un ajout, sinon on la contournerait.
+      if (watchedAt === null) await assertActiveWithinLimit(tx, groupId);
     });
   }
 

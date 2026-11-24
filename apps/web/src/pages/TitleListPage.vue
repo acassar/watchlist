@@ -3,6 +3,7 @@ import { mdiHistory } from '@mdi/js';
 import type { GroupTitle, WatchStatus } from '@watchlist/shared';
 import { computed, watch } from 'vue';
 import { useGroupsStore } from '@/features/groups/store';
+import ActiveTitlesCounter from '@/features/titles/components/ActiveTitlesCounter.vue';
 import NoticeSnackbar from '@/features/titles/components/NoticeSnackbar.vue';
 import StatusSheet from '@/features/titles/components/StatusSheet.vue';
 import SwipeCard from '@/features/titles/components/SwipeCard.vue';
@@ -91,9 +92,15 @@ function decide(title: GroupTitle, status: WatchStatus) {
     </div>
 
     <template v-else>
-      <h1 class="font-display text-headline-small mb-1">
-        {{ $t(`views.${view}`) }}
-      </h1>
+      <div class="d-flex align-center ga-2 mb-1">
+        <h1 class="font-display text-headline-small flex-grow-1">
+          {{ $t(`views.${view}`) }}
+        </h1>
+        <ActiveTitlesCounter
+          v-if="groups.activeGroup"
+          :count="groups.activeGroup.activeTitleCount"
+        />
+      </div>
 
       <v-alert
         v-if="titles.status === 'error'"

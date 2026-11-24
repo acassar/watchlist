@@ -2,6 +2,7 @@
 import { mdiContentPaste } from '@mdi/js';
 import {
   formatDuration,
+  GROUP_MAX_ACTIVE_TITLES,
   mediaUrlSchema,
   WatchStatus,
   type MediaInfo,
@@ -10,8 +11,10 @@ import type { GroupSummary } from '@watchlist/shared';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiErrorMessage } from '@/features/auth/validation';
+import { useGroupsStore } from '@/features/groups/store';
 import { titlesApi } from '../api';
 import { useTitlesStore } from '../store';
+import ActiveTitlesCounter from './ActiveTitlesCounter.vue';
 import MediaThumb from './MediaThumb.vue';
 import StatusPicker from './StatusPicker.vue';
 
@@ -28,6 +31,16 @@ const props = defineProps<{
 const emit = defineEmits<{ added: [groupName: string]; cancel: [] }>();
 const { t } = useI18n();
 const titles = useTitlesStore();
+const groups = useGroupsStore();
+
+/** Titres en cours, à jour (le résumé reçu en prop peut dater). */
+const activeCount = computed(
+  () =>
+    groups.groups.find((g) => g.id === props.group.id)?.activeTitleCount ??
+    props.group.activeTitleCount,
+);
+/** Liste pleine : on le dit tout de suite, sans aperçu (ni appel à YouTube). */
+const full = computed(() => activeCount.value >= GROUP_MAX_ACTIVE_TITLES);
 
 const link = ref(props.initialLink ?? '');
 const preview = ref<MediaInfo | null>(null);
@@ -85,7 +98,7 @@ async function resolve() {
 }
 
 onMounted(() => {
-  if (link.value) resolve();
+  if (link.value && !full.value) resolve();
 });
 
 // Lien modifié après l'aperçu : l'aperçu ne correspond plus.
@@ -142,7 +155,18 @@ async function submit() {
 
 <template>
   <div>
-    <v-card-text class="pt-4">
+    <v-card-text v-if="full" class="pt-4" data-test="active-full">
+      <v-alert
+        type="warning"
+        variant="tonal"
+        :title="$t('titles.active.fullTitle')"
+        :text="$t('titles.active.fullBody', { max: GROUP_MAX_ACTIVE_TITLES })"
+      />
+    </v-card-text>
+    <v-card-text v-else class="pt-4">
+      <div class="d-flex justify-end mb-3">
+        <ActiveTitlesCounter :count="activeCount" />
+      </div>
       <v-btn
         v-if="canReadClipboard && !initialLink"
         color="primary"
@@ -219,6 +243,7 @@ async function submit() {
       </v-btn>
       <v-spacer />
       <v-btn
+        v-if="!full"
         color="primary"
         variant="flat"
         rounded="pill"

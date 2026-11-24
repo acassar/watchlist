@@ -10,6 +10,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useAuthStore } from '@/features/auth/store';
 import { lastAddGroupMemory } from '@/features/groups/storage';
+import { useGroupsStore } from '@/features/groups/store';
 import { titlesApi } from './api';
 
 /** Changement local appliqué avant la réponse de l'API (mise à jour optimiste). */
@@ -25,6 +26,7 @@ type Patch = {
  */
 export const useTitlesStore = defineStore('titles', () => {
   const auth = useAuthStore();
+  const groups = useGroupsStore();
   /** Mes listes actives (toutes vues confondues). */
   const titles = ref<GroupTitle[]>([]);
   /** Historique (vus, écartés), chargé à la demande. */
@@ -111,6 +113,8 @@ export const useTitlesStore = defineStore('titles', () => {
     if (!id) return;
     load(id).catch(() => undefined);
     if (historyStatus.value !== 'idle') loadHistory(id).catch(() => undefined);
+    // Compteur de titres en cours (dans le résumé du groupe).
+    groups.load().catch(() => undefined);
   }
 
   async function add(id: string, body: AddTitleRequest): Promise<GroupTitle> {
@@ -120,6 +124,8 @@ export const useTitlesStore = defineStore('titles', () => {
     if (groupId.value === id) {
       titles.value = [title, ...titles.value.filter((t) => t.id !== title.id)];
       refresh();
+    } else {
+      groups.load().catch(() => undefined);
     }
     return title;
   }

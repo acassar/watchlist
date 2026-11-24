@@ -85,7 +85,13 @@ describe('Groupes et invitations (e2e)', () => {
 
       const list = await http().get('/api/groups').set(adrien.auth).expect(200);
       expect(list.body).toEqual([
-        { id: res.body.id, name: 'Nous deux', role: 'OWNER', memberCount: 1 },
+        {
+          id: res.body.id,
+          name: 'Nous deux',
+          role: 'OWNER',
+          memberCount: 1,
+          activeTitleCount: 0,
+        },
       ]);
     });
 
@@ -201,6 +207,7 @@ describe('Groupes et invitations (e2e)', () => {
         name: 'Nous deux',
         role: 'MEMBER',
         memberCount: 2,
+        activeTitleCount: 0,
       });
 
       const detail = await http()

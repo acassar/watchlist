@@ -107,6 +107,8 @@ export interface GroupSummary {
   /** Mon rôle dans ce groupe. */
   role: GroupRole;
   memberCount: number;
+  /** Titres en cours (pas encore dans l'historique), sur GROUP_MAX_ACTIVE_TITLES. */
+  activeTitleCount: number;
 }
 
 export interface GroupMember {

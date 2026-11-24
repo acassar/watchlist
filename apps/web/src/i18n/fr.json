@@ -245,6 +245,12 @@
       "TOGETHER": "Ensemble",
       "NOT_INTERESTED": "Pas pour moi"
     },
+    "active": {
+      "count": "{count}/{max} en cours",
+      "full": "Liste pleine · {count}/{max}",
+      "fullTitle": "Liste pleine",
+      "fullBody": "{max} titres en cours, c'est déjà un beau programme ! Regardez-en un ensemble pour libérer une place."
+    },
     "add": {
       "title": "Ajouter un titre",
       "inGroup": "Dans « {name} »",

@@ -270,6 +270,37 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
           .expect(409);
         expect(res.body.code).toBe('TOO_MANY_ACTIVE_TITLES');
       });
+
+      it('ne compte pas les titres que tout le monde a écartés', async () => {
+        await fill(GROUP_MAX_ACTIVE_TITLES, null);
+        const first = await t.prisma.groupTitle.findFirstOrThrow({
+          where: { groupId },
+        });
+        await t.prisma.memberStatus.createMany({
+          data: [adrien, camille].map((u) => ({
+            groupTitleId: first.id,
+            userId: u.id,
+            status: 'NOT_INTERESTED' as const,
+          })),
+        });
+        await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
+          201,
+        );
+      });
+
+      it('donne le compteur avec les groupes', async () => {
+        await fill(3, null);
+        const res = await http()
+          .get('/api/groups')
+          .set(adrien.auth)
+          .expect(200);
+        expect(res.body[0].activeTitleCount).toBe(3);
+        const detail = await http()
+          .get(`/api/groups/${groupId}`)
+          .set(adrien.auth)
+          .expect(200);
+        expect(detail.body.activeTitleCount).toBe(3);
+      });
     });
 
     it('est réservé aux membres du groupe', async () => {
