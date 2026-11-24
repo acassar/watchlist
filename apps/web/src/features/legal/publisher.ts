@@ -41,7 +41,7 @@ export const operations = {
   /** Journaux du reverse proxy (IP, date, adresse demandée). 1 an au plus. */
   serverLogsRetention: '14 jours',
   /** Sauvegardes pg_dump quotidiennes hors du VPS (décision D9). */
-  backupsRetention: '30 jours',
+  backupsRetention: '30 jours (7 jours pour la copie gardée sur notre serveur)',
   /** Où sont stockées les sauvegardes (prestataire et pays). */
   backupsLocation:
     "sur notre serveur et, chiffrées, dans le service Swiss Backup d'Infomaniak, en Suisse",
