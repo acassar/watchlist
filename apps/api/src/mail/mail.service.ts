@@ -5,6 +5,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { toLocale } from '@watchlist/shared';
 import type { Env } from '../config.js';
 import {
   MailQuotaExceededError,
@@ -22,6 +23,8 @@ import {
 interface Recipient {
   email: string;
   displayName: string;
+  /** Langue de l'email (texte libre en base, ramené à fr/en). */
+  locale: string;
 }
 
 /**
@@ -54,7 +57,11 @@ export class MailService implements OnApplicationShutdown {
   sendVerifyEmail(user: Recipient, token: string) {
     return this.deliver(
       user,
-      verifyEmailTemplate(user.displayName, this.link('/verify-email', token)),
+      verifyEmailTemplate(
+        toLocale(user.locale),
+        user.displayName,
+        this.link('/verify-email', token),
+      ),
     );
   }
 
@@ -62,6 +69,7 @@ export class MailService implements OnApplicationShutdown {
     return this.deliver(
       user,
       resetPasswordTemplate(
+        toLocale(user.locale),
         user.displayName,
         this.link('/reset-password', token),
       ),
@@ -72,6 +80,7 @@ export class MailService implements OnApplicationShutdown {
     return this.deliver(
       user,
       linkPasswordTemplate(
+        toLocale(user.locale),
         user.displayName,
         this.link('/link-password', token),
       ),
@@ -81,7 +90,11 @@ export class MailService implements OnApplicationShutdown {
   sendGoogleLinked(user: Recipient) {
     return this.deliver(
       user,
-      googleLinkedTemplate(user.displayName, `${this.appUrl}/forgot-password`),
+      googleLinkedTemplate(
+        toLocale(user.locale),
+        user.displayName,
+        `${this.appUrl}/forgot-password`,
+      ),
     );
   }
 
@@ -92,7 +105,7 @@ export class MailService implements OnApplicationShutdown {
    */
   async sendInactivityWarning(
     user: Recipient,
-    deletionDate: string,
+    deletionAt: Date,
   ): Promise<void> {
     if (!(await this.quota.tryConsume())) {
       throw new MailQuotaExceededError();
@@ -100,8 +113,9 @@ export class MailService implements OnApplicationShutdown {
     await this.transport.send({
       to: { email: user.email, name: user.displayName },
       ...inactivityWarningTemplate(
+        toLocale(user.locale),
         user.displayName,
-        deletionDate,
+        deletionAt,
         `${this.appUrl}/login`,
       ),
     });

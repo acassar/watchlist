@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import LanguagePicker from '@/features/locale/LanguagePicker.vue';
+
 defineProps<{ title: string; subtitle?: string }>();
 </script>
 
@@ -42,6 +44,8 @@ defineProps<{ title: string; subtitle?: string }>();
         $t('about.title')
       }}</router-link>
     </nav>
+
+    <LanguagePicker compact class="d-flex justify-center mt-3" />
   </v-container>
 </template>
 

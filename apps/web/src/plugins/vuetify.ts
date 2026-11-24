@@ -1,6 +1,7 @@
 import 'vuetify/styles';
 import { createVuetify, type ThemeDefinition } from 'vuetify';
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import { en, fr } from 'vuetify/locale';
 
 /**
  * Ambiance « Cocon du soir » : prune et ambre, comme un canapé à 21 h.
@@ -49,6 +50,8 @@ const canapactLight: ThemeDefinition = {
 
 export const vuetify = createVuetify({
   icons: { defaultSet: 'mdi', aliases, sets: { mdi } },
+  // Textes internes des composants (libellés d'accessibilité…), suivent vue-i18n.
+  locale: { locale: 'fr', fallback: 'fr', messages: { fr, en } },
   // Sombre par défaut (maquette validée), clair disponible.
   theme: {
     defaultTheme: 'canapactDark',

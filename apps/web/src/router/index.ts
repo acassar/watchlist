@@ -124,19 +124,25 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/legal/notice',
     name: 'legal-notice',
-    component: () => import('@/features/legal/pages/LegalNoticePage.vue'),
+    component: () =>
+      import('@/features/legal/components/LocalizedLegalPage.vue'),
+    props: { page: 'notice' },
     meta: legalPage,
   },
   {
     path: '/legal/privacy',
     name: 'privacy',
-    component: () => import('@/features/legal/pages/PrivacyPage.vue'),
+    component: () =>
+      import('@/features/legal/components/LocalizedLegalPage.vue'),
+    props: { page: 'privacy' },
     meta: legalPage,
   },
   {
     path: '/legal/terms',
     name: 'terms',
-    component: () => import('@/features/legal/pages/TermsPage.vue'),
+    component: () =>
+      import('@/features/legal/components/LocalizedLegalPage.vue'),
+    props: { page: 'terms' },
     meta: legalPage,
   },
   {

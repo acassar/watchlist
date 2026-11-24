@@ -140,13 +140,14 @@ describe('Export et suppression du compte (e2e)', () => {
       expect(res.headers['cache-control']).toBe('no-store');
       expect(res.body).toMatchObject({
         format: 'canapact-export',
-        version: 2,
+        version: 3,
         account: {
           id: adrien.id,
           lastActiveAt: expect.any(String),
           inactivityWarnedAt: null,
           email: 'adrien@exemple.fr',
           displayName: 'Adrien',
+          locale: 'fr',
           hasPassword: true,
           googleId: null,
         },

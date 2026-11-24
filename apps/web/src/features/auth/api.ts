@@ -1,5 +1,6 @@
 import type {
   AuthProviders,
+  Locale,
   AuthResponse,
   AuthUser,
   LoginRequest,
@@ -15,8 +16,11 @@ const pub = { auth: false } as const;
  * Départ de la connexion Google : une navigation complète (pas un fetch), car
  * Google affiche sa propre page. `next` = où revenir une fois connecté.
  */
-export function googleLoginUrl(next: string): string {
-  return `/api/auth/google?next=${encodeURIComponent(next)}`;
+export function googleLoginUrl(next: string, locale?: Locale): string {
+  const params = new URLSearchParams({ next });
+  // Langue d'un compte créé au retour de Google.
+  if (locale) params.set('locale', locale);
+  return `/api/auth/google?${params}`;
 }
 
 export const authApi = {
@@ -37,4 +41,6 @@ export const authApi = {
     api<AuthResponse>('/auth/password/link/confirm', { ...pub, body }),
   providers: () => api<AuthProviders>('/auth/providers', pub),
   me: () => api<AuthUser>('/me'),
+  updateLocale: (locale: Locale) =>
+    api<AuthUser>('/me/locale', { method: 'PATCH', body: { locale } }),
 };

@@ -34,6 +34,7 @@ export const fakeUser = {
   displayName: 'Adrien',
   emailVerified: true,
   hasPassword: true,
+  locale: 'fr' as const,
 };
 
 type Reply = readonly [status: number, body?: unknown];

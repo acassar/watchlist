@@ -1,0 +1,407 @@
+{
+  "app": {
+    "title": "Canapact",
+    "tagline": "I'll wait for you, promise."
+  },
+  "nav": {
+    "alone": "Solo",
+    "together": "Together",
+    "pending": "My say"
+  },
+  "views": {
+    "alone": "I can watch solo",
+    "together": "To watch together",
+    "pending": "Waiting for your say",
+    "aloneHint": "Everyone said “go without me” or isn't interested: go for it.",
+    "togetherHint": "Someone wants to watch it with you. We'll wait, promise.",
+    "aloneEmpty": "Nothing to watch solo for now. Tap “+” to add a video.",
+    "togetherEmpty": "Nothing to watch together for now. Tap “+” to add a video.",
+    "waiting": "Waiting for the others",
+    "waitingHint": "You said “go without me”, but someone hasn't answered yet.",
+    "pendingCount": "No title waiting for your say | 1 title waiting for your say | {n} titles waiting for your say",
+    "pendingDoneTitle": "All caught up!",
+    "pendingDone": "You've had your say on every title. Grab a blanket and put something on."
+  },
+  "account": {
+    "menu": "My account",
+    "logout": "Sign out",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "displayName": "First name or nickname",
+    "displayNameHint": "This is what the members of your groups will see.",
+    "passwordHint": "At least 8 characters. A sentence is even better.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "login": {
+      "title": "Welcome back to the couch",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "noAccount": "No account yet?",
+      "register": "Create an account",
+      "notVerified": "Your address isn't confirmed yet. Click the link we emailed you.",
+      "resend": "Resend the link"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "No more “you watched it without me?!”.",
+      "submit": "Create my account",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in",
+      "legal": "By creating an account, you accept the {terms} and the {privacy}.",
+      "legalTerms": "terms of use",
+      "legalPrivacy": "privacy policy"
+    },
+    "checkEmail": {
+      "title": "Check your inbox",
+      "body": "If everything's in order, an email just left for {email}. Click the link inside to carry on.",
+      "spam": "Nothing yet? Have a look in your spam folder, or resend the link.",
+      "resend": "Resend the link",
+      "resent": "Off it goes. A new link is on its way (if the last one left more than a minute ago).",
+      "back": "Back to sign in"
+    },
+    "verify": {
+      "title": "Confirming your address",
+      "loading": "One moment, we're checking your link…",
+      "success": "Address confirmed, welcome!",
+      "failed": "This link is invalid or has expired. Sign in to get a new one.",
+      "continue": "Let's go"
+    },
+    "forgot": {
+      "title": "Forgot your password",
+      "body": "Enter your email: we'll send you a link to choose a new one.",
+      "submit": "Send the link",
+      "sent": "If there's an account for {email}, a link just left. It's valid for 1 hour."
+    },
+    "reset": {
+      "title": "New password",
+      "submit": "Save",
+      "success": "Password changed. For your security, you've been signed out of all your devices.",
+      "login": "Sign in"
+    },
+    "link": {
+      "title": "Add a password",
+      "body": "Choose the password you'll use to sign in by email, on top of Google.",
+      "submit": "Save",
+      "success": "Done: you can now sign in with Google or with your password.",
+      "continue": "Continue"
+    },
+    "missingToken": "This link is incomplete. Copy the whole thing from the email.",
+    "google": {
+      "continue": "Continue with Google",
+      "or": "or",
+      "errors": {
+        "google_cancelled": "Google sign-in cancelled. Try again whenever you like.",
+        "google_email_not_verified": "Google doesn't confirm this account's address. Use another Google account or your email.",
+        "google_account_conflict": "This address is already linked to another Google account. Sign in with that one, or with your password.",
+        "google_failed": "Google sign-in didn't go through. Try again in a moment."
+      }
+    }
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "This email address doesn't look right.",
+    "passwordTooShort": "At least 8 characters.",
+    "passwordTooLong": "128 characters max.",
+    "displayNameTooLong": "50 characters max.",
+    "invalidToken": "Invalid link.",
+    "invalid": "Invalid value.",
+    "invalidLocale": "Unsupported language.",
+    "groupNameTooLong": "50 characters max.",
+    "invitationCode": "A code is 8 characters, letters and digits.",
+    "mediaUrl": "Paste a link (it starts with https://).",
+    "dateInFuture": "This date is in the future."
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Wrong email or password.",
+    "EMAIL_NOT_VERIFIED": "Your address isn't confirmed yet.",
+    "INVALID_TOKEN": "This link is invalid or has expired.",
+    "TOO_MANY_REQUESTS": "Easy there! Too many attempts, try again in a minute.",
+    "EMAIL_ALREADY_REGISTERED": "This address already has an account. Sign in, or use “Forgot your password?”.",
+    "MAIL_QUOTA_EXCEEDED": "Victims of our own success: we've sent all our emails for today. Try again tomorrow, we'll wait for you, promise.",
+    "MAIL_QUOTA_EXCEEDED_GOOGLE": "Victims of our own success: we've sent all our emails for today. Try again tomorrow, or continue with Google, it works right away.",
+    "VALIDATION_ERROR": "Some fields need fixing.",
+    "INVITATION_INVALID": "This invitation is invalid, expired or revoked. Ask for a new one.",
+    "GROUP_FULL": "This group is full (20 members max).",
+    "TOO_MANY_GROUPS": "One group per person for now. Leave yours to create or join another one.",
+    "TOO_MANY_INVITATIONS": "Too many pending invitations: revoke one first.",
+    "OWNER_ONLY": "Only the group owner can do that.",
+    "CANNOT_REMOVE_SELF": "To leave, use “Leave the group”.",
+    "NOT_FOUND": "Not found.",
+    "UNKNOWN": "Oops, something went wrong. Try again in a moment.",
+    "UNSUPPORTED_URL": "This link isn't supported. For now, Canapact reads YouTube links.",
+    "MEDIA_NOT_FOUND": "Video not found: it may be private or deleted.",
+    "MEDIA_UNAVAILABLE": "YouTube isn't answering. Try again in a moment.",
+    "TITLE_ALREADY_IN_GROUP": "Already on the group's list!",
+    "TOO_MANY_TITLES": "This list is full. Maybe it's time to watch something…",
+    "TOO_MANY_ACTIVE_TITLES": "50 titles waiting, that's quite a lineup already! Watch one together to free up a spot.",
+    "CONFIRMATION_MISMATCH": "This address doesn't match your account."
+  },
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "undo": "Undo",
+    "retry": "Try again"
+  },
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "groups": {
+    "name": "Group name",
+    "memberCount": "No members | 1 member | {n} members",
+    "roles": {
+      "OWNER": "Owner",
+      "MEMBER": "Member"
+    },
+    "switcher": {
+      "label": "Active group: {name}. Switch group",
+      "title": "Your groups",
+      "manage": "Manage the group {name}",
+      "create": "Create a group",
+      "join": "Join"
+    },
+    "limit": {
+      "title": "One couch at a time",
+      "body": "For now, everyone gets a single group. If you love Canapact and lots of you want more, we'll knock down a wall!",
+      "leaveHint": "To create or join another one, first leave yours from its settings."
+    },
+    "empty": {
+      "title": "Your couch is waiting",
+      "body": "A group is the list you share. Start on your own if you like, then invite your other half, your friends or your flatmates.",
+      "create": "Create a group",
+      "join": "I have a code"
+    },
+    "create": {
+      "title": "New group",
+      "body": "Give it a name everyone will recognise. You can change it later.",
+      "placeholder": "Just us two, Flat 4B…",
+      "submit": "Create the group"
+    },
+    "join": {
+      "title": "Join a group",
+      "needAccount": "You've been invited to a Canapact group. Create an account or sign in: we'll bring you right back here.",
+      "invitedBy": "{name} invites you to join",
+      "invited": "You're invited to join",
+      "alreadyMember": "You're already in this group.",
+      "open": "Open the group",
+      "accept": "Join the group",
+      "later": "Later",
+      "codeBody": "Enter the 8-character code you were given.",
+      "code": "Invitation code",
+      "submitCode": "Continue",
+      "back": "Back to my lists"
+    },
+    "settings": {
+      "title": "Group",
+      "members": "Members",
+      "you": "(you)",
+      "created": "Group created! Now invite the people you share the couch with.",
+      "notFound": "This group no longer exists, or you're no longer in it."
+    },
+    "invitations": {
+      "title": "Invite",
+      "body": "A link or a code, valid for 7 days. Any member can invite.",
+      "create": "Invite someone",
+      "expires": "Expires on {date}",
+      "uses": "Never used | Used once | Used {n} times",
+      "by": "by {name}",
+      "revoke": "Revoke"
+    },
+    "invite": {
+      "title": "Invitation ready",
+      "body": "Send this link, or read out the code. Valid until {date}.",
+      "link": "Invitation link",
+      "share": "Share",
+      "copyLink": "Copy the link",
+      "copied": "Copied!",
+      "orCode": "Or the code, to enter under “Join”:",
+      "copyCode": "Copy the code",
+      "shareTitle": "Join me on Canapact",
+      "shareText": "Join “{name}” on Canapact, so we stop watching stuff without each other!"
+    },
+    "rename": {
+      "title": "Rename the group"
+    },
+    "remove": {
+      "label": "Remove {name} from the group",
+      "title": "Remove {name}?",
+      "text": "Their answers on the group's titles will be deleted, the titles they added stay. A new invitation will let them come back.",
+      "confirm": "Remove"
+    },
+    "leave": {
+      "action": "Leave the group",
+      "title": "Leave “{name}”?",
+      "lastMember": "You're the only one left: the group and its list will be deleted.",
+      "owner": "{name} will become the owner. Your answers will be deleted, the titles you added stay.",
+      "member": "Your answers on the group's titles will be deleted. The titles you added stay.",
+      "confirm": "Leave"
+    }
+  },
+  "titles": {
+    "addButton": "Add a title",
+    "added": "Added to “{name}”",
+    "empty": "Nothing here for now. Tap “+” to add a video.",
+    "loadError": "Couldn't load the list. Check your connection.",
+    "status": {
+      "OK_ALONE": "Go without me",
+      "TOGETHER": "Together",
+      "NOT_INTERESTED": "Not for me"
+    },
+    "active": {
+      "count": "{count}/{max} in progress",
+      "full": "List full · {count}/{max}",
+      "fullTitle": "List full",
+      "fullBody": "{max} titles in progress, that's quite a lineup already! Watch one together to free up a spot."
+    },
+    "add": {
+      "title": "Add a title",
+      "inGroup": "In “{name}”",
+      "paste": "Paste the link",
+      "link": "YouTube link",
+      "placeholder": "https://youtu.be/…",
+      "preview": "Preview",
+      "noLink": "Paste a YouTube link (it starts with https://).",
+      "clipboardDenied": "Couldn't read the clipboard. Paste the link into the field.",
+      "yourStatus": "And you?",
+      "submit": "Add"
+    },
+    "open": "Open “{title}” on YouTube",
+    "watchOnYoutube": "Watch on YouTube",
+    "yourStatus": "Your say",
+    "addedBy": "Added by {name}",
+    "addedByDeleted": "Added by a former member",
+    "formerMember": "a former member",
+    "memberStatus": "{name}: {status}",
+    "notCounted": "(joined after it was added, doesn't block)",
+    "changeMine": "My say: {status}. Change",
+    "statusLabel": {
+      "OK_ALONE": "go without me",
+      "TOGETHER": "together",
+      "NOT_INTERESTED": "not for me",
+      "PENDING": "no answer yet"
+    },
+    "actions": {
+      "label": "Actions for “{title}”",
+      "watchedAlone": "I've seen it (solo)",
+      "watchedTogether": "We watched it together",
+      "undoTogether": "Not watched together yet",
+      "undoAlone": "Actually, not seen yet",
+      "changeStatus": "Change my say"
+    },
+    "notices": {
+      "watchedAlone": "Seen! It leaves your lists.",
+      "watchedTogether": "Watched together, well done! It leaves the group's lists.",
+      "backInList": "It's back in the lists."
+    }
+  },
+  "history": {
+    "link": "Watched and set aside",
+    "title": "Watched and set aside",
+    "together": "Watched together on {date}",
+    "alone": "Watched solo on {date}",
+    "archived": "Everyone has seen it or passed",
+    "notInterested": "Not for me",
+    "empty": "Nothing yet. Titles you've watched or set aside will show up here."
+  },
+  "tutorial": {
+    "title": "Have your say with a swipe",
+    "body": "Swipe the card:",
+    "OK_ALONE": {
+      "gesture": "Right:",
+      "meaning": "the others can watch it without you."
+    },
+    "TOGETHER": {
+      "gesture": "Up:",
+      "meaning": "you want to watch it together."
+    },
+    "NOT_INTERESTED": {
+      "gesture": "Left:",
+      "meaning": "not your thing, no strings attached."
+    },
+    "buttons": "The three buttons under the card do the same thing. You can always change your mind by tapping your dot.",
+    "ok": "Got it",
+    "replay": "Replay the swipe tutorial"
+  },
+  "share": {
+    "chooseGroup": "Add to which group?",
+    "changeGroup": "Change",
+    "loadError": "Couldn't load your groups. Check your connection.",
+    "empty": {
+      "title": "No link in this share",
+      "body": "Share a video from the YouTube app, or paste its link.",
+      "paste": "Paste a link"
+    },
+    "noGroup": {
+      "title": "You need a group",
+      "body": "Create a group or join your other half's: the video is waiting, we'll add it right after."
+    },
+    "done": {
+      "title": "Added to “{name}”!",
+      "body": "We'll wait for you, promise. You can head back to YouTube.",
+      "openList": "See the list",
+      "another": "Add another video"
+    }
+  },
+  "legal": {
+    "nav": "Legal information",
+    "notice": "Legal notice",
+    "privacy": "Privacy",
+    "privacyTitle": "Privacy policy",
+    "terms": "Terms",
+    "termsTitle": "Terms of use",
+    "updatedAt": "Last updated: {date}",
+    "frenchPrevails": "This is a translation provided for convenience. If it differs from the French version, the French version prevails."
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "My account",
+    "language": "Language",
+    "languageHint": "For the app and the emails we send you.",
+    "data": "My data",
+    "export": "Download my data",
+    "exportHint": "A JSON file with everything Canapact keeps about you: account, groups, titles added, answers.",
+    "exported": "File downloaded.",
+    "legal": "Legal information",
+    "danger": "Delete my account",
+    "deleteHint": "Final: your account and your answers are erased right away.",
+    "delete": {
+      "title": "Delete your account?",
+      "intro": "This is final, and we won't be able to recover anything:",
+      "point1": "your account, your sessions and all your answers are erased;",
+      "point2": "the titles you added stay in your groups, signed “former member”;",
+      "point3": "in groups you own, ownership passes to the longest-standing member;",
+      "point4": "groups where you're the only member are deleted along with their list.",
+      "exportFirst": "Remember to download your data first.",
+      "confirmEmail": "Type your email address again ({email})",
+      "password": "Your password",
+      "submit": "Delete for good",
+      "wrongPassword": "Wrong password.",
+      "reauth": "For your security, sign in again with Google, then start the deletion again.",
+      "reauthButton": "Sign in again with Google"
+    },
+    "deleted": "Your account has been deleted. The couch is still here if you come back.",
+    "support": "About Canapact"
+  },
+  "about": {
+    "title": "About",
+    "what": "Canapact is the watchlist for people who watch in pairs (or more). For each title, everyone says whether you can watch it without them. No more “you watched it without me?!”.",
+    "who": "A small home-made app, no ads and no data selling, by someone who got tired of negotiating every episode.",
+    "credits": "Credits",
+    "youtube": "Video titles, thumbnails and channels come from YouTube, via the YouTube API Services. Canapact is not affiliated with, or endorsed by, YouTube or Google."
+  },
+  "donate": {
+    "title": "Buy Canapact a blanket",
+    "pitch": "Canapact is free and ad-free. If it saves you a few couch arguments, a small donation helps pay for the server (and the blanket).",
+    "button": "Buy a blanket",
+    "newTab": "(opens Liberapay in a new tab)",
+    "hint": "Donations go through Liberapay: Canapact never sees or keeps any of it."
+  }
+}

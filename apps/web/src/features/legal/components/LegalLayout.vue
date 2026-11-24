@@ -4,7 +4,7 @@ import PageHeader from '@/features/groups/components/PageHeader.vue';
 import { LEGAL_UPDATED_AT } from '../publisher';
 
 defineProps<{ title: string }>();
-const { d } = useI18n();
+const { d, locale } = useI18n();
 </script>
 
 <template>
@@ -15,6 +15,15 @@ const { d } = useI18n();
         $t('legal.updatedAt', { date: d(new Date(LEGAL_UPDATED_AT), 'long') })
       }}
     </p>
+    <v-alert
+      v-if="locale !== 'fr'"
+      type="info"
+      variant="tonal"
+      density="compact"
+      class="mb-6"
+      data-test="legal-french-prevails"
+      :text="$t('legal.frenchPrevails')"
+    />
     <article class="legal-body text-body-medium">
       <slot />
     </article>

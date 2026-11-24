@@ -82,7 +82,11 @@ export class GoogleAuthController {
     }
 
     try {
-      const session = await this.google.login(req.user, req.get('user-agent'));
+      const session = await this.google.login(
+        req.user,
+        req.get('user-agent'),
+        req.authInfo?.state?.locale,
+      );
       setRefreshCookie(res, session.refreshToken, this.secureCookie);
       res.redirect(
         `${this.appUrl}${safeRedirectPath(req.authInfo?.state?.next)}`,

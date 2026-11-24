@@ -20,10 +20,13 @@ function fakeRequest(cookies: Record<string, string> = {}) {
   return { req: { cookies, res } as unknown as Request, set };
 }
 
-function storeState(store: CookieStateStore, next = '/together') {
+function storeState(
+  store: CookieStateStore,
+  state: GoogleLoginState = { next: '/together', locale: 'en' },
+) {
   const { req, set } = fakeRequest();
   let handle = '';
-  store.store(req, 'verifier-1', { next }, {}, (_err, h) => {
+  store.store(req, 'verifier-1', state, {}, (_err, h) => {
     handle = h!;
   });
   return { handle, cookie: set.canapact_oauth };
@@ -41,11 +44,14 @@ function verify(store: CookieStateStore, cookie: string, handle: unknown) {
 describe('CookieStateStore', () => {
   const store = new CookieStateStore(SECRET, true);
 
-  it('rend le vérificateur et le chemin de retour au bon state', () => {
+  it('rend le vérificateur, le chemin de retour et la langue au bon state', () => {
     const { handle, cookie } = storeState(store);
     const result = verify(store, cookie, handle);
     expect(result.ok).toBe('verifier-1');
-    expect(result.state as GoogleLoginState).toEqual({ next: '/together' });
+    expect(result.state as GoogleLoginState).toEqual({
+      next: '/together',
+      locale: 'en',
+    });
     expect(result.cleared).toBe(true);
   });
 
