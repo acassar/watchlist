@@ -46,7 +46,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://canapact:${POSTGRES_PASSWORD}@postgres:5432/canapact
-      APP_URL: ${APP_URL:-https://canapact.adrien-cassar.fr}
+      APP_URL: ${APP_URL:-https://canapact.fr}
       COOKIE_SECURE: 'true'
       # Chaîne : client -> Nginx du VPS -> conteneur web -> API. Les deux relais
       # ont des IP locales (127.0.0.1 / réseau Docker) : Express remonte

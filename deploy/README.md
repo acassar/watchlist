@@ -1,6 +1,6 @@
 # Déploiement de Canapact sur le VPS
 
-URL : https://canapact.adrien-cassar.fr
+URL : https://canapact.fr (l'ancienne adresse canapact.adrien-cassar.fr y renvoie, session comprise)
 
 ## Comment ça marche
 
@@ -14,7 +14,7 @@ merge sur main ─> CI verte ─> workflow Deploy
          (si elles échouent, on s'arrête là : le site reste sur l'ancienne version)
       c. remplace api et web (up --wait) ; si la nouvelle version n'est pas en
          bonne santé, relance automatiquement la précédente
-   3. vérifie https://canapact.adrien-cassar.fr/api/health
+   3. vérifie https://canapact.fr/api/health
 ```
 
 Sur le VPS :
@@ -75,13 +75,21 @@ Créer `/srv/canapact/.env` à partir de `env.prod.example` (droits 600, propri�
 ### 3. Site Nginx et HTTPS
 
 ```bash
-sudo cp canapact.host.conf /etc/nginx/sites-available/canapact.adrien-cassar.fr
-sudo ln -s /etc/nginx/sites-available/canapact.adrien-cassar.fr /etc/nginx/sites-enabled/
+sudo cp canapact.host.conf /etc/nginx/sites-available/canapact.fr
+sudo ln -s /etc/nginx/sites-available/canapact.fr /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d canapact.adrien-cassar.fr --redirect
+sudo certbot --nginx -d canapact.fr -d www.canapact.fr -d canapact.adrien-cassar.fr --redirect
 ```
 
-> Prompt : « Ce serveur a un Nginx qui sert déjà d'autres sites, ne les modifie pas. Ajoute un site pour canapact.adrien-cassar.fr avec cette configuration : [coller nginx/canapact.host.conf]. Adapte le chemin si Nginx n'utilise pas sites-available/sites-enabled. Vérifie avec `nginx -t` avant de recharger. Puis obtiens un certificat Let's Encrypt avec `certbot --nginx -d canapact.adrien-cassar.fr --redirect` (installe certbot et son plugin Nginx s'il manque). Vérifie que les autres sites répondent toujours. »
+> Prompt : « Ce serveur a un Nginx qui sert déjà d'autres sites, ne les modifie pas. Ajoute un site pour canapact.fr avec cette configuration : [coller nginx/canapact.host.conf]. Adapte le chemin si Nginx n'utilise pas sites-available/sites-enabled. Vérifie avec `nginx -t` avant de recharger. Puis obtiens un certificat Let's Encrypt avec `certbot --nginx -d canapact.fr -d www.canapact.fr -d canapact.adrien-cassar.fr --redirect` (installe certbot et son plugin Nginx s'il manque). Vérifie que les autres sites répondent toujours. »
+
+`www.canapact.fr` redirige en 301 vers `https://canapact.fr`. L'ancienne adresse `canapact.adrien-cassar.fr` renvoie elle aussi vers la même page de canapact.fr, de façon transparente :
+
+- la session suit (le cookie est lié à l'adresse : l'API la transmet, voir `apps/api/src/auth/handoff.controller.ts`), personne n'a à se reconnecter ;
+- les liens déjà envoyés par email (vérification, invitation), les favoris et les partages restent valables ;
+- l'ancien service worker, qui servait l'app en cache sans voir la redirection, est remplacé par un service worker qui se désinstalle (bloc `location = /sw.js`).
+
+Une PWA installée depuis l'ancienne adresse continue de marcher, mais s'ouvre avec une barre d'adresse : la réinstaller depuis canapact.fr. L'enregistrement DNS de `canapact.adrien-cassar.fr` (zone OVH) doit rester pointé sur le VPS, sinon Certbot ne pourra plus renouveler le certificat. Les trois noms doivent répondre avant de lancer Certbot, qui échoue sinon pour tous.
 
 Avant le premier déploiement, l'adresse répond 502 : c'est normal.
 
@@ -101,13 +109,13 @@ Ensuite, effacer la clé privée du VPS : `sudo rm /home/deploy/.ssh/id_github`.
 
 ### 5. Emails (Brevo)
 
-Créer un compte Brevo, authentifier le domaine expéditeur (enregistrements SPF/DKIM/DMARC dans la zone DNS OVH), puis renseigner `MAIL_FROM_EMAIL` et `BREVO_API_KEY` dans `.env`.
+Créer un compte Brevo, authentifier le domaine expéditeur (enregistrements SPF/DKIM/DMARC dans la zone DNS Infomaniak de canapact.fr), puis renseigner `MAIL_FROM_EMAIL` et `BREVO_API_KEY` dans `.env`.
 
-Expéditeur : `bonjour@canapact.adrien-cassar.fr`. Domaine `canapact.adrien-cassar.fr` authentifié en enregistrements DNS individuels (pas de délégation NS à Brevo, qui casserait l'enregistrement A). Clé API restreinte à « Emails transactionnels » ; elle expire au bout d'un an (créée le 23/11/2026) ou après 90 jours sans envoi : la renouveler avant.
+Expéditeur : `bonjour@canapact.fr`. Domaine `canapact.fr` authentifié en enregistrements DNS individuels (pas de délégation NS à Brevo, qui casserait l'enregistrement A). La réception (`contact@`, alias `bonjour@`) passe par la messagerie kSuite d'Infomaniak : un seul enregistrement SPF, qui inclut Infomaniak et Brevo. Clé API restreinte à « Emails transactionnels » ; elle expire au bout d'un an (créée le 23/11/2026) ou après 90 jours sans envoi : la renouveler avant.
 
 ### 6. Google et YouTube (facultatif)
 
-- Connexion Google : ajouter l'URI de redirection `https://canapact.adrien-cassar.fr/api/auth/google/callback` au client OAuth, puis `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` dans `.env`.
+- Connexion Google : ajouter l'URI de redirection `https://canapact.fr/api/auth/google/callback` au client OAuth, puis `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` dans `.env`.
 - Durée des vidéos : `YOUTUBE_API_KEY` dans `.env`.
 
 Après une modification de `.env` : `cd /srv/canapact && docker compose up -d`.

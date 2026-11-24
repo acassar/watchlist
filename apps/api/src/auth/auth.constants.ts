@@ -10,3 +10,9 @@ export const EMAIL_RESEND_COOLDOWN_MS = 60 * 1000;
 /** Cookie du refresh token : httpOnly, SameSite=Strict, limité aux routes d'auth. */
 export const REFRESH_COOKIE_NAME = 'canapact_rt';
 export const REFRESH_COOKIE_PATH = '/api/auth';
+
+/**
+ * Passage de session de l'ancienne adresse (canapact.adrien-cassar.fr) à
+ * APP_URL : durée de vie du jeton qui transite dans l'URL de redirection.
+ */
+export const HANDOFF_TOKEN_TTL_MS = 60 * 1000;
