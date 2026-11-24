@@ -94,7 +94,7 @@ export class GoogleAuthService {
         const user = await this.prisma.user.findUniqueOrThrow({
           where: { id: existing.id },
         });
-        this.mail.sendGoogleLinked(user);
+        await this.mail.sendGoogleLinked(user);
         return user;
       }
 

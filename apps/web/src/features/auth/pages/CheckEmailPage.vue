@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { mdiEmailFastOutline } from '@mdi/js';
+import { AuthErrorCode } from '@watchlist/shared';
 import { ref } from 'vue';
+import { ApiRequestError } from '@/api/http';
 import { authApi } from '../api';
 import AuthLayout from '../components/AuthLayout.vue';
+import { apiErrorMessage } from '../validation';
 
 // L'adresse arrive par l'état de navigation, pas par l'URL (elle ne reste pas dans l'historique partagé).
 const email = ref<string | null>(
@@ -10,12 +13,27 @@ const email = ref<string | null>(
 );
 const resent = ref(false);
 const loading = ref(false);
+const error = ref<string | null>(null);
 
 async function resend() {
   if (!email.value) return;
   loading.value = true;
-  await authApi.resendVerification(email.value).catch(() => undefined);
-  loading.value = false;
+  error.value = null;
+  try {
+    await authApi.resendVerification(email.value);
+  } catch (e) {
+    // Seul le quota d'emails épuisé mérite d'être dit : le reste (trop
+    // d'essais, réseau) se rattrape en recliquant plus tard.
+    if (
+      e instanceof ApiRequestError &&
+      e.code === AuthErrorCode.MAIL_QUOTA_EXCEEDED
+    ) {
+      error.value = apiErrorMessage(e);
+      return;
+    }
+  } finally {
+    loading.value = false;
+  }
   resent.value = true;
 }
 </script>
@@ -32,6 +50,13 @@ async function resend() {
       {{ $t('auth.checkEmail.spam') }}
     </p>
     <v-alert
+      v-if="error"
+      type="warning"
+      variant="tonal"
+      class="mb-4"
+      :text="error"
+    />
+    <v-alert
       v-if="resent"
       type="success"
       variant="tonal"
@@ -44,7 +69,7 @@ async function resend() {
       rounded="pill"
       block
       :loading="loading"
-      :disabled="resent"
+      :disabled="resent || !!error"
       @click="resend"
     >
       {{ $t('auth.checkEmail.resend') }}
