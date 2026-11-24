@@ -18,6 +18,7 @@ import { groupNotFound } from '../groups/group-member.guard.js';
 import { lockGroup, type Tx } from '../groups/groups.service.js';
 import { MediaService, toMediaInfo } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { assertActiveRoom, assertActiveWithinLimit } from './active-titles.js';
 
 const titleInclude = {
   mediaItem: true,
@@ -202,12 +203,15 @@ export class TitlesService {
     titleId: string,
     watchedAt: Date | null,
   ): Promise<GroupTitle> {
-    return this.write(groupId, userId, titleId, (tx) =>
-      tx.groupTitle.update({
+    return this.write(groupId, userId, titleId, async (tx) => {
+      await tx.groupTitle.update({
         where: { id: titleId },
         data: { watchedTogetherAt: watchedAt },
-      }),
-    );
+      });
+      // Annuler un « vu ensemble » peut remettre le titre en cours : même
+      // limite qu'un ajout, sinon on la contournerait.
+      if (watchedAt === null) await assertActiveWithinLimit(tx, groupId);
+    });
   }
 
   private async members(groupId: string): Promise<GroupMemberInfo[]> {
@@ -287,6 +291,9 @@ export class TitlesService {
     url: string,
     status: WatchStatus,
   ): Promise<GroupTitle> {
+    // Liste pleine : on refuse avant d'interroger YouTube (attente et quota
+    // épargnés). Le contrôle est refait sous verrou pour les ajouts simultanés.
+    await assertActiveRoom(this.prisma, groupId);
     const mediaItem = await this.media.resolve(url);
 
     try {
@@ -309,6 +316,7 @@ export class TitlesService {
             message: 'Cette liste est pleine',
           });
         }
+        await assertActiveRoom(tx, groupId);
 
         return tx.groupTitle.create({
           data: {

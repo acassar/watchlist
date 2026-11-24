@@ -85,13 +85,41 @@ describe('Groupes et invitations (e2e)', () => {
 
       const list = await http().get('/api/groups').set(adrien.auth).expect(200);
       expect(list.body).toEqual([
-        { id: res.body.id, name: 'Nous deux', role: 'OWNER', memberCount: 1 },
+        {
+          id: res.body.id,
+          name: 'Nous deux',
+          role: 'OWNER',
+          memberCount: 1,
+          activeTitleCount: 0,
+        },
       ]);
     });
 
-    it('liste plusieurs groupes par ordre alphabétique', async () => {
-      await createGroup(adrien, 'Coloc');
+    it('un seul groupe par personne, une place se libère en le quittant', async () => {
+      const first = await createGroup(adrien, 'Coloc');
+      const res = await http()
+        .post('/api/groups')
+        .set(adrien.auth)
+        .send({ name: 'Amis' })
+        .expect(409);
+      expect(res.body.code).toBe('TOO_MANY_GROUPS');
+
+      await http()
+        .post(`/api/groups/${first}/leave`)
+        .set(adrien.auth)
+        .expect(204);
       await createGroup(adrien, 'Amis');
+    });
+
+    it('liste plusieurs groupes par ordre alphabétique (comptes d’avant la limite)', async () => {
+      await createGroup(adrien, 'Coloc');
+      // Arrivé avant la limite d'un groupe : il les garde.
+      await t.prisma.group.create({
+        data: {
+          name: 'Amis',
+          members: { create: { userId: adrien.id, role: 'OWNER' } },
+        },
+      });
       const list = await http().get('/api/groups').set(adrien.auth).expect(200);
       expect(list.body.map((g: { name: string }) => g.name)).toEqual([
         'Amis',
@@ -179,6 +207,7 @@ describe('Groupes et invitations (e2e)', () => {
         name: 'Nous deux',
         role: 'MEMBER',
         memberCount: 2,
+        activeTitleCount: 0,
       });
 
       const detail = await http()
@@ -227,6 +256,19 @@ describe('Groupes et invitations (e2e)', () => {
 
       const res = await accept(adrien, { token }).expect(200);
       expect(res.body.role).toBe('OWNER');
+      const row = await t.prisma.invitation.findUniqueOrThrow({
+        where: { id },
+      });
+      expect(row.uses).toBe(0);
+    });
+
+    it('refuse de rejoindre un 2e groupe sans consommer l’invitation', async () => {
+      const groupId = await createGroup(adrien);
+      await createGroup(camille, 'Coloc');
+      const { id, token } = await invite(adrien, groupId);
+
+      const res = await accept(camille, { token }).expect(409);
+      expect(res.body.code).toBe('TOO_MANY_GROUPS');
       const row = await t.prisma.invitation.findUniqueOrThrow({
         where: { id },
       });

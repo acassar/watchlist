@@ -126,6 +126,7 @@
     "VALIDATION_ERROR": "Certains champs sont à corriger.",
     "INVITATION_INVALID": "Cette invitation est invalide, expirée ou révoquée. Demandez-en une nouvelle.",
     "GROUP_FULL": "Ce groupe est complet (20 membres maximum).",
+    "TOO_MANY_GROUPS": "Un seul groupe par personne pour l'instant. Quittez le vôtre pour en créer ou en rejoindre un autre.",
     "TOO_MANY_INVITATIONS": "Trop d'invitations en cours : révoquez-en une d'abord.",
     "OWNER_ONLY": "Seul le propriétaire du groupe peut faire ça.",
     "CANNOT_REMOVE_SELF": "Pour partir, utilisez « Quitter le groupe ».",
@@ -136,6 +137,7 @@
     "MEDIA_UNAVAILABLE": "YouTube ne répond pas. Réessayez dans un instant.",
     "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
     "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…",
+    "TOO_MANY_ACTIVE_TITLES": "50 titres en attente, c'est déjà un beau programme ! Regardez-en un ensemble pour libérer une place.",
     "CONFIRMATION_MISMATCH": "L'adresse ne correspond pas à votre compte."
   },
   "common": {
@@ -159,6 +161,11 @@
       "manage": "Gérer le groupe {name}",
       "create": "Créer un groupe",
       "join": "Rejoindre"
+    },
+    "limit": {
+      "title": "Un canapé à la fois",
+      "body": "Pour l'instant, chacun a un seul groupe. Si Canapact vous plaît et que vous êtes nombreux à en vouloir plus, on poussera les murs !",
+      "leaveHint": "Pour en créer ou en rejoindre un autre, quittez d'abord le vôtre depuis ses réglages."
     },
     "empty": {
       "title": "Votre canapé vous attend",
@@ -241,6 +248,12 @@
       "OK_ALONE": "Sans moi, ok",
       "TOGETHER": "Ensemble",
       "NOT_INTERESTED": "Pas pour moi"
+    },
+    "active": {
+      "count": "{count}/{max} en cours",
+      "full": "Liste pleine · {count}/{max}",
+      "fullTitle": "Liste pleine",
+      "fullBody": "{max} titres en cours, c'est déjà un beau programme ! Regardez-en un ensemble pour libérer une place."
     },
     "add": {
       "title": "Ajouter un titre",

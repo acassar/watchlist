@@ -16,6 +16,12 @@ import type { TitleView } from './views.js';
 export const MEDIA_URL_MAX_LENGTH = 2048;
 /** Garde-fou contre l'abus : une watchlist de couple n'en approche pas. */
 export const GROUP_MAX_TITLES = 2000;
+/**
+ * Titres « en cours » (pas encore vus ensemble) par groupe. Limite volontaire
+ * pour garder une liste qu'on regarde vraiment : marquer un titre « vu
+ * ensemble » libère une place.
+ */
+export const GROUP_MAX_ACTIVE_TITLES = 50;
 
 /** Toutes les URL http(s) d'un texte, dans l'ordre. */
 export function findAllUrls(text: string): string[] {
@@ -122,6 +128,8 @@ export const TitleErrorCode = {
   MEDIA_UNAVAILABLE: 'MEDIA_UNAVAILABLE',
   TITLE_ALREADY_IN_GROUP: 'TITLE_ALREADY_IN_GROUP',
   TOO_MANY_TITLES: 'TOO_MANY_TITLES',
+  /** Trop de titres en cours (GROUP_MAX_ACTIVE_TITLES). */
+  TOO_MANY_ACTIVE_TITLES: 'TOO_MANY_ACTIVE_TITLES',
 } as const;
 export type TitleErrorCode =
   (typeof TitleErrorCode)[keyof typeof TitleErrorCode];
