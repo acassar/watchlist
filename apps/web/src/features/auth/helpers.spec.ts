@@ -28,4 +28,12 @@ describe('helpers d’auth', () => {
     ).toBe('Email ou mot de passe incorrect.');
     expect(apiErrorMessage(new Error('?'))).toContain('Oups');
   });
+
+  it('suggère Google quand le quota d’emails est épuisé, s’il est proposé', () => {
+    const quota = new ApiRequestError(503, 'MAIL_QUOTA_EXCEEDED', 'x');
+    expect(apiErrorMessage(quota)).not.toContain('Google');
+    expect(apiErrorMessage(quota, { googleAvailable: true })).toContain(
+      'continuez avec Google',
+    );
+  });
 });

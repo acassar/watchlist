@@ -11,9 +11,11 @@ import { authApi } from '../api';
 import AuthLayout from '../components/AuthLayout.vue';
 import GoogleButton from '../components/GoogleButton.vue';
 import PasswordField from '../components/PasswordField.vue';
+import { useAuthStore } from '../store';
 import { apiErrorMessage, zodRule } from '../validation';
 
 const router = useRouter();
+const auth = useAuthStore();
 const route = useRoute();
 
 const displayName = ref('');
@@ -36,7 +38,9 @@ async function submit(event: Promise<{ valid: boolean }>) {
     // La réponse est la même que l'adresse soit nouvelle ou non : on renvoie vers les emails.
     await router.push({ name: 'check-email', state: { email: body.email } });
   } catch (e) {
-    error.value = apiErrorMessage(e);
+    error.value = apiErrorMessage(e, {
+      googleAvailable: !!auth.providers?.google,
+    });
   } finally {
     loading.value = false;
   }

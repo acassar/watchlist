@@ -19,11 +19,20 @@ function translate(key: string): string {
   return i18n.global.te(key) ? t(key) : key;
 }
 
-/** Message à afficher pour une erreur d'API. */
-export function apiErrorMessage(error: unknown): string {
+/**
+ * Message à afficher pour une erreur d'API. `googleAvailable` : la connexion
+ * Google est proposée sur la page, on la suggère quand plus aucun email ne
+ * peut partir aujourd'hui (elle n'en envoie pas).
+ */
+export function apiErrorMessage(
+  error: unknown,
+  { googleAvailable = false }: { googleAvailable?: boolean } = {},
+): string {
   const t = i18n.global.t as (key: string) => string;
   if (error instanceof ApiRequestError) {
-    const key = `errors.${error.code}`;
+    const suffix =
+      googleAvailable && error.code === 'MAIL_QUOTA_EXCEEDED' ? '_GOOGLE' : '';
+    const key = `errors.${error.code}${suffix}`;
     if (i18n.global.te(key)) return t(key);
   }
   return t('errors.UNKNOWN');
