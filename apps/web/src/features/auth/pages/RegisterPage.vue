@@ -35,7 +35,6 @@ async function submit(event: Promise<{ valid: boolean }>) {
       password: password.value,
     });
     await authApi.register(body);
-    // La réponse est la même que l'adresse soit nouvelle ou non : on renvoie vers les emails.
     await router.push({ name: 'check-email', state: { email: body.email } });
   } catch (e) {
     error.value = apiErrorMessage(e, {

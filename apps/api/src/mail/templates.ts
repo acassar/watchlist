@@ -93,26 +93,6 @@ export function linkPasswordTemplate(name: string, url: string): Template {
   };
 }
 
-export function alreadyRegisteredTemplate(
-  name: string,
-  loginUrl: string,
-  forgotUrl: string,
-): Template {
-  return {
-    subject: 'Vous avez déjà un compte Canapact',
-    ...layout({
-      greeting: `Bonsoir ${name},`,
-      paragraphs: [
-        'Quelqu’un vient d’essayer de créer un compte avec votre adresse, mais vous en avez déjà un. Promis, on ne vous en fait pas un deuxième.',
-        `Mot de passe oublié ? Réinitialisez-le ici : ${forgotUrl}`,
-      ],
-      action: { label: 'Me connecter', url: loginUrl },
-      footer:
-        'Ce n’est pas vous ? Ignorez cet email, votre compte n’a pas changé.',
-    }),
-  };
-}
-
 export function googleLinkedTemplate(
   name: string,
   forgotUrl: string,

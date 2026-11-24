@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   ServiceUnavailableException,
@@ -62,27 +63,32 @@ export class AuthService {
   ) {}
 
   /**
-   * Inscription. La réponse est toujours la même (« vérifiez vos emails ») pour ne
-   * pas révéler si un compte existe ; c'est l'email reçu qui diffère :
+   * Inscription. Adresse d'un compte actif : refus « déjà inscrit » à l'écran,
+   * sans email (choix assumé : savoir qui est inscrit n'est pas grave, et un
+   * email de prévenance renvoyable en boucle viderait le quota du jour).
+   * Sinon la réponse est « vérifiez vos emails », et c'est l'email qui diffère :
    * - adresse inconnue : création du compte + lien de vérification ;
    * - compte sans mot de passe (créé via Google) : lien pour choisir un mot de
    *   passe. Celui tapé à l'inscription est ignoré : sinon un inconnu pourrait
    *   s'inscrire avec l'adresse d'un compte Google et attendre que le vrai
    *   propriétaire clique « oui » dans l'email pour entrer avec son mot de passe à lui ;
    * - compte jamais vérifié : nouveau lien de vérification qui porte le mot de
-   *   passe choisi cette fois-ci (appliqué au clic, voir verifyEmail) ;
-   * - compte actif : email « vous avez déjà un compte ».
+   *   passe choisi cette fois-ci (appliqué au clic, voir verifyEmail).
    *
-   * Quota d'emails du jour épuisé : refus avant tout, quel que soit le compte
-   * (le refus ne révèle donc rien), et sans rien créer.
+   * Quota d'emails du jour épuisé : refus « réessayez demain », sans rien créer.
    */
   async register(dto: RegisterRequest): Promise<void> {
-    await this.assertMailAvailable();
-    // Hachage dans tous les cas : la durée de réponse ne trahit pas la branche suivie.
-    const passwordHash = await this.passwords.hash(dto.password);
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+    if (existing?.passwordHash && existing.emailVerifiedAt) {
+      throw new ConflictException({
+        code: AuthErrorCode.EMAIL_ALREADY_REGISTERED,
+        message: 'Cette adresse a déjà un compte',
+      });
+    }
+    await this.assertMailAvailable();
+    const passwordHash = await this.passwords.hash(dto.password);
 
     if (!existing) {
       const user = await this.prisma.user
@@ -113,12 +119,8 @@ export class AuthService {
       return;
     }
 
-    if (existing.emailVerifiedAt === null) {
-      await this.sendVerification(existing, passwordHash);
-      return;
-    }
-
-    await this.mail.sendAlreadyRegistered(existing);
+    // Compte jamais vérifié (le compte actif a été refusé plus haut).
+    await this.sendVerification(existing, passwordHash);
   }
 
   /** Renvoie le lien de vérification si le compte existe et n'est pas encore vérifié. */

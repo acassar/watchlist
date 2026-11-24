@@ -9,7 +9,6 @@ import type { Env } from '../config.js';
 import { MailQuotaService } from './mail-quota.service.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
-  alreadyRegisteredTemplate,
   googleLinkedTemplate,
   inactivityWarningTemplate,
   linkPasswordTemplate,
@@ -72,17 +71,6 @@ export class MailService implements OnApplicationShutdown {
       linkPasswordTemplate(
         user.displayName,
         this.link('/link-password', token),
-      ),
-    );
-  }
-
-  sendAlreadyRegistered(user: Recipient) {
-    return this.deliver(
-      user,
-      alreadyRegisteredTemplate(
-        user.displayName,
-        `${this.appUrl}/login`,
-        `${this.appUrl}/forgot-password`,
       ),
     );
   }
