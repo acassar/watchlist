@@ -29,6 +29,9 @@ describe('lien de don', () => {
       'https://liberapay.com/canapact/donate',
     );
     expect(donationUrl(' a b ')).toBe('https://liberapay.com/a%20b/donate');
+    expect(donationUrl('1935215')).toBe(
+      'https://liberapay.com/~1935215/donate',
+    );
   });
 
   it('n’existe pas sans identifiant', () => {
