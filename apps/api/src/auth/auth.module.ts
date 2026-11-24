@@ -16,6 +16,7 @@ import {
 } from './google/google-auth.guard.js';
 import { GoogleAuthService } from './google/google-auth.service.js';
 import { GoogleStrategy } from './google/google.strategy.js';
+import { HandoffController } from './handoff.controller.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { PasswordService } from './password.service.js';
 import { RefreshTokenService } from './refresh-token.service.js';
@@ -43,7 +44,7 @@ import { RefreshTokenService } from './refresh-token.service.js';
       ],
     }),
   ],
-  controllers: [AuthController, GoogleAuthController],
+  controllers: [AuthController, GoogleAuthController, HandoffController],
   providers: [
     AuthService,
     PasswordService,
