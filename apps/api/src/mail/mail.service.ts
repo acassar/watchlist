@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config.js';
-import { MailQuotaService } from './mail-quota.service.js';
+import {
+  MailQuotaExceededError,
+  MailQuotaService,
+} from './mail-quota.service.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
   googleLinkedTemplate,
@@ -92,7 +95,7 @@ export class MailService implements OnApplicationShutdown {
     deletionDate: string,
   ): Promise<void> {
     if (!(await this.quota.tryConsume())) {
-      throw new Error("Quota d'emails du jour épuisé");
+      throw new MailQuotaExceededError();
     }
     await this.transport.send({
       to: { email: user.email, name: user.displayName },

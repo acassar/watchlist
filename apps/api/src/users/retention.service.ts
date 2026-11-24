@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config.js';
+import { MailQuotaExceededError } from '../mail/mail-quota.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AccountService } from './account.service.js';
@@ -216,6 +217,13 @@ export class RetentionService
           formatDeletionDate(deletionDate),
         );
       } catch (error: unknown) {
+        // Quota du jour épuisé : les suivantes échoueraient aussi, on reprend demain.
+        if (error instanceof MailQuotaExceededError) {
+          this.logger.warn(
+            "Quota d'emails du jour épuisé : prévenances d'inactivité restantes reportées à demain",
+          );
+          break;
+        }
         // Pas d'adresse dans les journaux : l'identifiant suffit.
         this.logger.error(
           `Prévenance d'inactivité non envoyée (${user.id}) : ${String(error)}`,

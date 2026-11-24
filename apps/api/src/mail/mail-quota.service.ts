@@ -3,6 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
+/** Envoi refusé : le quota d'emails du jour est épuisé. */
+export class MailQuotaExceededError extends Error {
+  constructor() {
+    super("Quota d'emails du jour épuisé");
+    this.name = 'MailQuotaExceededError';
+  }
+}
+
 /** Jour courant en UTC, au format attendu par une colonne DATE. */
 function today(now = new Date()): Date {
   return new Date(now.toISOString().slice(0, 10));
