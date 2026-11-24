@@ -39,8 +39,6 @@ import DonateCard from '../components/DonateCard.vue';
 <style scoped>
 .about {
   max-width: 600px;
-  /* Au-dessus de la barre d'onglets. */
-  padding-bottom: 96px !important;
 }
 .about-links {
   display: flex;

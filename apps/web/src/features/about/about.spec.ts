@@ -93,4 +93,27 @@ describe('page À propos', () => {
     await settle();
     expect(document.body.textContent).toContain('Crédits');
   });
+
+  it('se lit sans compte, depuis l’écran de connexion', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({ '/api/auth/refresh': [[401, { code: 'UNAUTHENTICATED' }]] }),
+    );
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const router = createAppRouter(createMemoryHistory());
+    await router.push('/login');
+    await router.isReady();
+    mount(App, {
+      global: { plugins: [pinia, router, i18n, createVuetify()] },
+      attachTo: document.body,
+    });
+    await settle();
+    el('[data-test="auth-about"]').click();
+    await vi.waitFor(() =>
+      expect(router.currentRoute.value.name).toBe('about'),
+    );
+    await settle();
+    expect(document.body.textContent).toContain('Crédits');
+  });
 });

@@ -118,6 +118,8 @@ export const routes: RouteRecordRaw[] = [
     path: '/about',
     name: 'about',
     component: () => import('@/features/about/pages/AboutPage.vue'),
+    // Lisible sans compte, comme les pages légales : crédits YouTube et dons.
+    meta: legalPage,
   },
   {
     path: '/legal/notice',
