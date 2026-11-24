@@ -363,7 +363,7 @@
       "reauthButton": "Se reconnecter avec Google"
     },
     "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez.",
-    "support": "Canapact"
+    "support": "À propos de Canapact"
   },
   "about": {
     "title": "À propos",
@@ -377,6 +377,6 @@
     "pitch": "Canapact est gratuit et sans pub. S'il vous évite quelques disputes de canapé, un petit don aide à payer le serveur (et le plaid).",
     "button": "Offrir un plaid",
     "newTab": "(s'ouvre sur Liberapay, dans un nouvel onglet)",
-    "hint": "Le don se fait sur Liberapay. Canapact ne voit ni ne garde rien de votre côté."
+    "hint": "Le don se fait sur Liberapay : Canapact n'en voit et n'en garde rien."
   }
 }
