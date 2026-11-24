@@ -112,14 +112,16 @@ describe('Auth par email (e2e)', () => {
       );
     });
 
-    it('répond pareil pour une adresse déjà inscrite, et prévient son titulaire', async () => {
+    it('refuse une adresse déjà inscrite, sans envoyer d’email', async () => {
       await registerAndVerify();
       t.mail.clear();
 
-      await register({ password: 'autre-mot-de-passe' }).expect(202);
+      const res = await register({ password: 'autre-mot-de-passe' }).expect(
+        409,
+      );
 
-      expect(t.mail.to(email)).toHaveLength(1);
-      expect(t.mail.to(email)[0].subject).toContain('déjà un compte');
+      expect(res.body.code).toBe('EMAIL_ALREADY_REGISTERED');
+      expect(t.mail.to(email)).toHaveLength(0);
       // Le mot de passe d'origine reste le seul valide.
       await http()
         .post('/api/auth/login')

@@ -4,6 +4,7 @@ import type { Env } from '../config.js';
 import { BrevoMailTransport } from './brevo.transport.js';
 import { ConsoleMailTransport } from './console.transport.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
+import { MailQuotaService } from './mail-quota.service.js';
 import { MailService } from './mail.service.js';
 import { MemoryMailTransport } from './memory.transport.js';
 
@@ -27,8 +28,9 @@ import { MemoryMailTransport } from './memory.transport.js';
         }
       },
     },
+    MailQuotaService,
     MailService,
   ],
-  exports: [MailService],
+  exports: [MailService, MailQuotaService],
 })
 export class MailModule {}

@@ -89,6 +89,16 @@ model EmailToken {
   @@map("email_tokens")
 }
 
+/// Emails partis par jour (UTC), pour rester sous le quota quotidien du
+/// fournisseur (Brevo gratuit : 300 par jour). En base pour survivre aux
+/// redémarrages. Une ligne par jour, aucune donnée personnelle.
+model MailDailyCount {
+  day   DateTime @id @db.Date
+  count Int      @default(0)
+
+  @@map("mail_daily_counts")
+}
+
 enum GroupRole {
   OWNER
   MEMBER

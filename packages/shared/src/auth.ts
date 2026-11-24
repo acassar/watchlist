@@ -96,6 +96,10 @@ export const AuthErrorCode = {
   INVALID_TOKEN: 'INVALID_TOKEN',
   UNAUTHENTICATED: 'UNAUTHENTICATED',
   TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
+  /** Inscription avec l'adresse d'un compte actif : se connecter à la place. */
+  EMAIL_ALREADY_REGISTERED: 'EMAIL_ALREADY_REGISTERED',
+  /** Quota d'emails du jour atteint : réessayer demain (ou passer par Google). */
+  MAIL_QUOTA_EXCEEDED: 'MAIL_QUOTA_EXCEEDED',
 } as const;
 export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode];
 

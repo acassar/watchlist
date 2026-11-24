@@ -6,9 +6,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config.js';
+import {
+  MailQuotaExceededError,
+  MailQuotaService,
+} from './mail-quota.service.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
-  alreadyRegisteredTemplate,
   googleLinkedTemplate,
   inactivityWarningTemplate,
   linkPasswordTemplate,
@@ -30,6 +33,9 @@ interface Recipient {
  * (un appel HTTP à Brevo prend des centaines de millisecondes). Un échec d'envoi
  * est journalisé ; l'utilisateur peut redemander un lien. Les envois en cours
  * sont attendus à l'arrêt de l'application.
+ *
+ * Chaque envoi passe d'abord par le quota du jour (MailQuotaService) : une
+ * fois épuisé, l'email ne part pas et c'est journalisé.
  */
 @Injectable()
 export class MailService implements OnApplicationShutdown {
@@ -39,6 +45,7 @@ export class MailService implements OnApplicationShutdown {
 
   constructor(
     @Inject(MAIL_TRANSPORT) private readonly transport: MailTransport,
+    private readonly quota: MailQuotaService,
     config: ConfigService<Env, true>,
   ) {
     this.appUrl = config.get('APP_URL');
@@ -71,17 +78,6 @@ export class MailService implements OnApplicationShutdown {
     );
   }
 
-  sendAlreadyRegistered(user: Recipient) {
-    return this.deliver(
-      user,
-      alreadyRegisteredTemplate(
-        user.displayName,
-        `${this.appUrl}/login`,
-        `${this.appUrl}/forgot-password`,
-      ),
-    );
-  }
-
   sendGoogleLinked(user: Recipient) {
     return this.deliver(
       user,
@@ -94,8 +90,14 @@ export class MailService implements OnApplicationShutdown {
    * l'envoi est attendu et une erreur remonte : sans email parti, pas de
    * suppression (voir RetentionService).
    */
-  sendInactivityWarning(user: Recipient, deletionDate: string): Promise<void> {
-    return this.transport.send({
+  async sendInactivityWarning(
+    user: Recipient,
+    deletionDate: string,
+  ): Promise<void> {
+    if (!(await this.quota.tryConsume())) {
+      throw new MailQuotaExceededError();
+    }
+    await this.transport.send({
       to: { email: user.email, name: user.displayName },
       ...inactivityWarningTemplate(
         user.displayName,
@@ -118,10 +120,18 @@ export class MailService implements OnApplicationShutdown {
     return `${this.appUrl}${path}#token=${encodeURIComponent(token)}`;
   }
 
-  private deliver(
+  private async deliver(
     user: Recipient,
     template: Omit<Parameters<MailTransport['send']>[0], 'to'>,
-  ): void {
+  ): Promise<void> {
+    // Réservation sur le quota attendue (une requête en base, comme les
+    // autres branches de l'auth) ; seul l'appel au fournisseur part en fond.
+    if (!(await this.quota.tryConsume())) {
+      this.logger.warn(
+        `Quota d'emails du jour épuisé : « ${template.subject} » non envoyé`,
+      );
+      return;
+    }
     const sending = this.transport
       .send({ to: { email: user.email, name: user.displayName }, ...template })
       .catch((error: unknown) => {

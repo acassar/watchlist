@@ -1,6 +1,8 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +14,7 @@ import {
   type ResetPasswordRequest,
 } from '@watchlist/shared';
 import type { User } from '../generated/prisma/client.js';
+import { MailQuotaService } from '../mail/mail-quota.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -55,27 +58,37 @@ export class AuthService {
     private readonly refreshTokens: RefreshTokenService,
     private readonly emailTokens: EmailTokenService,
     private readonly mail: MailService,
+    private readonly mailQuota: MailQuotaService,
     private readonly jwt: JwtService,
   ) {}
 
   /**
-   * Inscription. La réponse est toujours la même (« vérifiez vos emails ») pour ne
-   * pas révéler si un compte existe ; c'est l'email reçu qui diffère :
+   * Inscription. Adresse d'un compte actif : refus « déjà inscrit » à l'écran,
+   * sans email (choix assumé : savoir qui est inscrit n'est pas grave, et un
+   * email de prévenance renvoyable en boucle viderait le quota du jour).
+   * Sinon la réponse est « vérifiez vos emails », et c'est l'email qui diffère :
    * - adresse inconnue : création du compte + lien de vérification ;
    * - compte sans mot de passe (créé via Google) : lien pour choisir un mot de
    *   passe. Celui tapé à l'inscription est ignoré : sinon un inconnu pourrait
    *   s'inscrire avec l'adresse d'un compte Google et attendre que le vrai
    *   propriétaire clique « oui » dans l'email pour entrer avec son mot de passe à lui ;
    * - compte jamais vérifié : nouveau lien de vérification qui porte le mot de
-   *   passe choisi cette fois-ci (appliqué au clic, voir verifyEmail) ;
-   * - compte actif : email « vous avez déjà un compte ».
+   *   passe choisi cette fois-ci (appliqué au clic, voir verifyEmail).
+   *
+   * Quota d'emails du jour épuisé : refus « réessayez demain », sans rien créer.
    */
   async register(dto: RegisterRequest): Promise<void> {
-    // Hachage dans tous les cas : la durée de réponse ne trahit pas la branche suivie.
-    const passwordHash = await this.passwords.hash(dto.password);
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+    if (existing?.passwordHash && existing.emailVerifiedAt) {
+      throw new ConflictException({
+        code: AuthErrorCode.EMAIL_ALREADY_REGISTERED,
+        message: 'Cette adresse a déjà un compte',
+      });
+    }
+    await this.assertMailAvailable();
+    const passwordHash = await this.passwords.hash(dto.password);
 
     if (!existing) {
       const user = await this.prisma.user
@@ -102,20 +115,17 @@ export class AuthService {
         'LINK_PASSWORD',
         LINK_PASSWORD_TTL_MS,
       );
-      if (token) this.mail.sendLinkPassword(existing, token);
+      if (token) await this.mail.sendLinkPassword(existing, token);
       return;
     }
 
-    if (existing.emailVerifiedAt === null) {
-      await this.sendVerification(existing, passwordHash);
-      return;
-    }
-
-    this.mail.sendAlreadyRegistered(existing);
+    // Compte jamais vérifié (le compte actif a été refusé plus haut).
+    await this.sendVerification(existing, passwordHash);
   }
 
   /** Renvoie le lien de vérification si le compte existe et n'est pas encore vérifié. */
   async resendVerification(email: string): Promise<void> {
+    await this.assertMailAvailable();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || user.emailVerifiedAt) return;
     await this.sendVerification(user);
@@ -185,6 +195,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<void> {
+    await this.assertMailAvailable();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return;
     const token = await this.emailTokens.create(
@@ -192,7 +203,7 @@ export class AuthService {
       'RESET_PASSWORD',
       RESET_PASSWORD_TTL_MS,
     );
-    if (token) this.mail.sendResetPassword(user, token);
+    if (token) await this.mail.sendResetPassword(user, token);
   }
 
   /**
@@ -243,6 +254,21 @@ export class AuthService {
     return this.openSession(user, userAgent);
   }
 
+  /**
+   * Refuse les demandes qui envoient un email quand le quota du jour est
+   * épuisé, pour que la personne le sache au lieu d'attendre un email qui
+   * ne viendra pas. Vérifié avant de regarder le compte : même réponse pour
+   * tout le monde.
+   */
+  private async assertMailAvailable(): Promise<void> {
+    if (await this.mailQuota.isExhausted()) {
+      throw new ServiceUnavailableException({
+        code: AuthErrorCode.MAIL_QUOTA_EXCEEDED,
+        message: "Trop d'emails envoyés aujourd'hui, réessayez demain",
+      });
+    }
+  }
+
   private async sendVerification(user: User, passwordHash?: string) {
     const token = await this.emailTokens.create(
       user.id,
@@ -250,7 +276,7 @@ export class AuthService {
       VERIFY_EMAIL_TTL_MS,
       passwordHash,
     );
-    if (token) this.mail.sendVerifyEmail(user, token);
+    if (token) await this.mail.sendVerifyEmail(user, token);
   }
 
   /** Ouvre une session (JWT + refresh token) pour un utilisateur déjà authentifié. */

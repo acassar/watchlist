@@ -31,6 +31,13 @@ export const envSchema = z
     MAIL_FROM_NAME: z.string().min(1).default('Canapact'),
     BREVO_API_KEY: z.string().optional(),
     /**
+     * Emails envoyés au plus par jour (UTC). Brevo gratuit : 300 ; la marge
+     * absorbe les envois faits hors de l'app (tests depuis Brevo, etc.). Une
+     * fois atteint, inscription, renvoi du lien et mot de passe oublié
+     * répondent « réessayez demain ».
+     */
+    MAIL_DAILY_LIMIT: z.coerce.number().int().positive().default(280),
+    /**
      * Identifiants OAuth « Se connecter avec Google » (console Google Cloud, type
      * « Application Web »). Les deux ou aucun : sans eux, le bouton Google est masqué.
      * URI de redirection à déclarer : `${APP_URL}/api/auth/google/callback`.

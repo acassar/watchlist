@@ -559,6 +559,33 @@ describe('Export et suppression du compte (e2e)', () => {
       send.mockRestore();
     });
 
+    it("s'arrête au premier refus pour quota d'emails, et reprend ensuite", async () => {
+      for (const id of [adrien.id, camille.id]) {
+        await setUser(id, {
+          lastActiveAt: new Date(Date.now() - 3 * YEAR + 20 * DAY),
+        });
+      }
+      // Quota du jour (280 par défaut) déjà consommé.
+      await t.prisma.mailDailyCount.create({
+        data: {
+          day: new Date(new Date().toISOString().slice(0, 10)),
+          count: 280,
+        },
+      });
+      const mail = t.app.get(MailService);
+      const send = vi.spyOn(mail, 'sendInactivityWarning');
+      t.mail.clear();
+
+      expect(await purge()).toMatchObject({ inactivityWarnings: 0 });
+      expect(send).toHaveBeenCalledOnce();
+      expect(t.mail.to('adrien@exemple.fr')).toHaveLength(0);
+
+      // Quota disponible (lendemain) : les deux prévenances partent.
+      await t.prisma.mailDailyCount.deleteMany();
+      expect(await purge()).toMatchObject({ inactivityWarnings: 2 });
+      send.mockRestore();
+    });
+
     it('une suppression en échec ne bloque pas les autres', async () => {
       for (const id of [adrien.id, camille.id]) {
         await setUser(id, {
