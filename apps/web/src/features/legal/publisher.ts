@@ -20,7 +20,7 @@ export const publisher = {
   address:
     "non publiée : l'éditeur, particulier non professionnel, a communiqué son adresse à l'hébergeur (LCEN, art. 6 III-2)",
   /** Adresse de contact affichée (aussi pour les demandes RGPD). */
-  email: 'support@canapact.adrien-cassar.fr',
+  email: 'contact@canapact.fr',
   /** Directeur de la publication (souvent l'éditeur lui-même). */
   director: 'Adrien Cassar',
   /** SIRET, si l'éditeur est une entreprise ou un auto-entrepreneur. Vide sinon. */
