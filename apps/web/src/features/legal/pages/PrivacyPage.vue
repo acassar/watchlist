@@ -162,7 +162,8 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       <li>
         <strong>Hébergement</strong> :
         <LegalValue :value="host.name" /> (serveurs en
-        <LegalValue :value="host.location" />), qui stocke la base de données.
+        <LegalValue :value="host.location" />), qui stocke la base de données
+        et, chiffrées avant l'envoi, ses sauvegardes (Swiss Backup).
       </li>
       <li>
         <strong>Brevo</strong> (Sendinblue SAS, France) envoie les emails du

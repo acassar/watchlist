@@ -222,10 +222,11 @@ describe('pages légales', () => {
     const text = document.body.textContent ?? '';
     expect(text).toContain('Brevo');
     expect(text).toContain("Services d'API YouTube");
-    // Les champs de l'éditeur restent à remplir, bien visibles.
-    expect(
-      document.querySelectorAll('[data-test="legal-todo"]').length,
-    ).toBeGreaterThan(0);
+    expect(text).toContain('Swiss Backup');
+    // Tous les champs de l'éditeur sont remplis : plus rien « À COMPLÉTER ».
+    expect(document.querySelectorAll('[data-test="legal-todo"]')).toHaveLength(
+      0,
+    );
     const hrefs = [...document.querySelectorAll('a')].map((a) =>
       a.getAttribute('href'),
     );
