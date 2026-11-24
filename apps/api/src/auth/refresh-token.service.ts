@@ -31,7 +31,16 @@ export class RefreshTokenService {
     return this.create(userId, randomUUID(), userAgent);
   }
 
-  async rotate(rawToken: string, userAgent?: string): Promise<RotateResult> {
+  /**
+   * `ttlMs` : durée de vie du nouveau jeton. Plus courte que celle d'une
+   * session pour le passage de l'ancienne adresse à la nouvelle (voir
+   * HandoffController) : le jeton transite dans une URL.
+   */
+  async rotate(
+    rawToken: string,
+    userAgent?: string,
+    ttlMs = REFRESH_TOKEN_TTL_MS,
+  ): Promise<RotateResult> {
     const existing = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: hashToken(rawToken) },
     });
@@ -58,6 +67,7 @@ export class RefreshTokenService {
       existing.userId,
       existing.familyId,
       userAgent,
+      ttlMs,
     );
     return {
       ok: true,
@@ -104,7 +114,12 @@ export class RefreshTokenService {
     });
   }
 
-  private async create(userId: string, familyId: string, userAgent?: string) {
+  private async create(
+    userId: string,
+    familyId: string,
+    userAgent?: string,
+    ttlMs = REFRESH_TOKEN_TTL_MS,
+  ) {
     const token = generateToken();
     // Connexion ou rafraîchissement (toutes les 15 minutes d'utilisation au
     // plus) : la personne est active, la purge des comptes inactifs repart de
@@ -131,7 +146,7 @@ export class RefreshTokenService {
         userId,
         familyId,
         tokenHash: hashToken(token),
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+        expiresAt: new Date(Date.now() + ttlMs),
         userAgent: userAgent?.slice(0, 255),
       },
     });
