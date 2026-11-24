@@ -25,7 +25,8 @@
   "account": {
     "menu": "Mon compte",
     "logout": "Se déconnecter",
-    "settings": "Réglages"
+    "settings": "Réglages",
+    "about": "À propos"
   },
   "auth": {
     "email": "Email",
@@ -361,6 +362,21 @@
       "reauth": "Par sécurité, reconnectez-vous avec Google, puis recommencez la suppression.",
       "reauthButton": "Se reconnecter avec Google"
     },
-    "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez."
+    "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez.",
+    "support": "Canapact"
+  },
+  "about": {
+    "title": "À propos",
+    "what": "Canapact, c'est la watchlist de ceux qui regardent à deux (ou à plus). Pour chaque titre, chacun dit s'il vous laisse le regarder sans lui. Fini le « tu l'as regardé sans moi ?! ».",
+    "who": "Une petite app faite à la maison, sans pub et sans revente de données, par quelqu'un qui en avait marre de négocier chaque épisode.",
+    "credits": "Crédits",
+    "youtube": "Les titres, miniatures et chaînes des vidéos viennent de YouTube, via les services d'API YouTube. Canapact n'est ni affilié à YouTube ou Google, ni approuvé par eux."
+  },
+  "donate": {
+    "title": "Offrir un plaid à Canapact",
+    "pitch": "Canapact est gratuit et sans pub. S'il vous évite quelques disputes de canapé, un petit don aide à payer le serveur (et le plaid).",
+    "button": "Offrir un plaid",
+    "newTab": "(s'ouvre sur Liberapay, dans un nouvel onglet)",
+    "hint": "Le don se fait sur Liberapay. Canapact ne voit ni ne garde rien de votre côté."
   }
 }

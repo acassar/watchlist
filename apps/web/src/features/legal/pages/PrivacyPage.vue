@@ -190,6 +190,12 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       au Data Privacy Framework UE–États-Unis. Nous ne vendons ni ne louons
       aucune donnée, et nous ne faisons aucune publicité.
     </p>
+    <p>
+      Les dons passent par Liberapay, un site tiers : le bouton « Offrir un
+      plaid » n'est qu'un lien vers sa page, sans widget ni traceur. Canapact ne
+      lui transmet aucune donnée et ne sait pas qui a donné. Ce que vous
+      saisissez sur Liberapay relève de sa propre politique de confidentialité.
+    </p>
 
     <h2>Services d'API YouTube</h2>
     <p>

@@ -6,6 +6,7 @@ import {
   mdiCogOutline,
   mdiGestureSwipe,
   mdiHelpCircleOutline,
+  mdiInformationOutline,
   mdiLogout,
   mdiPlus,
 } from '@mdi/js';
@@ -107,6 +108,12 @@ async function logout() {
                 :prepend-icon="mdiCogOutline"
                 :title="$t('account.settings')"
                 data-test="open-settings"
+              />
+              <v-list-item
+                :to="{ name: 'about' }"
+                :prepend-icon="mdiInformationOutline"
+                :title="$t('account.about')"
+                data-test="open-about"
               />
               <v-list-item
                 :prepend-icon="mdiGestureSwipe"

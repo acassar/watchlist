@@ -4,6 +4,7 @@ import {
   mdiDeleteOutline,
   mdiDownload,
   mdiFileDocumentOutline,
+  mdiInformationOutline,
   mdiScaleBalance,
   mdiShieldAccountOutline,
 } from '@mdi/js';
@@ -23,6 +24,7 @@ import { useAuthStore } from '@/features/auth/store';
 import { apiErrorMessage, zodRule } from '@/features/auth/validation';
 import PageHeader from '@/features/groups/components/PageHeader.vue';
 import { forgetUser } from '@/features/groups/storage';
+import DonateCard from '@/features/about/components/DonateCard.vue';
 import { accountApi, downloadJson } from '../api';
 
 const auth = useAuthStore();
@@ -156,6 +158,20 @@ async function deleteAccount() {
       class="mt-3"
       :text="exportError"
     />
+
+    <h2 class="text-title-small text-medium-emphasis mt-8 mb-2">
+      {{ $t('settings.support') }}
+    </h2>
+    <DonateCard class="mb-2" />
+    <v-list bg-color="transparent">
+      <v-list-item
+        :to="{ name: 'about' }"
+        :prepend-icon="mdiInformationOutline"
+        :append-icon="mdiChevronRight"
+        :title="$t('about.title')"
+        data-test="settings-about"
+      />
+    </v-list>
 
     <h2 class="text-title-small text-medium-emphasis mt-8 mb-2">
       {{ $t('settings.legal') }}
