@@ -79,7 +79,7 @@ jobs:
     # Secrets VPS_* rangés dans l'environnement « production » (Settings > Environments).
     environment:
       name: production
-      url: https://canapact.adrien-cassar.fr
+      url: https://canapact.fr
     permissions:
       contents: read
       packages: read
@@ -125,4 +125,4 @@ jobs:
         run: printf '%s' "$GHCR_TOKEN" | ssh vps "bash /srv/canapact/deploy.sh '$SHA' '$GHCR_USER'"
 
       - name: Vérification publique
-        run: curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors https://canapact.adrien-cassar.fr/api/health
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors https://canapact.fr/api/health
