@@ -22,6 +22,12 @@ model User {
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  /// Dernière ouverture ou reprise de session (connexion, rafraîchissement du
+  /// jeton). Au bout de 3 ans sans activité, le compte est supprimé.
+  lastActiveAt       DateTime  @default(now()) @map("last_active_at") @db.Timestamptz(3)
+  /// Email de prévenance de suppression pour inactivité envoyé. Remis à null
+  /// dès que la personne revient.
+  inactivityWarnedAt DateTime? @map("inactivity_warned_at") @db.Timestamptz(3)
 
   refreshTokens      RefreshToken[]
   emailTokens        EmailToken[]
@@ -30,6 +36,7 @@ model User {
   addedTitles        GroupTitle[]
   statuses           MemberStatus[]
 
+  @@index([lastActiveAt])
   @@map("users")
 }
 

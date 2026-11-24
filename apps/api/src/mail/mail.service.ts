@@ -10,6 +10,7 @@ import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
   alreadyRegisteredTemplate,
   googleLinkedTemplate,
+  inactivityWarningTemplate,
   linkPasswordTemplate,
   resetPasswordTemplate,
   verifyEmailTemplate,
@@ -86,6 +87,22 @@ export class MailService implements OnApplicationShutdown {
       user,
       googleLinkedTemplate(user.displayName, `${this.appUrl}/forgot-password`),
     );
+  }
+
+  /**
+   * Prévenance avant suppression pour inactivité. Contrairement aux autres,
+   * l'envoi est attendu et une erreur remonte : sans email parti, pas de
+   * suppression (voir RetentionService).
+   */
+  sendInactivityWarning(user: Recipient, deletionDate: string): Promise<void> {
+    return this.transport.send({
+      to: { email: user.email, name: user.displayName },
+      ...inactivityWarningTemplate(
+        user.displayName,
+        deletionDate,
+        `${this.appUrl}/login`,
+      ),
+    });
   }
 
   /** Attend les envois en cours (arrêt de l'application, tests). */

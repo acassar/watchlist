@@ -5,8 +5,8 @@ import { host, operations, publisher } from '../publisher';
 
 /*
  * Chaque durée ici doit correspondre au code : sessions (REFRESH_TOKEN_TTL_MS),
- * liens par email (auth.constants.ts), comptes non confirmés et purge
- * (RetentionService), cache YouTube (MediaRefreshService).
+ * liens par email (auth.constants.ts), comptes non confirmés, comptes
+ * inactifs et purge (RetentionService), cache YouTube (MediaRefreshService).
  */
 const GOOGLE_PRIVACY = 'https://policies.google.com/privacy';
 const GOOGLE_PERMISSIONS = 'https://myaccount.google.com/permissions';
@@ -47,14 +47,18 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             <td>
               Adresse email, prénom ou pseudo affiché, mot de passe (jamais en
               clair : seulement une empreinte Argon2id), date de confirmation de
-              l'adresse
+              l'adresse, date de votre dernière connexion
             </td>
             <td>
-              Créer et sécuriser votre compte, vous écrire au sujet du compte
+              Créer et sécuriser votre compte, vous écrire au sujet du compte,
+              supprimer les comptes qui ne servent plus
             </td>
             <td>
               Jusqu'à la suppression du compte. Un compte jamais confirmé est
-              supprimé au bout de 7 jours.
+              supprimé au bout de 7 jours. Un compte sans aucune connexion
+              pendant 3 ans est supprimé, comme si vous le faisiez depuis les
+              réglages : nous vous prévenons par email un mois avant, et il
+              suffit de vous connecter pour le garder.
             </td>
           </tr>
           <tr>

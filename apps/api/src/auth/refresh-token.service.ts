@@ -4,6 +4,9 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { REFRESH_TOKEN_TTL_MS } from './auth.constants.js';
 import { generateToken, hashToken } from './tokens.js';
 
+/** Précision de users.last_active_at (purge des comptes inactifs). */
+const ACTIVITY_PRECISION_MS = 24 * 3600 * 1000;
+
 export type RotateResult =
   | {
       ok: true;
@@ -103,6 +106,26 @@ export class RefreshTokenService {
 
   private async create(userId: string, familyId: string, userAgent?: string) {
     const token = generateToken();
+    // Connexion ou rafraîchissement (toutes les 15 minutes d'utilisation au
+    // plus) : la personne est active, la purge des comptes inactifs repart de
+    // zéro et une éventuelle prévenance est oubliée (voir RetentionService).
+    // Au plus une écriture par jour (users.updated_at ne bouge pas à chaque
+    // rafraîchissement), sauf pour effacer une prévenance.
+    const now = new Date();
+    await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        OR: [
+          {
+            lastActiveAt: {
+              lt: new Date(now.getTime() - ACTIVITY_PRECISION_MS),
+            },
+          },
+          { inactivityWarnedAt: { not: null } },
+        ],
+      },
+      data: { lastActiveAt: now, inactivityWarnedAt: null },
+    });
     await this.prisma.refreshToken.create({
       data: {
         userId,

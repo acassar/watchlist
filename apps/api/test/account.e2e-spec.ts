@@ -3,6 +3,8 @@ import request from 'supertest';
 import { PasswordService } from '../src/auth/password.service.js';
 import { RefreshTokenService } from '../src/auth/refresh-token.service.js';
 import { generateToken, hashToken } from '../src/auth/tokens.js';
+import { MailService } from '../src/mail/mail.service.js';
+import { AccountService } from '../src/users/account.service.js';
 import { RetentionService } from '../src/users/retention.service.js';
 import {
   createTestApp,
@@ -138,9 +140,11 @@ describe('Export et suppression du compte (e2e)', () => {
       expect(res.headers['cache-control']).toBe('no-store');
       expect(res.body).toMatchObject({
         format: 'canapact-export',
-        version: 1,
+        version: 2,
         account: {
           id: adrien.id,
+          lastActiveAt: expect.any(String),
+          inactivityWarnedAt: null,
           email: 'adrien@exemple.fr',
           displayName: 'Adrien',
           hasPassword: true,
@@ -423,6 +427,8 @@ describe('Export et suppression du compte (e2e)', () => {
         refreshTokens: 1,
         emailTokens: 1,
         unverifiedAccounts: 1,
+        inactivityWarnings: 0,
+        inactiveAccounts: 0,
       });
       expect(
         await t.prisma.refreshToken.findMany({ select: { tokenHash: true } }),
@@ -432,6 +438,188 @@ describe('Export et suppression du compte (e2e)', () => {
       expect(left.map((u) => u.id)).toEqual(
         expect.arrayContaining([recent.id, retried.id, adrien.id]),
       );
+    });
+  });
+  describe('comptes inactifs', () => {
+    const DAY = 24 * 3600 * 1000;
+    const YEAR = 365 * DAY;
+    const purge = (now = new Date()) => t.app.get(RetentionService).purge(now);
+    const setUser = (
+      id: string,
+      data: { lastActiveAt?: Date; inactivityWarnedAt?: Date | null },
+    ) => t.prisma.user.update({ where: { id }, data });
+    const exists = async (id: string) =>
+      (await t.prisma.user.count({ where: { id } })) === 1;
+
+    it('prévient un mois avant les 3 ans, une seule fois', async () => {
+      // 3 ans moins 20 jours : dans le mois de prévenance.
+      await setUser(adrien.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR + 20 * DAY),
+      });
+      // 3 ans moins 40 jours : pas encore.
+      await setUser(camille.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR + 40 * DAY),
+      });
+      t.mail.clear();
+
+      expect(await purge()).toMatchObject({
+        inactivityWarnings: 1,
+        inactiveAccounts: 0,
+      });
+      const [warning] = t.mail.to('adrien@exemple.fr');
+      expect(warning.subject).toMatch(
+        /^Votre compte Canapact sera supprimé le /,
+      );
+      expect(warning.text).toContain('http://canapact.test/login');
+      expect(t.mail.to('camille@exemple.fr')).toEqual([]);
+      const warned = await t.prisma.user.findUniqueOrThrow({
+        where: { id: adrien.id },
+      });
+      expect(warned.inactivityWarnedAt).not.toBeNull();
+
+      // Le lendemain : pas de second email.
+      expect(await purge(new Date(Date.now() + DAY))).toMatchObject({
+        inactivityWarnings: 0,
+      });
+      expect(t.mail.to('adrien@exemple.fr')).toHaveLength(1);
+    });
+
+    it('annonce une date au moins un mois après l’email', async () => {
+      // Inactif depuis 5 ans (la purge n'existait pas encore) : un mois de
+      // délai quand même, et pas de suppression avant.
+      const now = new Date('2030-06-10T12:00:00Z');
+      await setUser(adrien.id, { lastActiveAt: new Date('2025-01-01') });
+      // Les autres se sont connectés récemment.
+      await setUser(camille.id, { lastActiveAt: now });
+      await setUser(sam.id, { lastActiveAt: now });
+      t.mail.clear();
+
+      await purge(now);
+      expect(t.mail.to('adrien@exemple.fr')[0].subject).toBe(
+        'Votre compte Canapact sera supprimé le 10 juillet 2030',
+      );
+      expect(await purge(new Date(now.getTime() + 29 * DAY))).toMatchObject({
+        inactiveAccounts: 0,
+      });
+      expect(await exists(adrien.id)).toBe(true);
+      expect(await purge(new Date(now.getTime() + 30 * DAY))).toMatchObject({
+        inactiveAccounts: 1,
+      });
+      expect(await exists(adrien.id)).toBe(false);
+    });
+
+    it('supprime le compte comme depuis les réglages', async () => {
+      const groupId = await createGroup(adrien, 'Nous deux');
+      await join(camille, groupId, adrien);
+      await add(adrien, groupId, RICK);
+      await setUser(adrien.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR - 2 * DAY),
+        inactivityWarnedAt: new Date(Date.now() - 31 * DAY),
+      });
+      await setUser(camille.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR - 2 * DAY),
+      });
+
+      expect(await purge()).toMatchObject({
+        inactiveAccounts: 1,
+        // Camille, jamais prévenue : l'email part, elle reste.
+        inactivityWarnings: 1,
+      });
+      expect(await exists(adrien.id)).toBe(false);
+      expect(await exists(camille.id)).toBe(true);
+      // Même départ qu'une suppression volontaire : la propriété passe à
+      // Camille, le titre reste, signé « ancien membre ».
+      expect(
+        await t.prisma.groupMember.findMany({ where: { groupId } }),
+      ).toEqual([
+        expect.objectContaining({ userId: camille.id, role: 'OWNER' }),
+      ]);
+      expect(
+        await t.prisma.groupTitle.findMany({ where: { groupId } }),
+      ).toEqual([expect.objectContaining({ addedById: null })]);
+    });
+
+    it('ne supprime jamais sans prévenance', async () => {
+      await setUser(adrien.id, {
+        lastActiveAt: new Date(Date.now() - 10 * YEAR),
+      });
+      const mail = t.app.get(MailService);
+      const send = vi
+        .spyOn(mail, 'sendInactivityWarning')
+        .mockRejectedValue(new Error('Brevo indisponible'));
+
+      for (const days of [0, 40, 80]) {
+        expect(await purge(new Date(Date.now() + days * DAY))).toMatchObject({
+          inactivityWarnings: 0,
+          inactiveAccounts: 0,
+        });
+      }
+      expect(send).toHaveBeenCalledTimes(3);
+      expect(await exists(adrien.id)).toBe(true);
+      send.mockRestore();
+    });
+
+    it('une suppression en échec ne bloque pas les autres', async () => {
+      for (const id of [adrien.id, camille.id]) {
+        await setUser(id, {
+          lastActiveAt: new Date(Date.now() - 3 * YEAR - 2 * DAY),
+          inactivityWarnedAt: new Date(Date.now() - 31 * DAY),
+        });
+      }
+      await setUser(sam.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR + 20 * DAY),
+      });
+      const accounts = t.app.get(AccountService);
+      const erase = accounts.erase.bind(accounts);
+      const spy = vi
+        .spyOn(accounts, 'erase')
+        .mockImplementation((id, stillEligible) =>
+          id === adrien.id
+            ? Promise.reject(new Error('interblocage'))
+            : erase(id, stillEligible),
+        );
+
+      expect(await purge()).toMatchObject({
+        inactiveAccounts: 1,
+        inactivityWarnings: 1,
+      });
+      expect(await exists(adrien.id)).toBe(true);
+      expect(await exists(camille.id)).toBe(false);
+      spy.mockRestore();
+    });
+
+    it('une connexion annule la prévenance et repart pour 3 ans', async () => {
+      await setUser(adrien.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR - 2 * DAY),
+        inactivityWarnedAt: new Date(Date.now() - 31 * DAY),
+      });
+      const rawToken = await t.app.get(RefreshTokenService).issue(adrien.id);
+      expect(rawToken).toBeTruthy();
+
+      expect(await purge()).toMatchObject({
+        inactiveAccounts: 0,
+        inactivityWarnings: 0,
+      });
+      const user = await t.prisma.user.findUniqueOrThrow({
+        where: { id: adrien.id },
+      });
+      expect(user.inactivityWarnedAt).toBeNull();
+      expect(Date.now() - user.lastActiveAt.getTime()).toBeLessThan(60_000);
+    });
+
+    it('le rafraîchissement de session compte comme une activité', async () => {
+      const tokens = t.app.get(RefreshTokenService);
+      const raw = await tokens.issue(adrien.id);
+      await setUser(adrien.id, {
+        lastActiveAt: new Date(Date.now() - 3 * YEAR),
+        inactivityWarnedAt: new Date(Date.now() - 31 * DAY),
+      });
+      expect(await tokens.rotate(raw)).toMatchObject({ ok: true });
+      const user = await t.prisma.user.findUniqueOrThrow({
+        where: { id: adrien.id },
+      });
+      expect(user.inactivityWarnedAt).toBeNull();
+      expect(Date.now() - user.lastActiveAt.getTime()).toBeLessThan(60_000);
     });
   });
 });

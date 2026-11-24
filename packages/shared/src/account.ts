@@ -36,7 +36,7 @@ export type AccountErrorCode =
   (typeof AccountErrorCode)[keyof typeof AccountErrorCode];
 
 /** Version du format d'export, à incrémenter si sa forme change. */
-export const ACCOUNT_EXPORT_VERSION = 1;
+export const ACCOUNT_EXPORT_VERSION = 2;
 
 /**
  * Export des données (droit d'accès et portabilité, art. 15 et 20 du RGPD) :
@@ -58,6 +58,10 @@ export interface AccountExport {
     googleId: string | null;
     createdAt: string;
     updatedAt: string;
+    /** Dernière connexion ou reprise de session (purge après 3 ans sans). */
+    lastActiveAt: string;
+    /** Email de prévenance avant suppression pour inactivité, s'il est parti. */
+    inactivityWarnedAt: string | null;
   };
   /**
    * Jetons de session stockés : un par rafraîchissement, les révoqués étant

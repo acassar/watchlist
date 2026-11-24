@@ -130,3 +130,24 @@ export function googleLinkedTemplate(
     }),
   };
 }
+
+export function inactivityWarningTemplate(
+  name: string,
+  deletionDate: string,
+  loginUrl: string,
+): Template {
+  return {
+    subject: `Votre compte Canapact sera supprimé le ${deletionDate}`,
+    ...layout({
+      greeting: `Bonsoir ${name},`,
+      paragraphs: [
+        'Le canapé est vide depuis un moment : votre compte Canapact n’a pas servi depuis bientôt trois ans.',
+        `Pour ne pas garder vos données sans raison, votre compte sera supprimé le ${deletionDate}, avec vos avis et votre place dans vos groupes. Les titres que vous avez ajoutés restent pour les autres membres, signés « ancien membre ».`,
+        'Vous voulez le garder ? Connectez-vous simplement avant cette date, rien d’autre à faire.',
+      ],
+      action: { label: 'Garder mon compte', url: loginUrl },
+      footer:
+        'Vous pouvez aussi récupérer vos données depuis les réglages avant la suppression. Sans nouvelle de votre part, c’est la seule fois que nous vous écrivons à ce sujet.',
+    }),
+  };
+}
