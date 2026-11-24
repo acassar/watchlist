@@ -44,8 +44,14 @@ function titleNotFound() {
   });
 }
 
-/** À appeler sous le verrou du groupe, avant de remettre un titre en cours. */
-async function assertActiveRoom(tx: Tx, groupId: string): Promise<void> {
+/**
+ * À appeler sous le verrou du groupe avant de remettre un titre en cours
+ * (hors verrou : simple pré-contrôle, à refaire ensuite sous verrou).
+ */
+async function assertActiveRoom(
+  tx: Tx | PrismaService,
+  groupId: string,
+): Promise<void> {
   const active = await tx.groupTitle.count({
     where: { groupId, watchedTogetherAt: null },
   });
@@ -310,6 +316,9 @@ export class TitlesService {
     url: string,
     status: WatchStatus,
   ): Promise<GroupTitle> {
+    // Liste pleine : on refuse avant d'interroger YouTube (attente et quota
+    // épargnés). Le contrôle est refait sous verrou pour les ajouts simultanés.
+    await assertActiveRoom(this.prisma, groupId);
     const mediaItem = await this.media.resolve(url);
 
     try {

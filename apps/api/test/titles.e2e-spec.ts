@@ -243,7 +243,8 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
           url: `https://youtu.be/${RICK}`,
         }).expect(409);
         expect(res.body.code).toBe('TOO_MANY_ACTIVE_TITLES');
-        expect(youtube.calls.length).toBeGreaterThan(0);
+        // Refusé avant d'interroger YouTube.
+        expect(youtube.calls).toHaveLength(0);
       });
 
       it('ne compte pas les titres vus ensemble', async () => {
