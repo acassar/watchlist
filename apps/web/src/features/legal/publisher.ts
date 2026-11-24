@@ -46,7 +46,7 @@ export const operations = {
 } as const;
 
 /** Date de dernière mise à jour des textes, affichée en tête de page. */
-export const LEGAL_UPDATED_AT = '2026-11-23';
+export const LEGAL_UPDATED_AT = '2026-11-24';
 
 export function isTodo(value: string): boolean {
   return value.startsWith(TODO);

@@ -38,6 +38,9 @@ defineProps<{ title: string; subtitle?: string }>();
         $t('legal.privacy')
       }}</router-link>
       <router-link :to="{ name: 'terms' }">{{ $t('legal.terms') }}</router-link>
+      <router-link :to="{ name: 'about' }" data-test="auth-about">{{
+        $t('about.title')
+      }}</router-link>
     </nav>
   </v-container>
 </template>
