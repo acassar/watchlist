@@ -23,7 +23,6 @@ export async function countActiveTitles(
   const rows = await db.groupTitle.findMany({
     where: { groupId, watchedTogetherAt: null },
     select: {
-      addedAt: true,
       statuses: {
         select: { userId: true, status: true, watchedAloneAt: true },
       },
