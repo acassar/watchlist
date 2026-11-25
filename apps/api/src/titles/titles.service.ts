@@ -6,7 +6,6 @@ import {
 import {
   ACTIVE_VIEWS,
   GROUP_MAX_TITLES,
-  isCounted,
   TitleErrorCode,
   titleViewFor,
   WatchStatus,
@@ -31,7 +30,6 @@ type TitleRow = Prisma.GroupTitleGetPayload<{ include: typeof titleInclude }>;
 /** Membre actuel du groupe, tel qu'il sert au calcul des vues. */
 interface GroupMemberInfo {
   userId: string;
-  joinedAt: Date;
   displayName: string;
 }
 
@@ -63,7 +61,6 @@ function toGroupTitle(
       displayName: m.displayName,
       status,
       watchedAloneAt: s?.watchedAloneAt?.toISOString() ?? null,
-      counted: isCounted(m.joinedAt, row.addedAt),
     };
   });
   // Moi d'abord, puis par ordre d'arrivée (déjà l'ordre de `members`).
@@ -219,14 +216,12 @@ export class TitlesService {
       where: { groupId },
       select: {
         userId: true,
-        joinedAt: true,
         user: { select: { displayName: true } },
       },
       orderBy: [{ joinedAt: 'asc' }, { userId: 'asc' }],
     });
     return rows.map((m) => ({
       userId: m.userId,
-      joinedAt: m.joinedAt,
       displayName: m.user.displayName,
     }));
   }

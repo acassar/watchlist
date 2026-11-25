@@ -280,7 +280,6 @@
     "addedByDeleted": "Added by a former member",
     "formerMember": "a former member",
     "memberStatus": "{name}: {status}",
-    "notCounted": "(joined after it was added, doesn't block)",
     "changeMine": "My say: {status}. Change",
     "statusLabel": {
       "OK_ALONE": "go without me",

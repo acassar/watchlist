@@ -1,6 +1,5 @@
 import {
   isArchived,
-  isCounted,
   titleViewFor,
   TitleView,
   watchedTogetherRequestSchema,
@@ -9,9 +8,9 @@ import {
   type ViewTitle,
 } from './index.js';
 
-type Spec = MemberStatus | [MemberStatus, 'vu'] | [MemberStatus, 'nouveau'];
+type Spec = MemberStatus | [MemberStatus, 'vu'];
 
-/** Titre de test : un membre par entrée, `vu` = vu seul, `nouveau` = non compté. */
+/** Titre de test : un membre par entrée, `vu` = vu seul. */
 function title(
   members: Record<string, Spec>,
   watchedTogetherAt: string | null = null,
@@ -24,7 +23,6 @@ function title(
         userId,
         status,
         watchedAloneAt: flag === 'vu' ? '2026-11-22T21:00:00Z' : null,
-        counted: flag !== 'nouveau',
       };
     }),
   };
@@ -130,24 +128,30 @@ describe('vues', () => {
       expect(titleViewFor(t, 'c')).toBe(TitleView.PENDING);
     });
 
-    it('un nouveau membre sans avis ne bloque pas les anciens titres', () => {
-      const t = title({
-        a: 'OK_ALONE',
-        b: 'OK_ALONE',
-        nouveau: ['PENDING', 'nouveau'],
-      });
-      expect(titleViewFor(t, 'a')).toBe(TitleView.ALONE);
-      // … mais peut quand même donner son avis.
-      expect(titleViewFor(t, 'nouveau')).toBe(TitleView.PENDING);
+    // Régression : l'avis d'un membre arrivé après l'ajout était ignoré. Les
+    // vues ne connaissent plus la date d'arrivée : tout membre actuel compte.
+    it('chaque membre actuel compte, quelle que soit sa date d’arrivée', () => {
+      // Diane vient d'arriver et n'a pas encore répondu : on l'attend.
+      expect(
+        titleViewFor(title({ a: 'OK_ALONE', diane: 'PENDING' }), 'a'),
+      ).toBe(TitleView.WAITING);
+      // Elle veut le voir ensemble : plus regardable seul.
+      expect(
+        titleViewFor(title({ a: 'TOGETHER', diane: 'TOGETHER' }), 'a'),
+      ).toBe(TitleView.TOGETHER);
+      expect(
+        titleViewFor(title({ a: 'OK_ALONE', diane: 'TOGETHER' }), 'a'),
+      ).toBe(TitleView.TOGETHER);
     });
 
-    it('un nouveau membre sans avis n’empêche pas l’archivage', () => {
+    it('un membre sans avis empêche l’archivage', () => {
       const t = title({
         a: ['OK_ALONE', 'vu'],
         b: 'NOT_INTERESTED',
-        nouveau: ['PENDING', 'nouveau'],
+        diane: 'PENDING',
       });
-      expect(isArchived(t)).toBe(true);
+      expect(isArchived(t)).toBe(false);
+      expect(titleViewFor(t, 'diane')).toBe(TitleView.PENDING);
     });
   });
 
@@ -161,39 +165,8 @@ describe('vues', () => {
       );
     });
 
-    it('pas d’archivage sans aucun membre compté', () => {
-      expect(isArchived(title({ nouveau: ['PENDING', 'nouveau'] }))).toBe(
-        false,
-      );
-    });
-  });
-
-  it('ne compte que les membres arrivés avant l’ajout', () => {
-    const added = '2026-11-22T20:00:00Z';
-    expect(isCounted('2026-11-01T00:00:00Z', added)).toBe(true);
-    expect(isCounted(added, added)).toBe(true);
-    expect(isCounted('2026-11-22T21:00:00Z', added)).toBe(false);
-  });
-
-  describe('membre arrivé après l’ajout', () => {
-    it('son « ensemble » ne bloque pas les autres', () => {
-      const t = title({
-        moi: 'OK_ALONE',
-        toi: 'OK_ALONE',
-        nouveau: ['TOGETHER', 'nouveau'],
-      });
-      expect(titleViewFor(t, 'moi')).toBe(TitleView.ALONE);
-      // Lui veut le voir avec les autres, qui sont encore là.
-      expect(titleViewFor(t, 'nouveau')).toBe(TitleView.TOGETHER);
-    });
-
-    it('n’empêche pas l’archivage', () => {
-      const t = title({
-        moi: ['OK_ALONE', 'vu'],
-        toi: 'NOT_INTERESTED',
-        nouveau: ['OK_ALONE', 'nouveau'],
-      });
-      expect(isArchived(t)).toBe(true);
+    it('pas d’archivage sans aucun membre', () => {
+      expect(isArchived(title({}))).toBe(false);
     });
   });
 

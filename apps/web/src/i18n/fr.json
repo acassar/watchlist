@@ -280,7 +280,6 @@
     "addedByDeleted": "Ajouté par un ancien membre",
     "formerMember": "un ancien membre",
     "memberStatus": "{name} : {status}",
-    "notCounted": "(arrivé après l'ajout, ne bloque pas)",
     "changeMine": "Mon avis : {status}. Changer",
     "statusLabel": {
       "OK_ALONE": "sans moi, ok",

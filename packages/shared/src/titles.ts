@@ -89,11 +89,6 @@ export interface TitleMember {
   status: MemberStatus;
   /** « Vu seul » : le titre ne sort que des listes de ce membre. */
   watchedAloneAt: string | null;
-  /**
-   * Compte comme contrainte sur ce titre : arrivé avant son ajout, ou arrivé
-   * après mais a donné son avis.
-   */
-  counted: boolean;
 }
 
 /** Titre de la liste d'un groupe, vu par le membre connecté. */

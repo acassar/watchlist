@@ -9,7 +9,7 @@ import { WatchStatus, type MemberStatus } from './enums.js';
 
 /** Où un titre se range pour un membre donné. */
 export const TitleView = {
-  /** Regardable seul : aucun autre membre compté n'attend ni ne veut le voir avec moi. */
+  /** Regardable seul : aucun autre membre n'attend ni ne veut le voir avec moi. */
   ALONE: 'ALONE',
   /** Quelqu'un (moi compris) veut le voir ensemble, et il y a quelqu'un avec qui le voir. */
   TOGETHER: 'TOGETHER',
@@ -38,12 +38,6 @@ export interface ViewMember {
   /** Avis donné, ou PENDING (pas de ligne en base). */
   status: MemberStatus;
   watchedAloneAt: string | Date | null;
-  /**
-   * Compte comme contrainte : membre arrivé avant l'ajout du titre (ou au même
-   * moment). Arrivé après, il peut donner son avis, mais il ne bloque personne
-   * et n'empêche pas l'archivage (règle validée dans le doc d'architecture).
-   */
-  counted: boolean;
 }
 
 export interface ViewTitle {
@@ -52,28 +46,19 @@ export interface ViewTitle {
   members: readonly ViewMember[];
 }
 
-/** Calcule `counted` : voir ViewMember. */
-export function isCounted(
-  joinedAt: string | Date,
-  addedAt: string | Date,
-): boolean {
-  return new Date(joinedAt) <= new Date(addedAt);
-}
-
 /** Ce membre n'a plus rien à voir sur ce titre : il l'a vu seul ou n'est pas intéressé. */
 function isDone(m: ViewMember): boolean {
   return m.watchedAloneAt !== null || m.status === WatchStatus.NOT_INTERESTED;
 }
 
 /**
- * Archivé pour tout le groupe : vu ensemble, ou chaque membre compté l'a vu
- * seul ou n'est pas intéressé. Il faut au moins un membre compté (sinon, par
- * exemple quand l'auteur part, un titre que personne n'a vu s'archiverait).
+ * Archivé pour tout le groupe : vu ensemble, ou chaque membre actuel l'a vu
+ * seul ou n'est pas intéressé (y compris les membres arrivés après l'ajout).
+ * Il faut au moins un membre (prudence : un groupe vide n'archive rien).
  */
 export function isArchived(title: ViewTitle): boolean {
   if (title.watchedTogetherAt) return true;
-  const counted = title.members.filter((m) => m.counted);
-  return counted.length > 0 && counted.every(isDone);
+  return title.members.length > 0 && title.members.every(isDone);
 }
 
 /** Vue du titre pour le membre `userId`. */
@@ -85,10 +70,9 @@ export function titleViewFor(title: ViewTitle, userId: string): TitleView {
   if (isDone(me)) return TitleView.HIDDEN;
   if (me.status === 'PENDING') return TitleView.PENDING;
 
-  // Les autres membres qui comptent encore : comptés, et pas déjà « finis ».
-  const others = title.members.filter(
-    (m) => m.userId !== userId && m.counted && !isDone(m),
-  );
+  // Les autres membres qui comptent encore : pas déjà « finis ». Un membre
+  // arrivé après l'ajout du titre compte comme les autres.
+  const others = title.members.filter((m) => m.userId !== userId && !isDone(m));
   if (me.status === WatchStatus.TOGETHER) {
     // Je veux le voir ensemble… s'il reste quelqu'un avec qui le voir.
     return others.length > 0 ? TitleView.TOGETHER : TitleView.ALONE;

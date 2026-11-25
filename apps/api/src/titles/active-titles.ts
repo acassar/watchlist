@@ -2,7 +2,6 @@ import { ConflictException } from '@nestjs/common';
 import {
   GROUP_MAX_ACTIVE_TITLES,
   isArchived,
-  isCounted,
   TitleErrorCode,
 } from '@watchlist/shared';
 import type { Tx } from '../groups/groups.service.js';
@@ -12,7 +11,7 @@ type Db = Tx | PrismaService;
 
 /**
  * Titres « en cours » du groupe : ceux qui ne sont pas archivés pour tout le
- * groupe (ni vus ensemble, ni vus seul ou écartés par chaque membre compté).
+ * groupe (ni vus ensemble, ni vus seul ou écartés par chaque membre).
  * Même règle que les vues (shared/views.ts) : un titre rangé dans l'historique
  * ne prend pas de place. Calcul en mémoire, comme pour les vues.
  */
@@ -32,7 +31,7 @@ export async function countActiveTitles(
   });
   const members = await db.groupMember.findMany({
     where: { groupId },
-    select: { userId: true, joinedAt: true },
+    select: { userId: true },
   });
   return rows.filter((row) => {
     const byUser = new Map(row.statuses.map((s) => [s.userId, s]));
@@ -44,7 +43,6 @@ export async function countActiveTitles(
           userId: m.userId,
           status: s?.status ?? 'PENDING',
           watchedAloneAt: s?.watchedAloneAt ?? null,
-          counted: isCounted(m.joinedAt, row.addedAt),
         };
       }),
     });
