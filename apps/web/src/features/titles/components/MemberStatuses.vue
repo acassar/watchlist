@@ -16,12 +16,11 @@ const emit = defineEmits<{ edit: [] }>();
 const { t } = useI18n();
 const auth = useAuthStore();
 
-function label(name: string, status: string, counted: boolean) {
-  const base = t('titles.memberStatus', {
+function label(name: string, status: string) {
+  return t('titles.memberStatus', {
     name,
     status: t(`titles.statusLabel.${status}`),
   });
-  return counted ? base : `${base} ${t('titles.notCounted')}`;
 }
 </script>
 
@@ -49,10 +48,9 @@ function label(name: string, status: string, counted: boolean) {
       <span
         v-else
         class="member"
-        :class="{ 'not-counted': !member.counted }"
         role="img"
-        :aria-label="label(member.displayName, member.status, member.counted)"
-        :title="label(member.displayName, member.status, member.counted)"
+        :aria-label="label(member.displayName, member.status)"
+        :title="label(member.displayName, member.status)"
       >
         <v-avatar size="26" color="surface-variant" class="text-label-small">
           {{ member.displayName.charAt(0).toUpperCase() }}
@@ -85,8 +83,5 @@ function label(name: string, status: string, counted: boolean) {
   position: absolute;
   right: -3px;
   bottom: -3px;
-}
-.not-counted {
-  opacity: 0.5;
 }
 </style>

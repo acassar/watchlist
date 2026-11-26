@@ -129,13 +129,11 @@ describe('Avis, vues et suivi « vu » (e2e)', () => {
             userId: camille.id,
             displayName: 'Camille',
             status: 'PENDING',
-            counted: true,
           },
           {
             userId: adrien.id,
             displayName: 'Adrien',
             status: 'TOGETHER',
-            counted: true,
           },
         ],
       });
@@ -185,28 +183,25 @@ describe('Avis, vues et suivi « vu » (e2e)', () => {
   });
 
   describe('nouveau membre', () => {
-    it('ne bloque pas les titres ajoutés avant son arrivée, même avec un avis', async () => {
+    // Régression : il comptait seulement pour les titres ajoutés après son
+    // arrivée, et son « ensemble » était ignoré sur les plus anciens.
+    it('compte comme les autres pour les titres ajoutés avant son arrivée', async () => {
       const old = await addTitle(adrien);
       await setStatus(camille, old, 'OK_ALONE').expect(200);
+      expect(await viewOf(adrien, old)).toBe('ALONE');
       await join(sam, groupId, adrien);
 
-      expect(await viewOf(adrien, old)).toBe('ALONE');
+      // Tant qu'il n'a pas répondu, les autres attendent son avis.
+      expect(await viewOf(adrien, old)).toBe('WAITING');
       expect(await viewOf(sam, old)).toBe('PENDING');
-      const [title] = await list(adrien);
-      expect(title.members.find((m) => m.userId === sam.id)).toMatchObject({
-        status: 'PENDING',
-        counted: false,
-      });
 
-      // Même avec un avis donné, il ne bloque pas les autres.
       await setStatus(sam, old, 'TOGETHER').expect(200);
-      expect(await viewOf(adrien, old)).toBe('ALONE');
+      expect(await viewOf(adrien, old)).toBe('TOGETHER');
+      expect(await viewOf(camille, old)).toBe('TOGETHER');
       expect(await viewOf(sam, old)).toBe('TOGETHER');
-      const [after] = await list(adrien);
-      expect(after.members.find((m) => m.userId === sam.id)).toMatchObject({
-        status: 'TOGETHER',
-        counted: false,
-      });
+
+      await setStatus(sam, old, 'OK_ALONE').expect(200);
+      expect(await viewOf(adrien, old)).toBe('ALONE');
     });
 
     it('compte pour les titres ajoutés après son arrivée', async () => {
