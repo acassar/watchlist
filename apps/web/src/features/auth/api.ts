@@ -3,6 +3,8 @@ import type {
   Locale,
   AuthResponse,
   AuthUser,
+  ChangeEmailRequest,
+  ChangePasswordRequest,
   LoginRequest,
   RegisterRequest,
   ResetPasswordRequest,
@@ -39,6 +41,15 @@ export const authApi = {
     api('/auth/password/reset', { ...pub, body }),
   confirmLinkPassword: (body: ResetPasswordRequest) =>
     api<AuthResponse>('/auth/password/link/confirm', { ...pub, body }),
+  /** Réglages (connecté) : sous /auth pour que le cookie de cet appareil parte. */
+  changePassword: (body: ChangePasswordRequest) =>
+    api('/auth/password/change', { body }),
+  requestEmailChange: (body: ChangeEmailRequest) =>
+    api('/auth/email/change', { body }),
+  confirmEmailChange: (token: string) =>
+    api('/auth/email/confirm', { ...pub, body: { token } }),
+  revertEmailChange: (body: ResetPasswordRequest) =>
+    api('/auth/email/revert', { ...pub, body }),
   providers: () => api<AuthProviders>('/auth/providers', pub),
   me: () => api<AuthUser>('/me'),
   updateLocale: (locale: Locale) =>

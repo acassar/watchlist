@@ -18,6 +18,10 @@ export class EmailTokenService {
     type: EmailTokenType,
     ttlMs: number,
     passwordHash?: string,
+    options: {
+      /** CHANGE_EMAIL / REVERT_EMAIL : adresse portée par le jeton. */
+      email?: string;
+    } = {},
   ): Promise<string | null> {
     const recent = await this.prisma.emailToken.findFirst({
       where: {
@@ -36,10 +40,31 @@ export class EmailTokenService {
         type,
         tokenHash: hashToken(token),
         passwordHash,
+        email: options.email,
         expiresAt: new Date(Date.now() + ttlMs),
       },
     });
     return token;
+  }
+
+  /** Jeton encore valide, sans le consommer (contrôles avant consume). */
+  find(rawToken: string, type: EmailTokenType) {
+    return this.prisma.emailToken.findFirst({
+      where: {
+        tokenHash: hashToken(rawToken),
+        type,
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    });
+  }
+
+  /** Invalide les jetons en attente d'un type (ex. changement d'adresse annulé). */
+  async invalidate(userId: string, type: EmailTokenType): Promise<void> {
+    await this.prisma.emailToken.updateMany({
+      where: { userId, type, usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 
   /**

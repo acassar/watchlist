@@ -139,7 +139,11 @@
     "TITLE_ALREADY_IN_GROUP": "Already on the group's list!",
     "TOO_MANY_TITLES": "This list is full. Maybe it's time to watch something…",
     "TOO_MANY_ACTIVE_TITLES": "50 titles waiting, that's quite a lineup already! Watch one together to free up a spot.",
-    "CONFIRMATION_MISMATCH": "This address doesn't match your account."
+    "CONFIRMATION_MISMATCH": "This address doesn't match your account.",
+    "EMAIL_CHANGE_LIMIT": "You've already changed your address {max} times in the last {days} days. Try again a bit later.",
+    "SAME_EMAIL": "That's already your account's address.",
+    "NO_PASSWORD": "Only for accounts with a password.",
+    "EMAIL_TAKEN": "This address is now used by another account. Write to us at contact@canapact.fr and we'll sort it out with you."
   },
   "common": {
     "back": "Back",
@@ -388,7 +392,31 @@
       "reauthButton": "Sign in again with Google"
     },
     "deleted": "Your account has been deleted. The couch is still here if you come back.",
-    "support": "About Canapact"
+    "support": "About Canapact",
+    "email": {
+      "title": "Change email address",
+      "intro": "A confirmation link goes to the new address: it replaces the old one when you click it. At most {max} changes every {days} days.",
+      "newEmail": "New email address",
+      "submit": "Send the link",
+      "sent": "Link sent to {email}. Click it to finish: until then, nothing changes.",
+      "taken": "This address already has a Canapact account.",
+      "confirmTitle": "New address",
+      "confirming": "Updating your address…",
+      "confirmed": "Done: your account now uses this address. The old one got a little note, just in case.",
+      "backToSettings": "Back to settings"
+    },
+    "password": {
+      "title": "Change password",
+      "current": "Current password",
+      "otherDevices": "Your other devices will be signed out, this one stays signed in.",
+      "changed": "Password changed. Your other devices have been signed out."
+    },
+    "revert": {
+      "title": "Wasn't you?",
+      "intro": "We'll put this address back on your account. Choose a new password: every device will be signed out.",
+      "submit": "Recover my account",
+      "success": "Your account is back on this address, with your new password. Every device has been signed out."
+    }
   },
   "about": {
     "title": "About",

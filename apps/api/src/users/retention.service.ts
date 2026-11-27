@@ -5,6 +5,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EMAIL_CHANGE_WINDOW_DAYS } from '@watchlist/shared';
 import type { Env } from '../config.js';
 import { MailQuotaExceededError } from '../mail/mail-quota.service.js';
 import { MailService } from '../mail/mail.service.js';
@@ -101,6 +102,14 @@ export class RetentionService
     });
     const emailTokens = await this.prisma.emailToken.deleteMany({
       where: { expiresAt: { lt: now } },
+    });
+    // Seule la limite de changements d'adresse (30 jours glissants) s'en sert.
+    await this.prisma.emailChange.deleteMany({
+      where: {
+        changedAt: {
+          lt: new Date(now.getTime() - EMAIL_CHANGE_WINDOW_DAYS * 86_400_000),
+        },
+      },
     });
     const unverifiedAccounts = await this.prisma.user.deleteMany({
       where: {

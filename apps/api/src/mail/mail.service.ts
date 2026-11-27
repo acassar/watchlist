@@ -13,7 +13,10 @@ import {
 } from './mail-quota.service.js';
 import { MAIL_TRANSPORT, type MailTransport } from './mail-transport.js';
 import {
+  changeEmailTemplate,
+  emailChangedTemplate,
   googleLinkedTemplate,
+  passwordChangedTemplate,
   inactivityWarningTemplate,
   linkPasswordTemplate,
   resetPasswordTemplate,
@@ -94,6 +97,47 @@ export class MailService implements OnApplicationShutdown {
         toLocale(user.locale),
         user.displayName,
         `${this.appUrl}/forgot-password`,
+      ),
+    );
+  }
+
+  sendPasswordChanged(user: Recipient) {
+    return this.deliver(
+      user,
+      passwordChangedTemplate(
+        toLocale(user.locale),
+        user.displayName,
+        `${this.appUrl}/forgot-password`,
+      ),
+    );
+  }
+
+  /** Lien de confirmation, envoyé à `newEmail` (pas encore celle du compte). */
+  sendChangeEmail(user: Recipient, newEmail: string, token: string) {
+    return this.deliver(
+      { ...user, email: newEmail },
+      changeEmailTemplate(
+        toLocale(user.locale),
+        user.displayName,
+        this.link('/confirm-email', token),
+      ),
+    );
+  }
+
+  /** Avis à l'ancienne adresse (`oldEmail`), avec le lien d'annulation. */
+  sendEmailChanged(
+    user: Recipient,
+    oldEmail: string,
+    newEmail: string,
+    token: string,
+  ) {
+    return this.deliver(
+      { ...user, email: oldEmail },
+      emailChangedTemplate(
+        toLocale(user.locale),
+        user.displayName,
+        newEmail,
+        this.link('/revert-email', token),
       ),
     );
   }
