@@ -120,8 +120,8 @@ export class MediaRefreshService
         // Vidéo supprimée ou devenue privée : elle reste dans les listes
         // (c'est l'historique du groupe), mais on ne peut plus rafraîchir ses
         // données, donc on les efface. Seul l'identifiant reste : si la vidéo
-        // revient, le passage suivant (dans 29 jours) ou un nouvel ajout la
-        // restaure.
+        // revient, un nouvel ajout ou un aperçu la restaure aussitôt, sinon le
+        // passage suivant (dans 29 jours).
         await this.prisma.mediaItem.update({
           where: { id: item.id },
           data: {

@@ -60,11 +60,13 @@ export class MediaService {
     const cached = await this.prisma.mediaItem.findUnique({
       where: { source_externalId: { source: source.type, externalId } },
     });
+    // Vidéo marquée indisponible : on redemande toujours (oEmbed, sans quota),
+    // pour qu'une vidéo revenue puisse être ajoutée tout de suite.
     if (
       cached &&
+      !cached.unavailable &&
       Date.now() - cached.fetchedAt.getTime() < MEDIA_CACHE_MAX_AGE_MS
     ) {
-      if (cached.unavailable) throw notFound();
       return cached;
     }
 
