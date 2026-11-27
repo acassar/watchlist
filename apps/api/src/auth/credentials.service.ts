@@ -109,6 +109,8 @@ export class CredentialsService {
     await this.refreshTokens.revokeOthers(user.id, currentRefreshToken);
     // Un lien « mot de passe oublié » encore valide ne doit pas défaire ce choix.
     await this.emailTokens.invalidate(user.id, 'RESET_PASSWORD');
+    // Ni un changement d'adresse demandé avec l'ancien mot de passe.
+    await this.emailTokens.invalidate(user.id, 'CHANGE_EMAIL');
     await this.mail.sendPasswordChanged(user);
   }
 
@@ -184,12 +186,9 @@ export class CredentialsService {
           data: { email: newEmail, emailVerifiedAt: new Date() },
         });
         await tx.emailChange.create({ data: { userId: user.id } });
-        // Un changement plus ancien encore annulable vise une adresse qui
-        // n'est plus celle d'avant : seul le dernier avis garde son lien.
-        await tx.emailToken.updateMany({
-          where: { userId: user.id, type: 'REVERT_EMAIL', usedAt: null },
-          data: { usedAt: new Date() },
-        });
+        // Les liens « ce n'est pas moi » des changements précédents restent
+        // valables : sinon un intrus qui a la main enchaînerait un second
+        // changement pour rendre caduc celui envoyé à l'adresse d'origine.
         const revert = generateToken();
         await tx.emailToken.create({
           data: {
@@ -241,7 +240,13 @@ export class CredentialsService {
             message: 'Cette adresse est utilisée par un autre compte',
           });
         }
-        if (!(await consumeInTx(tx, pending.id, pending.userId))) {
+        // Les liens plus récents (adresses intermédiaires) tombent ; les plus
+        // anciens restent, pour que l'adresse d'origine garde le dernier mot.
+        if (
+          !(await consumeInTx(tx, pending.id, pending.userId, {
+            createdAt: { gte: pending.createdAt },
+          }))
+        ) {
           throw invalidToken();
         }
         await this.freeEmail(tx, oldEmail, pending.userId);
@@ -330,8 +335,16 @@ async function lockUser(tx: Tx, userId: string) {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'user-email:' + userId}))`;
 }
 
-/** Consomme le jeton dans la transaction ; false s'il vient d'être utilisé. */
-async function consumeInTx(tx: Tx, tokenId: string, userId: string) {
+/**
+ * Consomme le jeton dans la transaction ; false s'il vient d'être utilisé.
+ * Les autres liens du même type (restreints par `others`) ne servent plus.
+ */
+async function consumeInTx(
+  tx: Tx,
+  tokenId: string,
+  userId: string,
+  others: Prisma.EmailTokenWhereInput = {},
+) {
   const now = new Date();
   const { count } = await tx.emailToken.updateMany({
     where: { id: tokenId, userId, usedAt: null, expiresAt: { gt: now } },
@@ -342,9 +355,8 @@ async function consumeInTx(tx: Tx, tokenId: string, userId: string) {
     where: { id: tokenId },
     select: { type: true },
   });
-  // Les autres liens du même type ne servent plus.
   await tx.emailToken.updateMany({
-    where: { userId, type, usedAt: null },
+    where: { ...others, userId, type, usedAt: null },
     data: { usedAt: now },
   });
   return true;

@@ -61,6 +61,7 @@ describe('Mot de passe et adresse depuis les réglages (e2e)', () => {
       .expect(204);
     // Hors du délai anti-spam entre deux liens du même type.
     await t.prisma.emailToken.updateMany({
+      where: { type: 'CHANGE_EMAIL' },
       data: { createdAt: new Date(Date.now() - 120_000) },
     });
   }
@@ -101,6 +102,20 @@ describe('Mot de passe et adresse depuis les réglages (e2e)', () => {
       const notice = t.mail.to(email).at(-1)!;
       expect(notice.subject).toBe('Votre mot de passe a changé');
       expect(notice.text).toContain('http://canapact.test/forgot-password');
+    });
+
+    it('annule un changement d’adresse demandé avant', async () => {
+      const user = await signUp();
+      await requestChange(user).expect(202);
+      const token = lastTokenSentTo(t.mail, newEmail);
+      await http()
+        .post('/api/auth/password/change')
+        .set(user.auth)
+        .set('Cookie', user.cookie)
+        .send({ currentPassword: password, newPassword: 'nouveau-plaid-21h' })
+        .expect(204);
+
+      await http().post('/api/auth/email/confirm').send({ token }).expect(401);
     });
 
     it('refuse un mot de passe actuel faux', async () => {
@@ -342,6 +357,34 @@ describe('Mot de passe et adresse depuis les réglages (e2e)', () => {
         where: { id: user.id },
       });
       expect(after.googleId).toBe('g-adrien');
+    });
+
+    it('un second changement ne rend pas caduc le lien envoyé à l’adresse d’origine', async () => {
+      const user = await signUp();
+      await changeEmail(user, newEmail);
+      const original = lastTokenSentTo(t.mail, email);
+      await changeEmail(user, 'intrus@ailleurs.fr');
+      const intermediate = lastTokenSentTo(t.mail, newEmail);
+
+      // L'intrus remet d'abord l'adresse intermédiaire, qu'il contrôle…
+      await http()
+        .post('/api/auth/email/revert')
+        .send({ token: intermediate, password: 'mot-de-passe-intrus' })
+        .expect(204);
+      // … l'adresse d'origine garde le dernier mot.
+      await http()
+        .post('/api/auth/email/revert')
+        .send({ token: original, password: 'reprendre-la-main' })
+        .expect(204);
+      const after = await t.prisma.user.findUniqueOrThrow({
+        where: { id: user.id },
+      });
+      expect(after.email).toBe(email);
+      await login(email, 'reprendre-la-main').expect(200);
+      await http()
+        .post('/api/auth/email/revert')
+        .send({ token: intermediate, password: 'encore-une-fois' })
+        .expect(401);
     });
 
     it('refuse si un autre compte actif a pris l’ancienne adresse', async () => {

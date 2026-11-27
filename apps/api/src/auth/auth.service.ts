@@ -229,6 +229,8 @@ export class AuthService {
         emailVerifiedAt: user.emailVerifiedAt ?? new Date(),
       },
     });
+    // Un changement d'adresse demandé avec l'ancien mot de passe tombe aussi.
+    await this.emailTokens.invalidate(user.id, 'CHANGE_EMAIL');
     await this.refreshTokens.revokeAllForUser(user.id);
   }
 

@@ -21,20 +21,16 @@ export class EmailTokenService {
     options: {
       /** CHANGE_EMAIL / REVERT_EMAIL : adresse portée par le jeton. */
       email?: string;
-      /** Envoi déclenché par un lien déjà reçu, jamais par un formulaire. */
-      skipCooldown?: boolean;
     } = {},
   ): Promise<string | null> {
-    const recent = options.skipCooldown
-      ? null
-      : await this.prisma.emailToken.findFirst({
-          where: {
-            userId,
-            type,
-            createdAt: { gt: new Date(Date.now() - EMAIL_RESEND_COOLDOWN_MS) },
-          },
-          select: { id: true },
-        });
+    const recent = await this.prisma.emailToken.findFirst({
+      where: {
+        userId,
+        type,
+        createdAt: { gt: new Date(Date.now() - EMAIL_RESEND_COOLDOWN_MS) },
+      },
+      select: { id: true },
+    });
     if (recent) return null;
 
     const token = generateToken();
