@@ -82,12 +82,25 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             </td>
           </tr>
           <tr>
-            <td>Liens envoyés par email (confirmation, mot de passe oublié)</td>
-            <td>Confirmer que l'adresse est bien la vôtre</td>
             <td>
-              24 heures (1 heure pour le mot de passe oublié), puis supprimés
-              dans la journée
+              Liens envoyés par email (confirmation, mot de passe oublié,
+              changement d'adresse) ; pour un changement d'adresse, la nouvelle
+              adresse demandée, puis l'ancienne pour le lien « ce n'est pas moi
+              »
             </td>
+            <td>
+              Confirmer que l'adresse est bien la vôtre, annuler un changement
+              d'adresse que vous n'avez pas fait
+            </td>
+            <td>
+              24 heures (1 heure pour le mot de passe oublié, 7 jours pour le
+              lien « ce n'est pas moi »), puis supprimés dans la journée
+            </td>
+          </tr>
+          <tr>
+            <td>Dates de vos changements d'adresse email</td>
+            <td>Limiter à 2 changements sur 30 jours (sécurité)</td>
+            <td>30 jours, puis supprimées dans la journée</td>
           </tr>
           <tr>
             <td>

@@ -18,15 +18,23 @@ export class EmailTokenService {
     type: EmailTokenType,
     ttlMs: number,
     passwordHash?: string,
+    options: {
+      /** CHANGE_EMAIL / REVERT_EMAIL : adresse portée par le jeton. */
+      email?: string;
+      /** Envoi déclenché par un lien déjà reçu, jamais par un formulaire. */
+      skipCooldown?: boolean;
+    } = {},
   ): Promise<string | null> {
-    const recent = await this.prisma.emailToken.findFirst({
-      where: {
-        userId,
-        type,
-        createdAt: { gt: new Date(Date.now() - EMAIL_RESEND_COOLDOWN_MS) },
-      },
-      select: { id: true },
-    });
+    const recent = options.skipCooldown
+      ? null
+      : await this.prisma.emailToken.findFirst({
+          where: {
+            userId,
+            type,
+            createdAt: { gt: new Date(Date.now() - EMAIL_RESEND_COOLDOWN_MS) },
+          },
+          select: { id: true },
+        });
     if (recent) return null;
 
     const token = generateToken();
@@ -36,10 +44,31 @@ export class EmailTokenService {
         type,
         tokenHash: hashToken(token),
         passwordHash,
+        email: options.email,
         expiresAt: new Date(Date.now() + ttlMs),
       },
     });
     return token;
+  }
+
+  /** Jeton encore valide, sans le consommer (contrôles avant consume). */
+  find(rawToken: string, type: EmailTokenType) {
+    return this.prisma.emailToken.findFirst({
+      where: {
+        tokenHash: hashToken(rawToken),
+        type,
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    });
+  }
+
+  /** Invalide les jetons en attente d'un type (ex. changement d'adresse annulé). */
+  async invalidate(userId: string, type: EmailTokenType): Promise<void> {
+    await this.prisma.emailToken.updateMany({
+      where: { userId, type, usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 
   /**

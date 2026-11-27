@@ -51,6 +51,7 @@ export class AccountService {
         // leur expiration (ils portent le navigateur utilisé).
         refreshTokens: { orderBy: { createdAt: 'asc' } },
         emailTokens: { orderBy: { createdAt: 'asc' } },
+        emailChanges: { orderBy: { changedAt: 'asc' } },
         memberships: {
           include: {
             group: {
@@ -117,9 +118,13 @@ export class AccountService {
       })),
       emailLinks: user.emailTokens.map((t) => ({
         type: t.type,
+        email: t.email,
         createdAt: iso(t.createdAt),
         expiresAt: iso(t.expiresAt),
         usedAt: isoOrNull(t.usedAt),
+      })),
+      emailChanges: user.emailChanges.map((c) => ({
+        changedAt: iso(c.changedAt),
       })),
       groups: user.memberships.map((m) => ({
         id: m.group.id,

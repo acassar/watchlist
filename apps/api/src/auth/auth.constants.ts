@@ -4,6 +4,9 @@ export const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const VERIFY_EMAIL_TTL_MS = 24 * 60 * 60 * 1000;
 export const RESET_PASSWORD_TTL_MS = 60 * 60 * 1000;
 export const LINK_PASSWORD_TTL_MS = 24 * 60 * 60 * 1000;
+export const CHANGE_EMAIL_TTL_MS = 24 * 60 * 60 * 1000;
+/** Lien « ce n'est pas moi » envoyé à l'ancienne adresse. */
+export const REVERT_EMAIL_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 /** Délai minimal entre deux emails du même type pour un même compte (anti-spam). */
 export const EMAIL_RESEND_COOLDOWN_MS = 60 * 1000;
 

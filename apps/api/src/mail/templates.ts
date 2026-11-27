@@ -261,3 +261,124 @@ export function inactivityWarningTemplate(
     }),
   };
 }
+
+/** Avis après un changement de mot de passe depuis les réglages. */
+export function passwordChangedTemplate(
+  locale: Locale,
+  name: string,
+  forgotUrl: string,
+): Template {
+  const copy = {
+    fr: {
+      subject: 'Votre mot de passe a changé',
+      paragraphs: [
+        'Le mot de passe de votre compte Canapact vient d’être changé depuis les réglages. Vos autres appareils ont été déconnectés.',
+        'C’était bien vous ? Tout va bien, rien à faire.',
+      ],
+      action: 'Ce n’est pas moi : choisir un nouveau mot de passe',
+      footer:
+        'Cet email est envoyé pour votre sécurité. Si ce n’est pas vous, changez aussi le mot de passe de votre boîte mail.',
+    },
+    en: {
+      subject: 'Your password has changed',
+      paragraphs: [
+        'The password of your Canapact account was just changed from the settings. Your other devices have been signed out.',
+        'Was it you? All good, nothing to do.',
+      ],
+      action: 'Not me: choose a new password',
+      footer:
+        'This email is sent for your security. If it wasn’t you, also change the password of your mailbox.',
+    },
+  }[locale];
+  return {
+    subject: copy.subject,
+    ...layout({
+      locale,
+      greeting: greeting(locale, name),
+      paragraphs: copy.paragraphs,
+      action: { label: copy.action, url: forgotUrl },
+      footer: copy.footer,
+    }),
+  };
+}
+
+/** Lien de confirmation envoyé à la nouvelle adresse. */
+export function changeEmailTemplate(
+  locale: Locale,
+  name: string,
+  url: string,
+): Template {
+  const copy = {
+    fr: {
+      subject: 'Confirmez votre nouvelle adresse',
+      paragraphs: [
+        'Vous avez demandé à utiliser cette adresse pour votre compte Canapact.',
+        'Confirmez-la avec le lien ci-dessous. D’ici là, rien ne change : vous vous connectez toujours avec l’ancienne.',
+      ],
+      action: 'Confirmer cette adresse',
+      footer:
+        'Ce lien est valable 24 heures. Vous n’avez rien demandé ? Ignorez cet email, aucun compte ne sera lié à votre adresse.',
+    },
+    en: {
+      subject: 'Confirm your new address',
+      paragraphs: [
+        'You asked to use this address for your Canapact account.',
+        'Confirm it with the link below. Until then nothing changes: you still sign in with the old one.',
+      ],
+      action: 'Confirm this address',
+      footer:
+        'This link is valid for 24 hours. Didn’t ask for anything? Ignore this email, no account will be linked to your address.',
+    },
+  }[locale];
+  return {
+    subject: copy.subject,
+    ...layout({
+      locale,
+      greeting: greeting(locale, name),
+      paragraphs: copy.paragraphs,
+      action: { label: copy.action, url },
+      footer: copy.footer,
+    }),
+  };
+}
+
+/** Avis envoyé à l'ancienne adresse, avec le lien « ce n'est pas moi ». */
+export function emailChangedTemplate(
+  locale: Locale,
+  name: string,
+  newEmail: string,
+  revertUrl: string,
+): Template {
+  const copy = {
+    fr: {
+      subject: 'L’adresse de votre compte a changé',
+      paragraphs: [
+        `Votre compte Canapact utilise désormais l’adresse ${newEmail}. Cette adresse-ci ne sert plus à vous connecter.`,
+        'C’était bien vous ? Tout va bien, rien à faire.',
+        'Ce n’est pas vous ? Le lien ci-dessous remet cette adresse sur votre compte, vous fait choisir un nouveau mot de passe et déconnecte tous les appareils.',
+      ],
+      action: 'Ce n’est pas moi',
+      footer: 'Ce lien est valable 7 jours.',
+    },
+    en: {
+      subject: 'The address of your account has changed',
+      paragraphs: [
+        `Your Canapact account now uses the address ${newEmail}. This address no longer signs you in.`,
+        'Was it you? All good, nothing to do.',
+        'Not you? The link below puts this address back on your account, has you choose a new password and signs out every device.',
+      ],
+      action: 'Not me',
+      footer: 'This link is valid for 7 days.',
+    },
+  }[locale];
+  return {
+    subject: copy.subject,
+    ...layout({
+      locale,
+      greeting: greeting(locale, name),
+      paragraphs: copy.paragraphs,
+      action: { label: copy.action, url: revertUrl },
+      footer: copy.footer,
+    }),
+  };
+}

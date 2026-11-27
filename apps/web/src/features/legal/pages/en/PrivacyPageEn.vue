@@ -74,12 +74,24 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
             </td>
           </tr>
           <tr>
-            <td>Links sent by email (confirmation, forgotten password)</td>
-            <td>Confirm that the address really is yours</td>
             <td>
-              24 hours (1 hour for a forgotten password), then deleted within
-              the day
+              Links sent by email (confirmation, forgotten password, change of
+              address); for a change of address, the new address requested, then
+              the old one for the “not me” link
             </td>
+            <td>
+              Confirm that the address really is yours, undo a change of address
+              you didn't make
+            </td>
+            <td>
+              24 hours (1 hour for a forgotten password, 7 days for the “not me”
+              link), then deleted within the day
+            </td>
+          </tr>
+          <tr>
+            <td>Dates of your email address changes</td>
+            <td>Limit to 2 changes in 30 days (security)</td>
+            <td>30 days, then deleted within the day</td>
           </tr>
           <tr>
             <td>

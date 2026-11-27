@@ -107,6 +107,29 @@ export class RefreshTokenService {
     });
   }
 
+  /**
+   * Déconnexion des autres appareils : toutes les sessions sauf celle du
+   * jeton donné (l'appareil qui vient de changer le mot de passe).
+   */
+  async revokeOthers(userId: string, keepRawToken?: string): Promise<void> {
+    const kept = keepRawToken
+      ? await this.prisma.refreshToken.findUnique({
+          where: { tokenHash: hashToken(keepRawToken) },
+          select: { userId: true, familyId: true, revokedAt: true },
+        })
+      : null;
+    const keepFamily =
+      kept && kept.userId === userId && !kept.revokedAt ? kept.familyId : null;
+    await this.prisma.refreshToken.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+        ...(keepFamily ? { familyId: { not: keepFamily } } : {}),
+      },
+      data: { revokedAt: new Date() },
+    });
+  }
+
   private async revokeFamily(familyId: string) {
     await this.prisma.refreshToken.updateMany({
       where: { familyId, revokedAt: null },
