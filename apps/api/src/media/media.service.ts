@@ -22,6 +22,13 @@ const DAY_MS = 24 * 3600 * 1000;
 export const MEDIA_CACHE_MAX_AGE_MS = 28 * DAY_MS;
 export const MEDIA_STORAGE_MAX_AGE_MS = 29 * DAY_MS;
 
+function notFound(): NotFoundException {
+  return new NotFoundException({
+    code: TitleErrorCode.MEDIA_NOT_FOUND,
+    message: 'Titre introuvable ou privé',
+  });
+}
+
 export function toMediaInfo(item: MediaItem): MediaInfo {
   return {
     source: item.source,
@@ -31,6 +38,7 @@ export function toMediaInfo(item: MediaItem): MediaInfo {
     thumbnailUrl: item.thumbnailUrl,
     author: item.author,
     durationSec: item.durationSec,
+    unavailable: item.unavailable,
   };
 }
 
@@ -56,6 +64,7 @@ export class MediaService {
       cached &&
       Date.now() - cached.fetchedAt.getTime() < MEDIA_CACHE_MAX_AGE_MS
     ) {
+      if (cached.unavailable) throw notFound();
       return cached;
     }
 
@@ -64,10 +73,7 @@ export class MediaService {
       info = await source.resolve(url);
     } catch (error) {
       if (error instanceof MediaNotFoundError) {
-        throw new NotFoundException({
-          code: TitleErrorCode.MEDIA_NOT_FOUND,
-          message: 'Titre introuvable ou privé',
-        });
+        throw notFound();
       }
       if (error instanceof MediaUnavailableError) {
         throw new BadGatewayException({
@@ -84,6 +90,7 @@ export class MediaService {
       thumbnailUrl: info.thumbnailUrl,
       author: info.author,
       durationSec: info.durationSec,
+      unavailable: false,
       fetchedAt: new Date(),
     };
     // Upsert natif (INSERT … ON CONFLICT) : deux ajouts simultanés de la même vidéo ne se gênent pas.

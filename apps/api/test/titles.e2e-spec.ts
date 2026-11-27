@@ -109,6 +109,7 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
         author: 'Rick Astley',
         thumbnailUrl: `https://i.ytimg.com/vi/${RICK}/mqdefault.jpg`,
         durationSec: 213,
+        unavailable: false,
       });
     });
 
@@ -380,17 +381,37 @@ describe('Ajout de titres par lien YouTube (e2e)', () => {
       expect(youtube.calls).toHaveLength(2);
     });
 
-    it('vidéo supprimée : le titre reste, sans la durée', async () => {
+    it('vidéo supprimée : le titre reste dans la liste, sans ses données YouTube', async () => {
       await add(adrien, groupId, { url: `https://youtu.be/${RICK}` }).expect(
         201,
       );
       await ageAll(29.5);
+      const video = youtube.videos[RICK];
       delete youtube.videos[RICK];
 
       expect((await refresh()).gone).toBe(1);
       const [title] = (await list(adrien, groupId).expect(200)).body;
-      expect(title.media.title).toBe('Never Gonna Give You Up');
-      expect(title.media.durationSec).toBeNull();
+      expect(title.media).toMatchObject({
+        externalId: RICK,
+        title: '',
+        author: null,
+        thumbnailUrl: null,
+        durationSec: null,
+        unavailable: true,
+      });
+      // Encore en cache : un nouvel aperçu répond « introuvable » sans
+      // redemander à YouTube.
+      const calls = youtube.calls.length;
+      await resolve(adrien, `https://youtu.be/${RICK}`).expect(404);
+      expect(youtube.calls).toHaveLength(calls);
+
+      // La vidéo revient : le passage suivant la restaure.
+      youtube.videos[RICK] = video;
+      await ageAll(29.5);
+      expect((await refresh()).refreshed).toBe(1);
+      const [back] = (await list(adrien, groupId).expect(200)).body;
+      expect(back.media.title).toBe('Never Gonna Give You Up');
+      expect(back.media.unavailable).toBe(false);
     });
 
     it('YouTube injoignable : rien n’est perdu, nouvel essai plus tard', async () => {

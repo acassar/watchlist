@@ -193,6 +193,10 @@ model MediaItem {
   thumbnailUrl String?     @map("thumbnail_url")
   author       String?
   durationSec  Int?        @map("duration_sec")
+  /// Vidéo supprimée ou devenue privée : titre, chaîne, miniature et durée
+  /// sont effacés (pas de donnée YouTube gardée plus de 30 jours sans
+  /// rafraîchissement), seul l'identifiant reste.
+  unavailable  Boolean     @default(false)
   fetchedAt    DateTime    @map("fetched_at") @db.Timestamptz(3)
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
 

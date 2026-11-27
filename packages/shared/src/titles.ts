@@ -80,6 +80,12 @@ export interface MediaInfo {
   author: string | null;
   /** Null si inconnue (pas de clé API, direct en cours…). */
   durationSec: number | null;
+  /**
+   * Vidéo supprimée ou devenue privée : titre, chaîne et miniature sont
+   * effacés (règles de l'API YouTube), l'interface affiche « Vidéo
+   * indisponible ».
+   */
+  unavailable?: boolean;
 }
 
 /** Avis d'un membre actuel du groupe sur un titre. */
