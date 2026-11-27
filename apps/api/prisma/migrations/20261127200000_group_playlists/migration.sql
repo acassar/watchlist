@@ -23,6 +23,17 @@ CREATE TABLE "youtube_daily_units" (
     CONSTRAINT "youtube_daily_units_pkey" PRIMARY KEY ("day")
 );
 
+-- CreateTable
+CREATE TABLE "youtube_group_daily_units" (
+    "day" DATE NOT NULL,
+    "group_id" UUID NOT NULL,
+    "units" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "youtube_group_daily_units_pkey" PRIMARY KEY ("day","group_id")
+);
+
 -- AddForeignKey
 ALTER TABLE "group_playlists" ADD CONSTRAINT "group_playlists_group_id_user_id_fkey" FOREIGN KEY ("group_id", "user_id") REFERENCES "group_members"("group_id", "user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
+ALTER TABLE "youtube_group_daily_units" ADD CONSTRAINT "youtube_group_daily_units_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "groups"("id") ON DELETE CASCADE ON UPDATE CASCADE;

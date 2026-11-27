@@ -258,6 +258,33 @@ describe('Synchro des playlists YouTube (e2e)', () => {
     expect(res.body.code).toBe('PLAYLIST_QUOTA_EXCEEDED');
   });
 
+  it('part du quota par groupe : un groupe gourmand ne bloque pas les autres', async () => {
+    const today = new Date(new Date().toISOString().slice(0, 10));
+    await t.prisma.youTubeGroupDailyUnits.create({
+      data: { day: today, groupId, units: 500 },
+    });
+    const res = await link(adrien, playlistUrl(MINE));
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe('PLAYLIST_QUOTA_EXCEEDED');
+
+    // Un autre groupe garde sa part (et rien n'est compté à ce groupe-ci).
+    const other = await createUser(t, 'Sam');
+    const created = await http()
+      .post('/api/groups')
+      .set(other.auth)
+      .send({ name: 'Colocs' })
+      .expect(201);
+    await http()
+      .put(`/api/groups/${created.body.id}/playlists/mine`)
+      .set(other.auth)
+      .send({ url: playlistUrl(HERS), importExisting: true })
+      .expect(200);
+    const mine = await t.prisma.youTubeGroupDailyUnits.findUnique({
+      where: { day_groupId: { day: today, groupId } },
+    });
+    expect(mine?.units).toBe(500);
+  });
+
   it('délier, ou quitter le groupe, retire la playlist mais garde les titres', async () => {
     await link(adrien, playlistUrl(MINE)).expect(200);
     await link(camille, playlistUrl(HERS)).expect(200);

@@ -12,19 +12,19 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid()) @db.Uuid
+  id                 String    @id @default(uuid()) @db.Uuid
   /// Toujours en minuscules (normalisé par le schéma Zod partagé).
-  email           String    @unique
+  email              String    @unique
   /// Null pour un compte créé uniquement via Google (étape 3).
-  passwordHash    String?   @map("password_hash")
-  googleId        String?   @unique @map("google_id")
-  displayName     String    @map("display_name")
+  passwordHash       String?   @map("password_hash")
+  googleId           String?   @unique @map("google_id")
+  displayName        String    @map("display_name")
   /// Langue de l'interface et des emails ('fr' | 'en', validée par le schéma
   /// Zod partagé). Choisie à l'inscription, modifiable dans les réglages.
-  locale          String    @default("fr")
-  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  locale             String    @default("fr")
+  emailVerifiedAt    DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
   /// Dernière ouverture ou reprise de session (connexion, rafraîchissement du
   /// jeton). Au bout de 3 ans sans activité, le compte est supprimé.
   lastActiveAt       DateTime  @default(now()) @map("last_active_at") @db.Timestamptz(3)
@@ -121,9 +121,10 @@ model Group {
   /// Vidéos des playlists qui attendaient une place (liste pleine) à cette synchro.
   playlistsWaiting  Int       @default(0) @map("playlists_waiting")
 
-  members     GroupMember[]
-  invitations Invitation[]
-  titles      GroupTitle[]
+  members      GroupMember[]
+  invitations  Invitation[]
+  youTubeUnits YouTubeGroupDailyUnits[]
+  titles       GroupTitle[]
 
   @@map("groups")
 }
@@ -276,4 +277,17 @@ model YouTubeDailyUnits {
   units Int      @default(0)
 
   @@map("youtube_daily_units")
+}
+
+/// Part du quota ci-dessus dépensée par chaque groupe, par jour (UTC) : un
+/// membre qui relie sa playlist en boucle ne bloque pas les autres groupes.
+model YouTubeGroupDailyUnits {
+  day     DateTime @db.Date
+  groupId String   @map("group_id") @db.Uuid
+  units   Int      @default(0)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([day, groupId])
+  @@map("youtube_group_daily_units")
 }

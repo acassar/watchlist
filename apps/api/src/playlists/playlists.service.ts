@@ -158,7 +158,7 @@ export class PlaylistsService {
         message: 'Ce lien ne mène pas à une playlist lisible',
       });
     }
-    if (!(await this.quota.tryConsume(1))) throw quotaExceeded();
+    if (!(await this.quota.tryConsume(groupId))) throw quotaExceeded();
     const found = await this.youtube.exists(parsed.playlistId);
     if (found !== true) {
       if (found === 'quota') {
@@ -322,6 +322,7 @@ export class PlaylistsService {
         cursor + Math.min(PAGE_SIZE, room - accepted.length),
       );
       const items = await this.mediaItems(
+        groupId,
         batch.map((c) => c.videoId),
         now,
       );
@@ -389,7 +390,9 @@ export class PlaylistsService {
     const entries: PlaylistEntry[] = [];
     let token: string | undefined;
     for (let page = 0; page < MAX_PAGES; page++) {
-      if (!(await this.quota.tryConsume(1))) throw new QuotaStop();
+      if (!(await this.quota.tryConsume(playlist.groupId))) {
+        throw new QuotaStop();
+      }
       const result = await this.youtube.page(playlist.playlistId, token);
       if (typeof result === 'string') {
         await this.failed(playlist, result);
@@ -427,6 +430,7 @@ export class PlaylistsService {
    * fraîches (règle des 30 jours). Null si YouTube n'a pas pu répondre.
    */
   private async mediaItems(
+    groupId: string,
     videoIds: string[],
     now: Date,
   ): Promise<Map<string, string> | null> {
@@ -442,7 +446,7 @@ export class PlaylistsService {
     const missing = videoIds.filter((id) => !ids.has(id));
     if (missing.length === 0) return ids;
 
-    if (!(await this.quota.tryConsume(1))) return null;
+    if (!(await this.quota.tryConsume(groupId))) return null;
     const details = await this.youtube.videos(missing);
     if (typeof details === 'string') {
       if (details === 'quota') await this.quota.exhaust();

@@ -58,6 +58,15 @@ export const envSchema = z
      */
     PLAYLIST_SYNC_DAILY_UNITS: z.coerce.number().int().positive().default(6000),
     /**
+     * Part de ces unités qu'un même groupe peut dépenser par jour (UTC) :
+     * relier sa playlist en boucle n'épuise que la part de son groupe.
+     */
+    PLAYLIST_SYNC_GROUP_DAILY_UNITS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(500),
+    /**
      * Rafraîchissement périodique du cache des titres (CGU YouTube : 30 jours
      * de conservation au plus). Désactivé dans les tests e2e.
      */
