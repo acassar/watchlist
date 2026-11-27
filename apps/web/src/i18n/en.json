@@ -246,6 +246,7 @@
     }
   },
   "titles": {
+    "unavailable": "Video unavailable",
     "addButton": "Add a title",
     "added": "Added to “{name}”",
     "empty": "Nothing here for now. Tap “+” to add a video.",

@@ -6,6 +6,7 @@ import {
 } from '@watchlist/shared';
 import { mdiOpenInNew } from '@mdi/js';
 import { computed, ref } from 'vue';
+import { mediaTitle } from '../media';
 import { statusAppearance, statusChoices } from '../status';
 import { swipeChoice, swipeHint } from '../swipe';
 import MediaThumb from './MediaThumb.vue';
@@ -99,7 +100,7 @@ function decide(choice: WatchStatus) {
         </div>
       </div>
       <h2 class="text-title-large font-display mt-3 title-text">
-        {{ title.media.title }}
+        {{ mediaTitle(title.media, $t) }}
       </h2>
       <p class="text-body-medium text-medium-emphasis">{{ meta }}</p>
       <p class="text-body-small text-medium-emphasis mt-1">

@@ -106,6 +106,7 @@ export class MediaRefreshService
             thumbnailUrl: info.thumbnailUrl,
             author: info.author,
             durationSec: info.durationSec,
+            unavailable: false,
             fetchedAt: new Date(),
           },
         });
@@ -116,12 +117,21 @@ export class MediaRefreshService
           report.failed++;
           continue;
         }
-        // Vidéo supprimée ou devenue privée : le titre reste dans les listes
-        // (c'est l'historique du groupe), mais on efface la durée, seule donnée
-        // venue de l'API Data qu'on ne peut plus rafraîchir.
+        // Vidéo supprimée ou devenue privée : elle reste dans les listes
+        // (c'est l'historique du groupe), mais on ne peut plus rafraîchir ses
+        // données, donc on les efface. Seul l'identifiant reste : si la vidéo
+        // revient, un nouvel ajout ou un aperçu la restaure aussitôt, sinon le
+        // passage suivant (dans 29 jours).
         await this.prisma.mediaItem.update({
           where: { id: item.id },
-          data: { durationSec: null, fetchedAt: new Date() },
+          data: {
+            title: '',
+            author: null,
+            thumbnailUrl: null,
+            durationSec: null,
+            unavailable: true,
+            fetchedAt: new Date(),
+          },
         });
         report.gone++;
       }

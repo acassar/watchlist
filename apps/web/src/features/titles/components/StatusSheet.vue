@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { GroupTitle, WatchStatus } from '@watchlist/shared';
 import { computed } from 'vue';
+import { mediaTitle } from '../media';
 import { statusAppearance, statusChoices } from '../status';
 
 /** Titre dont on change mon avis ; null = fermé. */
@@ -26,7 +27,7 @@ function pick(status: WatchStatus) {
     <v-card class="pa-4 pb-6" rounded="t-xl" data-test="status-sheet">
       <div class="sheet-handle mx-auto mb-4" />
       <p class="text-title-small mb-1 text-truncate">
-        {{ title?.media.title }}
+        {{ title ? mediaTitle(title.media, $t) : '' }}
       </p>
       <p class="text-body-small text-medium-emphasis mb-4">
         {{ $t('titles.yourStatus') }}

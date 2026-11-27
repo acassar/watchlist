@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatDuration, type GroupTitle } from '@watchlist/shared';
 import { computed } from 'vue';
+import { mediaTitle } from '../media';
 import MediaThumb from './MediaThumb.vue';
 import MemberStatuses from './MemberStatuses.vue';
 
@@ -32,12 +33,14 @@ const meta = computed(() =>
       target="_blank"
       rel="noopener noreferrer"
       class="thumb-link"
-      :aria-label="$t('titles.open', { title: title.media.title })"
+      :aria-label="$t('titles.open', { title: mediaTitle(title.media, $t) })"
     >
       <MediaThumb :src="title.media.thumbnailUrl" :width="112" />
     </a>
     <div class="d-flex flex-column flex-1-1 overflow-hidden ga-1">
-      <span class="text-title-small title-text">{{ title.media.title }}</span>
+      <span class="text-title-small title-text">{{
+        mediaTitle(title.media, $t)
+      }}</span>
       <span class="text-body-small text-medium-emphasis text-truncate">{{
         meta
       }}</span>
