@@ -10,8 +10,22 @@ export interface FakeVideo {
   duration: string;
 }
 
-export function mockYouTube(videos: Record<string, FakeVideo> = {}) {
-  const state = { videos, down: false, calls: [] as URL[] };
+/** Playlist simulée : vidéos dans l'ordre, avec leur date d'ajout. */
+export interface FakePlaylist {
+  items: { videoId: string; addedAt?: string; private?: boolean }[];
+}
+
+export function mockYouTube(
+  videos: Record<string, FakeVideo> = {},
+  playlists: Record<string, FakePlaylist> = {},
+) {
+  const state = {
+    videos,
+    playlists,
+    down: false,
+    quotaExceeded: false,
+    calls: [] as URL[],
+  };
 
   const fetchMock = vi.fn((input: string | URL | Request) => {
     const url = new URL(input instanceof Request ? input.url : input);
@@ -27,18 +41,67 @@ export function mockYouTube(videos: Record<string, FakeVideo> = {}) {
           : new Response('Not Found', { status: 404 }),
       );
     }
-    if (url.href.startsWith('https://www.googleapis.com/youtube/v3/videos')) {
-      const video = state.videos[url.searchParams.get('id')!];
+    const api = 'https://www.googleapis.com/youtube/v3/';
+    if (url.href.startsWith(api) && state.quotaExceeded) {
+      return Promise.resolve(
+        Response.json(
+          { error: { errors: [{ reason: 'quotaExceeded' }] } },
+          { status: 403 },
+        ),
+      );
+    }
+    if (url.href.startsWith(`${api}videos`)) {
+      const ids = url.searchParams.get('id')!.split(',');
       return Promise.resolve(
         Response.json({
-          items: video
-            ? [
-                {
-                  snippet: { title: video.title, channelTitle: video.channel },
-                  contentDetails: { duration: video.duration },
-                },
-              ]
-            : [],
+          items: ids.flatMap((id) => {
+            const video = state.videos[id];
+            return video
+              ? [
+                  {
+                    id,
+                    snippet: {
+                      title: video.title,
+                      channelTitle: video.channel,
+                    },
+                    contentDetails: { duration: video.duration },
+                  },
+                ]
+              : [];
+          }),
+        }),
+      );
+    }
+    if (url.href.startsWith(`${api}playlists`)) {
+      const id = url.searchParams.get('id')!;
+      return Promise.resolve(
+        Response.json({ items: state.playlists[id] ? [{ id }] : [] }),
+      );
+    }
+    if (url.href.startsWith(`${api}playlistItems`)) {
+      const playlist = state.playlists[url.searchParams.get('playlistId')!];
+      if (!playlist) {
+        return Promise.resolve(
+          Response.json(
+            { error: { errors: [{ reason: 'playlistNotFound' }] } },
+            { status: 404 },
+          ),
+        );
+      }
+      const size = Number(url.searchParams.get('maxResults') ?? 5);
+      const start = Number(url.searchParams.get('pageToken') ?? 0);
+      const page = playlist.items.slice(start, start + size);
+      const next = start + size < playlist.items.length;
+      return Promise.resolve(
+        Response.json({
+          ...(next ? { nextPageToken: String(start + size) } : {}),
+          items: page.map((item) => ({
+            snippet: {
+              publishedAt: item.addedAt ?? '2026-01-01T00:00:00Z',
+              resourceId: { videoId: item.videoId },
+            },
+            status: { privacyStatus: item.private ? 'private' : 'public' },
+          })),
         }),
       );
     }

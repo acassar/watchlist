@@ -52,6 +52,12 @@ export const envSchema = z
     /** Résolutions de liens (aperçu ou ajout) par utilisateur et par minute. */
     MEDIA_RATE_LIMIT: z.coerce.number().int().positive().default(30),
     /**
+     * Unités de quota YouTube par jour (UTC) réservées à la synchro des
+     * playlists, sur les 10 000 gratuites. Le reste couvre les ajouts de liens
+     * (1 unité) et le rafraîchissement des 30 jours (2 000 par jour au plus).
+     */
+    PLAYLIST_SYNC_DAILY_UNITS: z.coerce.number().int().positive().default(6000),
+    /**
      * Rafraîchissement périodique du cache des titres (CGU YouTube : 30 jours
      * de conservation au plus). Désactivé dans les tests e2e.
      */

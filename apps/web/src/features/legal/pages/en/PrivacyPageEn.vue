@@ -110,6 +110,14 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
           </tr>
           <tr>
             <td>
+              Link of the YouTube playlist you link to a group (optional) and
+              the date you linked it
+            </td>
+            <td>Add its new videos to the group’s list</td>
+            <td>Until you unlink it, leave the group or delete your account</td>
+          </tr>
+          <tr>
+            <td>
               Public video information (title, channel, duration, thumbnail
               address)
             </td>
@@ -225,8 +233,10 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       </li>
       <li>Opening a video takes you to YouTube, where its own rules apply.</li>
       <li>
-        We access no data from your YouTube account: no history, no playlists,
-        no subscriptions.
+        We access no data from your YouTube account: no history, no
+        subscriptions, no private playlists. If you link a public or unlisted
+        playlist, our server reads it like anyone with the link would, without
+        signing in to your account, and keeps only its ID.
       </li>
       <li>
         Video information is refreshed or deleted at the latest 30 days after

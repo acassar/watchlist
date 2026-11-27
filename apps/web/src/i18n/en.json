@@ -139,7 +139,13 @@
     "TITLE_ALREADY_IN_GROUP": "Already on the group's list!",
     "TOO_MANY_TITLES": "This list is full. Maybe it's time to watch something…",
     "TOO_MANY_ACTIVE_TITLES": "50 titles waiting, that's quite a lineup already! Watch one together to free up a spot.",
-    "CONFIRMATION_MISMATCH": "This address doesn't match your account."
+    "CONFIRMATION_MISMATCH": "This address doesn't match your account.",
+    "INVALID_PLAYLIST_URL": "That's not a YouTube playlist link. It looks like https://www.youtube.com/playlist?list=…",
+    "PLAYLIST_NOT_SUPPORTED": "That list (Watch later, liked videos, mixes) can't be read. Create an unlisted playlist instead.",
+    "PLAYLIST_NOT_FOUND": "Playlist not found: it may be private. Set it to “Unlisted” and try again.",
+    "PLAYLIST_SYNC_TOO_SOON": "Already synced less than 15 minutes ago. Just a little patience!",
+    "PLAYLIST_SYNC_DISABLED": "Playlist sync isn't available right now.",
+    "PLAYLIST_QUOTA_EXCEEDED": "Victims of our own success: we've read all the playlists we can for today. Try again tomorrow, we'll be waiting."
   },
   "common": {
     "back": "Back",
@@ -402,5 +408,36 @@
     "button": "Buy a blanket",
     "newTab": "(opens Liberapay in a new tab)",
     "hint": "Donations go through Liberapay: Canapact never sees or keeps any of it."
+  },
+  "playlists": {
+    "title": "My YouTube playlist",
+    "intro": "Link a YouTube playlist to this group: the videos you add to it show up in the list on their own. One playlist per person.",
+    "tuto": {
+      "create": "In YouTube, create a playlist just for Canapact (You > Playlists > New playlist).",
+      "visibility": "Set its visibility to “Unlisted” (or “Public”). A private playlist can't be read.",
+      "copy": "Open the playlist, tap “Share”, then “Copy link”.",
+      "paste": "Paste the link here. Then add videos to that playlist from YouTube, as usual.",
+      "watchLater": "“Watch later” and liked videos can't be linked: YouTube doesn't share them."
+    },
+    "urlLabel": "Playlist link",
+    "importExisting": "Import the videos already in the playlist",
+    "importHint": "Only the first {n} will be added: that's the room left in the list (50 titles in progress at most). The others will come once a spot frees up.",
+    "newOnlyHint": "Only videos added to the playlist from now on will show up in the list.",
+    "link": "Link playlist",
+    "linked": "Playlist linked",
+    "linkedAll": "All its videos are imported",
+    "linkedNewOnly": "Videos added since {date}",
+    "open": "Open the playlist in YouTube",
+    "notFound": "Canapact can't read your playlist anymore: it may have been made private or deleted. Set it back to “Unlisted”, or link another one.",
+    "sync": "Sync playlist",
+    "nextSync": "Next sync available at {time}.",
+    "lastSync": "Last synced on {date}.",
+    "linkedCount": "No playlist linked in the group | 1 playlist linked in the group | {n} playlists linked in the group",
+    "added": "No video added. | 1 video added to the list. | {n} videos added to the list.",
+    "nothingNew": "Nothing new in the playlists.",
+    "waiting": "No video waiting. | 1 video is waiting for a spot: it will come as soon as you watch a title together. | {n} videos are waiting for a spot: they will come as soon as you watch titles together.",
+    "change": "Change playlist",
+    "unlink": "Unlink",
+    "loadError": "Can't load the group's playlist right now."
   }
 }

@@ -139,7 +139,13 @@
     "TITLE_ALREADY_IN_GROUP": "Déjà dans la liste du groupe !",
     "TOO_MANY_TITLES": "Cette liste est pleine. Il est peut-être temps de regarder quelque chose…",
     "TOO_MANY_ACTIVE_TITLES": "50 titres en attente, c'est déjà un beau programme ! Regardez-en un ensemble pour libérer une place.",
-    "CONFIRMATION_MISMATCH": "L'adresse ne correspond pas à votre compte."
+    "CONFIRMATION_MISMATCH": "L'adresse ne correspond pas à votre compte.",
+    "INVALID_PLAYLIST_URL": "Ce n'est pas un lien de playlist YouTube. Il ressemble à https://www.youtube.com/playlist?list=…",
+    "PLAYLIST_NOT_SUPPORTED": "Cette liste-là (À regarder plus tard, vidéos aimées, mix) ne peut pas être lue. Créez une playlist non répertoriée.",
+    "PLAYLIST_NOT_FOUND": "Playlist introuvable : elle est peut-être privée. Passez-la en « Non répertoriée » et réessayez.",
+    "PLAYLIST_SYNC_TOO_SOON": "Déjà synchronisée il y a moins de 15 minutes. Encore un peu de patience !",
+    "PLAYLIST_SYNC_DISABLED": "La synchro des playlists n'est pas disponible pour l'instant.",
+    "PLAYLIST_QUOTA_EXCEEDED": "Victimes de notre succès : on a lu toutes les playlists possibles pour aujourd'hui. Réessayez demain, promis, on vous attend."
   },
   "common": {
     "back": "Retour",
@@ -402,5 +408,36 @@
     "button": "Offrir un plaid",
     "newTab": "(s'ouvre sur Liberapay, dans un nouvel onglet)",
     "hint": "Le don se fait sur Liberapay : Canapact n'en voit et n'en garde rien."
+  },
+  "playlists": {
+    "title": "Ma playlist YouTube",
+    "intro": "Liez une playlist YouTube à ce groupe : les vidéos que vous y ajoutez arrivent dans la liste toutes seules. Une playlist par personne.",
+    "tuto": {
+      "create": "Dans YouTube, créez une playlist rien que pour Canapact (Vous > Playlists > Nouvelle playlist).",
+      "visibility": "Choisissez la visibilité « Non répertoriée » (ou « Publique »). Une playlist privée ne peut pas être lue.",
+      "copy": "Ouvrez la playlist, touchez « Partager » puis « Copier le lien ».",
+      "paste": "Collez le lien ici. Ensuite, ajoutez vos vidéos à cette playlist depuis YouTube, comme d'habitude.",
+      "watchLater": "« À regarder plus tard » et les vidéos aimées ne peuvent pas être liées : YouTube ne les partage pas."
+    },
+    "urlLabel": "Lien de la playlist",
+    "importExisting": "Importer les vidéos déjà dans la playlist",
+    "importHint": "Seules les {n} premières seront ajoutées : c'est la place qui reste dans la liste (50 titres en cours au plus). Les autres arriveront quand une place se libère.",
+    "newOnlyHint": "Seules les vidéos ajoutées à la playlist à partir de maintenant arriveront dans la liste.",
+    "link": "Lier la playlist",
+    "linked": "Playlist liée",
+    "linkedAll": "Toutes ses vidéos sont importées",
+    "linkedNewOnly": "Vidéos ajoutées depuis le {date}",
+    "open": "Ouvrir la playlist dans YouTube",
+    "notFound": "Canapact n'arrive plus à lire votre playlist : elle est peut-être passée en privée ou a été supprimée. Repassez-la en « Non répertoriée », ou liez-en une autre.",
+    "sync": "Synchroniser la playlist",
+    "nextSync": "Prochaine synchro possible à {time}.",
+    "lastSync": "Dernière synchro le {date}.",
+    "linkedCount": "Aucune playlist liée dans le groupe | 1 playlist liée dans le groupe | {n} playlists liées dans le groupe",
+    "added": "Aucune vidéo ajoutée. | 1 vidéo ajoutée à la liste. | {n} vidéos ajoutées à la liste.",
+    "nothingNew": "Rien de nouveau dans les playlists.",
+    "waiting": "Aucune vidéo en attente. | 1 vidéo attend une place : elle arrivera dès que vous aurez regardé un titre ensemble. | {n} vidéos attendent une place : elles arriveront dès que vous aurez regardé des titres ensemble.",
+    "change": "Changer de playlist",
+    "unlink": "Délier",
+    "loadError": "Impossible de charger la playlist du groupe pour l'instant."
   }
 }

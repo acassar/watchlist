@@ -37,7 +37,7 @@ export type AccountErrorCode =
   (typeof AccountErrorCode)[keyof typeof AccountErrorCode];
 
 /** Version du format d'export, à incrémenter si sa forme change. */
-export const ACCOUNT_EXPORT_VERSION = 3;
+export const ACCOUNT_EXPORT_VERSION = 4;
 
 /**
  * Export des données (droit d'accès et portabilité, art. 15 et 20 du RGPD) :
@@ -91,6 +91,12 @@ export interface AccountExport {
     joinedAt: string;
     /** Prénoms affichés des autres membres : on les voit dans l'app. */
     otherMembers: string[];
+    /** Playlist YouTube liée à ce groupe (importFrom nul : tout importer). */
+    playlist: {
+      url: string;
+      linkedAt: string;
+      importFrom: string | null;
+    } | null;
   }[];
   /**
    * Titres que la personne a ajoutés. Dans un groupe qu'elle a quitté, le nom

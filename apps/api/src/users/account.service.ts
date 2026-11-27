@@ -11,6 +11,7 @@ import {
   REAUTH_MAX_AGE_SECONDS,
   toLocale,
   type AccountExport,
+  youTubePlaylistUrl,
   type DeleteAccountRequest,
 } from '@watchlist/shared';
 import type { AuthenticatedUser } from '../auth/current-user.decorator.js';
@@ -53,6 +54,7 @@ export class AccountService {
         emailTokens: { orderBy: { createdAt: 'asc' } },
         memberships: {
           include: {
+            playlist: true,
             group: {
               include: {
                 members: {
@@ -127,6 +129,13 @@ export class AccountService {
         role: m.role,
         joinedAt: iso(m.joinedAt),
         otherMembers: m.group.members.map((o) => o.user.displayName),
+        playlist: m.playlist
+          ? {
+              url: youTubePlaylistUrl(m.playlist.playlistId),
+              linkedAt: iso(m.playlist.linkedAt),
+              importFrom: isoOrNull(m.playlist.importFrom),
+            }
+          : null,
       })),
       addedTitles: user.addedTitles.map((t) => ({
         groupId: t.group.id,

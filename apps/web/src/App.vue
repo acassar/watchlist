@@ -16,6 +16,7 @@ import { useAuthStore } from '@/features/auth/store';
 import GroupSwitcher from '@/features/groups/components/GroupSwitcher.vue';
 import { pendingInvite, pendingShare } from '@/features/groups/storage';
 import { useGroupsStore } from '@/features/groups/store';
+import { usePlaylistsStore } from '@/features/playlists/store';
 import AddTitleSheet from '@/features/titles/components/AddTitleSheet.vue';
 import { useTitlesStore } from '@/features/titles/store';
 import { swipeTutorial } from '@/features/titles/tutorial';
@@ -25,6 +26,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const groups = useGroupsStore();
 const titles = useTitlesStore();
+const playlists = usePlaylistsStore();
 const bare = computed(() => route.meta.layout === 'auth');
 const adding = ref(false);
 const addedTo = ref<string | null>(null);
@@ -47,14 +49,27 @@ watch(
   (userId) => {
     groups.reset();
     titles.reset();
+    playlists.reset();
     if (userId) groups.load().catch(() => undefined);
+  },
+  { immediate: true },
+);
+
+// Playlists YouTube des membres : synchro à l'ouverture et au retour sur
+// l'app (l'API ne la refait que toutes les 4 h).
+watch(
+  () => groups.activeGroup?.id,
+  (id) => {
+    if (id) playlists.autoSync(id);
   },
   { immediate: true },
 );
 
 // Pas de temps réel (décision D8) : retour sur l'app = listes rechargées.
 function onVisible() {
-  if (document.visibilityState === 'visible' && auth.user) titles.refresh();
+  if (document.visibilityState !== 'visible' || !auth.user) return;
+  titles.refresh();
+  if (groups.activeGroup) playlists.autoSync(groups.activeGroup.id);
 }
 onMounted(() => document.addEventListener('visibilitychange', onVisible));
 onBeforeUnmount(() =>
