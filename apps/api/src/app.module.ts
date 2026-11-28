@@ -8,6 +8,7 @@ import { MailModule } from './mail/mail.module.js';
 import { MediaModule } from './media/media.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { TitlesModule } from './titles/titles.module.js';
+import { PlaylistsModule } from './playlists/playlists.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module.js';
     GroupsModule,
     MediaModule,
     TitlesModule,
+    PlaylistsModule,
     HealthModule,
   ],
 })

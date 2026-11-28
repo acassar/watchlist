@@ -132,6 +132,17 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
           </tr>
           <tr>
             <td>
+              Lien de la playlist YouTube que vous liez à un groupe (facultatif)
+              et date de liaison
+            </td>
+            <td>Ajouter ses nouvelles vidéos à la liste du groupe</td>
+            <td>
+              Jusqu'à ce que vous la déliiez, quittiez le groupe ou supprimiez
+              votre compte
+            </td>
+          </tr>
+          <tr>
+            <td>
               Informations publiques des vidéos (titre, chaîne, durée, adresse
               de la miniature)
             </td>
@@ -241,7 +252,10 @@ const CNIL_COMPLAINT = 'https://www.cnil.fr/fr/plaintes';
       </li>
       <li>
         Nous n'accédons à aucune donnée de votre compte YouTube : pas
-        d'historique, pas de playlists, pas d'abonnements.
+        d'historique, pas d'abonnements, pas de playlists privées. Si vous liez
+        une playlist publique ou non répertoriée, notre serveur la lit comme
+        n'importe qui ayant le lien, sans connexion à votre compte, et n'en
+        garde que l'identifiant.
       </li>
       <li>
         Les informations des vidéos sont rafraîchies ou supprimées au plus tard

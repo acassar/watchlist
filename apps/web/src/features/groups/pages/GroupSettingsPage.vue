@@ -24,6 +24,7 @@ import { groupsApi } from '../api';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import InviteDialog from '../components/InviteDialog.vue';
 import PageHeader from '../components/PageHeader.vue';
+import PlaylistSection from '@/features/playlists/components/PlaylistSection.vue';
 import { useGroupsStore } from '../store';
 
 const props = defineProps<{ groupId: string }>();
@@ -356,6 +357,8 @@ function initial(name: string) {
           </v-list-item>
         </v-list>
       </section>
+
+      <PlaylistSection :group-id="groupId" />
 
       <v-btn
         variant="text"

@@ -7,3 +7,4 @@ export * from './groups.js';
 export * from './titles.js';
 export * from './views.js';
 export * from './youtube.js';
+export * from './playlists.js';
