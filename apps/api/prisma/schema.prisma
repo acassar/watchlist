@@ -38,6 +38,7 @@ model User {
   createdInvitations Invitation[]
   addedTitles        GroupTitle[]
   statuses           MemberStatus[]
+  emailChanges       EmailChange[]
 
   @@index([lastActiveAt])
   @@map("users")
@@ -70,6 +71,10 @@ enum EmailTokenType {
   RESET_PASSWORD
   /// Ajouter un mot de passe à un compte existant sans mot de passe (compte Google).
   LINK_PASSWORD
+  /// Confirmer une nouvelle adresse (lien envoyé à la nouvelle adresse).
+  CHANGE_EMAIL
+  /// « Ce n'est pas moi » : remettre l'ancienne adresse (lien envoyé à l'ancienne).
+  REVERT_EMAIL
 
   @@map("email_token_type")
 }
@@ -82,6 +87,10 @@ model EmailToken {
   tokenHash    String         @unique @map("token_hash")
   /// LINK_PASSWORD : hash du mot de passe choisi, appliqué seulement après le clic.
   passwordHash String?        @map("password_hash")
+  /// CHANGE_EMAIL : nouvelle adresse demandée. REVERT_EMAIL : ancienne adresse à remettre.
+  email        String?
+  /// REVERT_EMAIL : compte Google lié au moment du changement (null : aucun).
+  googleId     String?        @map("google_id")
   expiresAt    DateTime       @map("expires_at") @db.Timestamptz(3)
   usedAt       DateTime?      @map("used_at") @db.Timestamptz(3)
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -90,6 +99,19 @@ model EmailToken {
 
   @@index([userId, type])
   @@map("email_tokens")
+}
+
+/// Changements d'adresse confirmés, pour limiter leur nombre sur 30 jours
+/// glissants. Aucune adresse stockée ici ; lignes purgées après 30 jours.
+model EmailChange {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  changedAt DateTime @default(now()) @map("changed_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, changedAt])
+  @@map("email_changes")
 }
 
 /// Emails partis par jour (UTC), pour rester sous le quota quotidien du
@@ -200,6 +222,10 @@ model MediaItem {
   thumbnailUrl String?     @map("thumbnail_url")
   author       String?
   durationSec  Int?        @map("duration_sec")
+  /// Vidéo supprimée ou devenue privée : titre, chaîne, miniature et durée
+  /// sont effacés (pas de donnée YouTube gardée plus de 30 jours sans
+  /// rafraîchissement), seul l'identifiant reste.
+  unavailable  Boolean     @default(false)
   fetchedAt    DateTime    @map("fetched_at") @db.Timestamptz(3)
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
 
@@ -261,6 +287,7 @@ model GroupPlaylist {
   /// celles ajoutées à la playlist après cette date (choix fait à la liaison).
   importFrom DateTime? @map("import_from") @db.Timestamptz(3)
   /// NOT_FOUND : playlist devenue privée ou supprimée à la dernière synchro.
+  /// TOO_LONG : plus de 200 vidéos, celles du bas ne sont pas lues.
   error      String?
 
   member GroupMember @relation(fields: [groupId, userId], references: [groupId, userId], onDelete: Cascade)

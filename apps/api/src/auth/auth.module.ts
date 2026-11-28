@@ -8,6 +8,8 @@ import type { Env } from '../config.js';
 import { ACCESS_TOKEN_TTL_SECONDS } from './auth.constants.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { CredentialsController } from './credentials.controller.js';
+import { CredentialsService } from './credentials.service.js';
 import { EmailTokenService } from './email-token.service.js';
 import { GoogleAuthController } from './google/google-auth.controller.js';
 import {
@@ -44,9 +46,15 @@ import { RefreshTokenService } from './refresh-token.service.js';
       ],
     }),
   ],
-  controllers: [AuthController, GoogleAuthController, HandoffController],
+  controllers: [
+    AuthController,
+    CredentialsController,
+    GoogleAuthController,
+    HandoffController,
+  ],
   providers: [
     AuthService,
+    CredentialsService,
     PasswordService,
     RefreshTokenService,
     EmailTokenService,

@@ -37,7 +37,7 @@ export type AccountErrorCode =
   (typeof AccountErrorCode)[keyof typeof AccountErrorCode];
 
 /** Version du format d'export, à incrémenter si sa forme change. */
-export const ACCOUNT_EXPORT_VERSION = 4;
+export const ACCOUNT_EXPORT_VERSION = 5;
 
 /**
  * Export des données (droit d'accès et portabilité, art. 15 et 20 du RGPD) :
@@ -79,11 +79,20 @@ export interface AccountExport {
   }[];
   /** Liens envoyés par email (confirmation, mot de passe), jusqu'à expiration. */
   emailLinks: {
-    type: 'VERIFY_EMAIL' | 'RESET_PASSWORD' | 'LINK_PASSWORD';
+    type:
+      | 'VERIFY_EMAIL'
+      | 'RESET_PASSWORD'
+      | 'LINK_PASSWORD'
+      | 'CHANGE_EMAIL'
+      | 'REVERT_EMAIL';
+    /** Nouvelle adresse (CHANGE_EMAIL) ou ancienne à remettre (REVERT_EMAIL). */
+    email: string | null;
     createdAt: string;
     expiresAt: string;
     usedAt: string | null;
   }[];
+  /** Dates des changements d'adresse des 30 derniers jours (limite). */
+  emailChanges: { changedAt: string }[];
   groups: {
     id: string;
     name: string;

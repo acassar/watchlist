@@ -168,6 +168,25 @@ describe('playlist YouTube du groupe', () => {
     expect(wrapper.text()).toContain('Prochaine synchro possible');
   });
 
+  it('playlist de plus de 200 vidéos : son propriétaire est prévenu', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchByUrl({
+        '/api/auth/refresh': [session],
+        '/api/groups': [[200, [nousDeux]]],
+        '/api/groups/g1': [[200, detail]],
+        '/api/groups/g1/invitations': [[200, []]],
+        '/api/groups/g1/playlists': [
+          [200, { ...linked, mine: { ...linked.mine, error: 'TOO_LONG' } }],
+        ],
+        '/api/groups/g1/playlists/sync': [[200, skipped]],
+      }),
+    );
+    const wrapper = await mountAt('/groups/g1');
+    const alert = wrapper.find('[data-test="playlist-too-long"]');
+    expect(alert.text()).toContain('dépasse 200 vidéos');
+  });
+
   it('masquée si le serveur n’a pas de clé YouTube', async () => {
     vi.stubGlobal(
       'fetch',

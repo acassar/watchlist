@@ -89,8 +89,12 @@ export interface MyPlaylist {
   linkedAt: string;
   /** Les vidéos présentes au moment de la liaison ont été importées. */
   importExisting: boolean;
-  /** NOT_FOUND : playlist devenue privée ou supprimée à la dernière synchro. */
-  error: 'NOT_FOUND' | null;
+  /**
+   * NOT_FOUND : playlist devenue privée ou supprimée à la dernière synchro.
+   * TOO_LONG : plus de PLAYLIST_MAX_ITEMS_READ vidéos, celles du bas ne sont
+   * pas lues.
+   */
+  error: 'NOT_FOUND' | 'TOO_LONG' | null;
 }
 
 /** État de la synchro des playlists d'un groupe, vu par un membre. */

@@ -114,6 +114,12 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = await authApi.updateLocale(locale);
   }
 
+  /** Relit le profil (ex. adresse changée depuis un lien reçu par email). */
+  async function reloadUser() {
+    if (status.value !== 'authenticated') return;
+    user.value = await authApi.me();
+  }
+
   setAuthHooks({ getAccessToken: () => accessToken.value, refresh });
 
   return {
@@ -123,6 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     init,
     refresh,
+    reloadUser,
     providers,
     loadProviders,
     login,

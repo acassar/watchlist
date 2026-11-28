@@ -188,6 +188,18 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/features/auth/pages/LinkPasswordPage.vue'),
     meta: authPage,
   },
+  {
+    path: '/confirm-email',
+    name: 'confirm-email',
+    component: () => import('@/features/account/pages/ConfirmEmailPage.vue'),
+    meta: authPage,
+  },
+  {
+    path: '/revert-email',
+    name: 'revert-email',
+    component: () => import('@/features/account/pages/RevertEmailPage.vue'),
+    meta: authPage,
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

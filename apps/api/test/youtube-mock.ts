@@ -95,6 +95,7 @@ export function mockYouTube(
       return Promise.resolve(
         Response.json({
           ...(next ? { nextPageToken: String(start + size) } : {}),
+          pageInfo: { totalResults: playlist.items.length },
           items: page.map((item) => ({
             snippet: {
               publishedAt: item.addedAt ?? '2026-01-01T00:00:00Z',

@@ -7,6 +7,7 @@ import {
   mdiUndo,
 } from '@mdi/js';
 import type { GroupTitle } from '@watchlist/shared';
+import { mediaTitle } from '../media';
 
 defineProps<{ title: GroupTitle; history?: boolean }>();
 const emit = defineEmits<{
@@ -24,7 +25,9 @@ const emit = defineEmits<{
         :icon="mdiDotsVertical"
         variant="text"
         size="small"
-        :aria-label="$t('titles.actions.label', { title: title.media.title })"
+        :aria-label="
+          $t('titles.actions.label', { title: mediaTitle(title.media, $t) })
+        "
         data-test="title-actions"
       />
     </template>

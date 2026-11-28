@@ -3,8 +3,10 @@ import {
   mdiChevronRight,
   mdiDeleteOutline,
   mdiDownload,
+  mdiEmailEditOutline,
   mdiFileDocumentOutline,
   mdiInformationOutline,
+  mdiLockReset,
   mdiScaleBalance,
   mdiShieldAccountOutline,
 } from '@mdi/js';
@@ -28,10 +30,19 @@ import DonateCard from '@/features/about/components/DonateCard.vue';
 import LanguagePicker from '@/features/locale/LanguagePicker.vue';
 import { currentLocale } from '@/features/locale/locale';
 import { accountApi, downloadJson } from '../api';
+import ChangeEmailDialog from '../components/ChangeEmailDialog.vue';
+import ChangePasswordDialog from '../components/ChangePasswordDialog.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
 const { t } = useI18n();
+
+/* Adresse et mot de passe (comptes avec mot de passe seulement) */
+const emailOpen = ref(false);
+const passwordOpen = ref(false);
+/** Adresse à laquelle le lien de confirmation vient de partir. */
+const emailSentTo = ref<string | null>(null);
+const passwordChanged = ref(false);
 
 /* Export */
 const exporting = ref(false);
@@ -130,7 +141,48 @@ async function deleteAccount() {
         :subtitle="auth.user.email"
         data-test="settings-user"
       />
+      <template v-if="hasPassword">
+        <v-list-item
+          :prepend-icon="mdiEmailEditOutline"
+          :append-icon="mdiChevronRight"
+          :title="$t('settings.email.title')"
+          data-test="change-email"
+          @click="emailOpen = true"
+        />
+        <v-list-item
+          :prepend-icon="mdiLockReset"
+          :append-icon="mdiChevronRight"
+          :title="$t('settings.password.title')"
+          data-test="change-password"
+          @click="passwordOpen = true"
+        />
+      </template>
     </v-list>
+    <v-alert
+      v-if="emailSentTo"
+      type="info"
+      variant="tonal"
+      class="mb-4"
+      closable
+      :text="$t('settings.email.sent', { email: emailSentTo })"
+      data-test="email-sent"
+      @click:close="emailSentTo = null"
+    />
+    <v-alert
+      v-if="passwordChanged"
+      type="success"
+      variant="tonal"
+      class="mb-4"
+      closable
+      :text="$t('settings.password.changed')"
+      data-test="password-changed"
+      @click:close="passwordChanged = false"
+    />
+    <ChangeEmailDialog v-model="emailOpen" @sent="emailSentTo = $event" />
+    <ChangePasswordDialog
+      v-model="passwordOpen"
+      @done="passwordChanged = true"
+    />
 
     <h2 class="text-title-small text-medium-emphasis mb-2">
       {{ $t('settings.language') }}

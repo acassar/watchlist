@@ -251,6 +251,22 @@ describe('Synchro des playlists YouTube (e2e)', () => {
     expect(state.body.mine.error).toBe('NOT_FOUND');
   });
 
+  it('plus de 200 vidéos : son propriétaire est prévenu', async () => {
+    youtube.playlists[MINE] = {
+      items: Array.from({ length: 201 }, (_, i) => ({ videoId: vid(i + 1) })),
+    };
+    await link(adrien, playlistUrl(MINE), false).expect(200);
+    const state = await http().get(base()).set(adrien.auth).expect(200);
+    expect(state.body.mine.error).toBe('TOO_LONG');
+
+    // Repassée sous 200 : le message disparaît à la synchro suivante.
+    youtube.playlists[MINE] = { items: [{ videoId: vid(1) }] };
+    await syncedHoursAgo(5);
+    await sync(camille, 'auto').expect(200);
+    const after = await http().get(base()).set(adrien.auth).expect(200);
+    expect(after.body.mine.error).toBeNull();
+  });
+
   it('quota YouTube épuisé : réessayer demain', async () => {
     youtube.quotaExceeded = true;
     const res = await link(adrien, playlistUrl(MINE));

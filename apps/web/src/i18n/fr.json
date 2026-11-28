@@ -145,7 +145,11 @@
     "PLAYLIST_NOT_FOUND": "Playlist introuvable : elle est peut-être privée. Passez-la en « Non répertoriée » et réessayez.",
     "PLAYLIST_SYNC_TOO_SOON": "Déjà synchronisée il y a moins de 15 minutes. Encore un peu de patience !",
     "PLAYLIST_SYNC_DISABLED": "La synchro des playlists n'est pas disponible pour l'instant.",
-    "PLAYLIST_QUOTA_EXCEEDED": "Victimes de notre succès : on a lu toutes les playlists possibles pour aujourd'hui. Réessayez demain, promis, on vous attend."
+    "PLAYLIST_QUOTA_EXCEEDED": "Victimes de notre succès : on a lu toutes les playlists possibles pour aujourd'hui. Réessayez demain, promis, on vous attend.",
+    "EMAIL_CHANGE_LIMIT": "Vous avez déjà changé d'adresse {max} fois ces {days} derniers jours. Réessayez un peu plus tard.",
+    "SAME_EMAIL": "C'est déjà l'adresse de votre compte.",
+    "NO_PASSWORD": "Réservé aux comptes avec un mot de passe.",
+    "EMAIL_TAKEN": "Cette adresse est maintenant utilisée par un autre compte. Écrivez-nous à contact@canapact.fr, on regarde ça avec vous."
   },
   "common": {
     "back": "Retour",
@@ -252,6 +256,7 @@
     }
   },
   "titles": {
+    "unavailable": "Vidéo indisponible",
     "addButton": "Ajouter un titre",
     "added": "Ajouté à « {name} »",
     "empty": "Rien ici pour l'instant. Appuyez sur « + » pour ajouter une vidéo.",
@@ -393,7 +398,31 @@
       "reauthButton": "Se reconnecter avec Google"
     },
     "deleted": "Votre compte a bien été supprimé. Le canapé reste là si vous revenez.",
-    "support": "À propos de Canapact"
+    "support": "À propos de Canapact",
+    "email": {
+      "title": "Changer d'adresse email",
+      "intro": "Un lien de confirmation part à la nouvelle adresse : elle remplace l'ancienne au clic. Au plus {max} changements tous les {days} jours.",
+      "newEmail": "Nouvelle adresse email",
+      "submit": "Envoyer le lien",
+      "sent": "Lien envoyé à {email}. Cliquez dessus pour terminer : d'ici là, rien ne change.",
+      "taken": "Cette adresse a déjà un compte Canapact.",
+      "confirmTitle": "Nouvelle adresse",
+      "confirming": "On met votre adresse à jour…",
+      "confirmed": "C'est fait : votre compte utilise maintenant cette adresse. L'ancienne a reçu un petit mot, au cas où.",
+      "backToSettings": "Retour aux réglages"
+    },
+    "password": {
+      "title": "Changer de mot de passe",
+      "current": "Mot de passe actuel",
+      "otherDevices": "Vos autres appareils seront déconnectés, celui-ci reste connecté.",
+      "changed": "Mot de passe changé. Vos autres appareils ont été déconnectés."
+    },
+    "revert": {
+      "title": "Ce n'était pas vous ?",
+      "intro": "On remet cette adresse sur votre compte. Choisissez un nouveau mot de passe : tous les appareils seront déconnectés.",
+      "submit": "Récupérer mon compte",
+      "success": "Votre compte est de nouveau à cette adresse, avec votre nouveau mot de passe. Tous les appareils ont été déconnectés."
+    }
   },
   "about": {
     "title": "À propos",
@@ -429,6 +458,7 @@
     "linkedNewOnly": "Vidéos ajoutées depuis le {date}",
     "open": "Ouvrir la playlist dans YouTube",
     "notFound": "Canapact n'arrive plus à lire votre playlist : elle est peut-être passée en privée ou a été supprimée. Repassez-la en « Non répertoriée », ou liez-en une autre.",
+    "tooLong": "Votre playlist dépasse {n} vidéos : Canapact ne lit que les {n} premières, et les nouvelles ajoutées en bas n'arriveront pas. Retirez de la playlist les vidéos déjà vues pour faire de la place.",
     "sync": "Synchroniser la playlist",
     "nextSync": "Prochaine synchro possible à {time}.",
     "lastSync": "Dernière synchro le {date}.",

@@ -21,6 +21,7 @@ const playlistsSchema = z.object({ items: z.array(z.unknown()) });
 
 const playlistItemsSchema = z.object({
   nextPageToken: z.string().optional(),
+  pageInfo: z.object({ totalResults: z.number().optional() }).optional(),
   items: z.array(
     z.object({
       snippet: z
@@ -105,13 +106,15 @@ export class YouTubePlaylistClient {
   async page(
     playlistId: string,
     pageToken?: string,
-  ): Promise<{ entries: PlaylistEntry[]; next: string | null } | Failure> {
+  ): Promise<
+    { entries: PlaylistEntry[]; next: string | null; total: number } | Failure
+  > {
     const reply = await this.call('playlistItems', {
       part: 'snippet,status',
       playlistId,
       maxResults: String(PAGE_SIZE),
       fields:
-        'nextPageToken,items(snippet(publishedAt,resourceId(videoId)),status(privacyStatus))',
+        'nextPageToken,pageInfo(totalResults),items(snippet(publishedAt,resourceId(videoId)),status(privacyStatus))',
       ...(pageToken ? { pageToken } : {}),
     });
     if (typeof reply === 'string') return reply;
@@ -133,7 +136,12 @@ export class YouTubePlaylistClient {
         addedAt: addedAt && !isNaN(addedAt.getTime()) ? addedAt : null,
       });
     }
-    return { entries, next: parsed.data.nextPageToken ?? null };
+    return {
+      entries,
+      next: parsed.data.nextPageToken ?? null,
+      /** Vidéos de la playlist en tout (toutes pages confondues). */
+      total: parsed.data.pageInfo?.totalResults ?? 0,
+    };
   }
 
   /**

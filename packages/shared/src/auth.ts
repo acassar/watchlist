@@ -74,6 +74,30 @@ export const resetPasswordRequestSchema = z.object({
 });
 export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
 
+/** Mot de passe actuel retapé (réglages) : seulement la borne haute. */
+const currentPasswordSchema = z
+  .string({ error: 'validation.required' })
+  .min(1, { error: 'validation.required' })
+  .max(PASSWORD_MAX_LENGTH, { error: 'validation.passwordTooLong' });
+
+/** Réglages : changer de mot de passe en connaissant l'actuel. */
+export const changePasswordRequestSchema = z.object({
+  currentPassword: currentPasswordSchema,
+  newPassword: newPasswordSchema,
+});
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
+
+/** Réglages : demander à changer d'adresse (lien envoyé à la nouvelle). */
+export const changeEmailRequestSchema = z.object({
+  newEmail: emailSchema,
+  password: currentPasswordSchema,
+});
+export type ChangeEmailRequest = z.infer<typeof changeEmailRequestSchema>;
+
+/** Changements d'adresse confirmés autorisés sur EMAIL_CHANGE_WINDOW_DAYS. */
+export const EMAIL_CHANGE_MAX = 2;
+export const EMAIL_CHANGE_WINDOW_DAYS = 30;
+
 /** Utilisateur tel que le voit le front. */
 export interface AuthUser {
   id: string;
@@ -105,6 +129,14 @@ export const AuthErrorCode = {
   EMAIL_ALREADY_REGISTERED: 'EMAIL_ALREADY_REGISTERED',
   /** Quota d'emails du jour atteint : réessayer demain (ou passer par Google). */
   MAIL_QUOTA_EXCEEDED: 'MAIL_QUOTA_EXCEEDED',
+  /** Changement d'adresse demandé vers l'adresse actuelle. */
+  SAME_EMAIL: 'SAME_EMAIL',
+  /** Déjà EMAIL_CHANGE_MAX changements d'adresse sur la période. */
+  EMAIL_CHANGE_LIMIT: 'EMAIL_CHANGE_LIMIT',
+  /** Compte sans mot de passe (Google) : action réservée aux comptes email. */
+  NO_PASSWORD: 'NO_PASSWORD',
+  /** Ancienne adresse reprise entre-temps par un autre compte actif. */
+  EMAIL_TAKEN: 'EMAIL_TAKEN',
 } as const;
 export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode];
 

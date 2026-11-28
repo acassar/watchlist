@@ -3,6 +3,7 @@ import { mdiOpenInNew, mdiPlaylistPlay, mdiSync } from '@mdi/js';
 import {
   GROUP_MAX_ACTIVE_TITLES,
   linkPlaylistRequestSchema,
+  PLAYLIST_MAX_ITEMS_READ,
   mediaUrlSchema,
   type PlaylistSyncResult,
 } from '@watchlist/shared';
@@ -162,6 +163,14 @@ async function unlink() {
         class="mb-4"
         :text="$t('playlists.notFound')"
         data-test="playlist-error"
+      />
+      <v-alert
+        v-else-if="state.mine.error === 'TOO_LONG'"
+        type="info"
+        variant="tonal"
+        class="mb-4"
+        :text="$t('playlists.tooLong', { n: PLAYLIST_MAX_ITEMS_READ })"
+        data-test="playlist-too-long"
       />
       <v-list-item class="px-0" :prepend-icon="mdiPlaylistPlay">
         <v-list-item-title>{{ $t('playlists.linked') }}</v-list-item-title>

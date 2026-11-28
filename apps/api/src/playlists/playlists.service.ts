@@ -130,7 +130,10 @@ export class PlaylistsService {
             url: youTubePlaylistUrl(mine.playlistId),
             linkedAt: mine.linkedAt.toISOString(),
             importExisting: mine.importFrom === null,
-            error: mine.error === 'NOT_FOUND' ? 'NOT_FOUND' : null,
+            error:
+              mine.error === 'NOT_FOUND' || mine.error === 'TOO_LONG'
+                ? mine.error
+                : null,
           }
         : null,
       linkedCount: playlists.length,
@@ -389,6 +392,7 @@ export class PlaylistsService {
   private async read(playlist: GroupPlaylist): Promise<PlaylistEntry[] | null> {
     const entries: PlaylistEntry[] = [];
     let token: string | undefined;
+    let total = 0;
     for (let page = 0; page < MAX_PAGES; page++) {
       if (!(await this.quota.tryConsume(playlist.groupId))) {
         throw new QuotaStop();
@@ -399,13 +403,16 @@ export class PlaylistsService {
         return page === 0 ? null : entries;
       }
       entries.push(...result.entries);
+      total = result.total;
       if (!result.next) break;
       token = result.next;
     }
-    if (playlist.error) {
+    // Au-delà, les vidéos du bas ne sont pas lues : on prévient le propriétaire.
+    const error = total > PLAYLIST_MAX_ITEMS_READ ? 'TOO_LONG' : null;
+    if (playlist.error !== error) {
       await this.prisma.groupPlaylist.updateMany({
         where: { groupId: playlist.groupId, userId: playlist.userId },
-        data: { error: null },
+        data: { error },
       });
     }
     return entries;
@@ -438,6 +445,7 @@ export class PlaylistsService {
       where: {
         source: MediaSourceType.YOUTUBE,
         externalId: { in: videoIds },
+        unavailable: false,
         fetchedAt: { gt: new Date(now.getTime() - MEDIA_CACHE_MAX_AGE_MS) },
       },
       select: { id: true, externalId: true },
@@ -459,6 +467,7 @@ export class PlaylistsService {
         thumbnailUrl: youTubeThumbnailUrl(video.videoId),
         author: video.author,
         durationSec: video.durationSec,
+        unavailable: false,
         fetchedAt: new Date(),
       };
       const item = await this.prisma.mediaItem.upsert({
